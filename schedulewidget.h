@@ -3,6 +3,8 @@
 
 #include <QWidget>
 #include <QFont>
+#include <QTableWidget>
+#include <QTableWidgetItem>
 #include "staff.h"
 #include "exam.h"
 #include "sdate.h"
@@ -94,15 +96,16 @@ private:
     QRadioButton *totalRadioButton;
     QRadioButton *weekendRadioButton;
     QList<MyQLabel*> *teamStatsLabels;
-    //QList<int> * totalStaffShifts;//contains the number of shifts for each staff member.
-    //QList<int> * weekendStaffShifts;
     QList<QLabel*> * shiftCountLabels;
-
+    //tableWidget stuff
+    QTableWidget * statsTable;
+    QList<QTableWidgetItem*> * statsTableItems;
+    //
 
     QLabel *donAverageLabel;
     QLabel *raAverageLabel;
-    QLabel *donAverageLabelFIXED;//fixed label
-    QLabel *raAverageLabelFIXED;//fixed label
+    QLabel *donAverageLabelFIXED;
+    QLabel *raAverageLabelFIXED;
 
 
 

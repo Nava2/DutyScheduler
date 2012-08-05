@@ -27,6 +27,7 @@ staff::staff(int i, QString first, QString last, bool pos, bool gen, int night)
     availability = "";
     numShifts = 0;
     numWeekendShifts = 0;
+    numAMShifts = 0;
 }
 
 staff::~staff()
