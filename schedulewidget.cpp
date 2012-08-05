@@ -105,6 +105,8 @@ void scheduleWidget::createScheduleControls()
     spDutyFlagButton = new QPushButton("Flag selected date as Sp.Duty");
     copyButton = new QPushButton("Copy");
     pasteButton = new QPushButton("Paste");
+    currentDateLabel = new QLabel(QDate::shortDayName(startDate->dayOfWeek()) + " " + QDate::shortMonthName(startDate->month()) + " " + QString::number(startDate->day()));
+
 
     exportButton->setStatusTip("Export the schedule as a Comma Separated File (\".csv\")");
     spDutyFlagButton->setStatusTip("Mark the selected date as Special Duty. No staff can be added to this day. Click again to un-mark as special duty.");
@@ -116,12 +118,15 @@ void scheduleWidget::createScheduleControls()
     connect(copyButton,SIGNAL(clicked()),this,SLOT(copySlot()));
     connect(pasteButton,SIGNAL(clicked()),this,SLOT(pasteSlot()));
 
+
+
     QGridLayout *layout = new QGridLayout;
 
     layout->addWidget(exportButton,0,0,1,2);
     layout->addWidget(spDutyFlagButton,1,0,1,2);
     layout->addWidget(copyButton,2,0);
     layout->addWidget(pasteButton,2,1);
+    layout->addWidget(currentDateLabel, 3,0,1,2);
 
     scheduleControls->setLayout(layout);
 }
@@ -496,6 +501,8 @@ int scheduleWidget::dateToIndex(QDate date)
 
 void scheduleWidget::dateClicked(QDate dateSelected)
 {
+    currentDateLabel->setText(QDate::shortDayName(dateSelected.dayOfWeek()) + " " + QDate::shortMonthName(dateSelected.month()) + " " + QString::number(dateSelected.day()));
+
     int dateIndex = dateToIndex(dateSelected); // get the index of the date in "datesList"
     int id;
 

@@ -83,6 +83,7 @@ private:
     QPushButton *spDutyFlagButton;
     QPushButton *copyButton;
     QPushButton *pasteButton;
+    QLabel *currentDateLabel;
 
 
     QRadioButton *totalRadioButton;
