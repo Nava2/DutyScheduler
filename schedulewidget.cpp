@@ -168,6 +168,7 @@ void scheduleWidget::createScheduleStats()
     //connect(totalRadioButton,SIGNAL(toggled(bool)),this,SLOT(updateStats(bool)));
 
     statsTable = new QTableWidget(theTeam->count(),5);
+    //statsTable->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Maximum);
     statsTableItems = new QList<QTableWidgetItem*>;
 
     QStringList labels;                                                                         //set the top row titles
@@ -215,7 +216,7 @@ void scheduleWidget::createScheduleStats()
 
 
     }
-        statsTable->setSortingEnabled(true);
+        //statsTable->setSortingEnabled(true);
 
     QGridLayout *layout = new QGridLayout;
 
