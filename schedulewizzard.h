@@ -58,7 +58,7 @@ private:
     QLabel *friLabel;
     QLabel *satLabel;
     QLabel *donLabel;
-    QLabel *raLabel;
+    QLabel *raAverageLabelFIXED;
     QSpinBox *donSunSpinBox;
     QSpinBox *donMonSpinBox;
     QSpinBox *donTueSpinBox;

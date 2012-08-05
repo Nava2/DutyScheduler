@@ -69,7 +69,7 @@ void scheduleWizzard::createStaffNeededGroupBox()
     satLabel = new QLabel("SAT");
     sunLabel = new QLabel("Sun");
     donLabel = new QLabel("Don-ON:");
-    raLabel = new QLabel("RA:");
+    raAverageLabelFIXED = new QLabel("RA:");
 
     donMonSpinBox = new QSpinBox;
     donTueSpinBox = new QSpinBox;
@@ -115,7 +115,7 @@ void scheduleWizzard::createStaffNeededGroupBox()
     layout->addWidget(sunLabel,0,7);
 
     layout->addWidget(donLabel,1,0);
-    layout->addWidget(raLabel,2,0);
+    layout->addWidget(raAverageLabelFIXED,2,0);
 
 
     layout->addWidget(donMonSpinBox,1,1);

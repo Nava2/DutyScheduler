@@ -147,13 +147,13 @@ void scheduleWidget::createScheduleStats()
 {
     donAverageLabel = new QLabel("0");
     raAverageLabel = new QLabel("0");
-    rALabel = new QLabel("RA Average shifts:");
-    dALabel = new QLabel("Don Average shifts:");
+    raAverageLabelFIXED = new QLabel("RA Avg. shifts:");
+    donAverageLabelFIXED = new QLabel("Don Avg. shifts:");
 
     donAverageLabel->setStatusTip("The average number of shifts for dons, no differentiation between AM and DON-on. (Total or weekend depending on the selection)");
     raAverageLabel->setStatusTip("The average number of shifts for RAs. (Total or weekend depending on the selection)");
-    rALabel->setStatusTip("The average number of shifts for RAs. (Total or weekend depending on the selection)");
-    dALabel->setStatusTip("The average number of shifts for dons, no differentiation between AM and DON-on. (Total or weekend depending on the selection)");
+    raAverageLabelFIXED->setStatusTip("The average number of shifts for RAs. (Total or weekend depending on the selection)");
+    donAverageLabelFIXED->setStatusTip("The average number of shifts for dons, no differentiation between AM and DON-on. (Total or weekend depending on the selection)");
 
     scheduleStatsGroupBox = new QGroupBox("Stats");
 
@@ -171,6 +171,14 @@ void scheduleWidget::createScheduleStats()
 
     QGridLayout *layout = new QGridLayout;
 
+    layout->addWidget(donAverageLabelFIXED,0,0);
+    layout->addWidget(donAverageLabel,0,1);
+    layout->addWidget(raAverageLabelFIXED,1,0);
+    layout->addWidget(raAverageLabel,1,1);
+
+    layout->addWidget(totalRadioButton,2,0);
+    layout->addWidget(weekendRadioButton,2,2);
+
     for(int x=0; x<theTeam->count(); x++)
     {
         MyQLabel *staff = new MyQLabel();
@@ -179,39 +187,28 @@ void scheduleWidget::createScheduleStats()
         staff->setStatusTip("Click here to view this staff member's individual schedule.");
         teamStatsLabels->append(staff);
 
-
-
         QLabel *totalLabel = new QLabel("0");
         shiftCountLabels->append(totalLabel);
         if(theTeam->count() > 16)
         {
             if(x < theTeam->count()/2)
             {
-                layout->addWidget(staff,5+x,0);
-                layout->addWidget(totalLabel,5+x,1);
+                layout->addWidget(staff,3+x,0);
+                layout->addWidget(totalLabel,3+x,1);
             }
             else
             {
-                layout->addWidget(staff,5+x-(theTeam->count()/2),2);
-                layout->addWidget(totalLabel,5+x-(theTeam->count()/2),3);
+                layout->addWidget(staff,3+x-(theTeam->count()/2),2);
+                layout->addWidget(totalLabel,3+x-(theTeam->count()/2),3);
             }
         }
         else
         {
-            layout->addWidget(staff,5+x,0);
-            layout->addWidget(totalLabel,5+x,1);
+            layout->addWidget(staff,3+x,0);
+            layout->addWidget(totalLabel,3+x,1);
         }
 
     }
-
-
-    layout->addWidget(totalRadioButton,4,0);
-    layout->addWidget(weekendRadioButton,4,1);
-    layout->addWidget(rALabel,3,2);
-    layout->addWidget(dALabel,3,0);
-    layout->addWidget(raAverageLabel,3,3);
-    layout->addWidget(donAverageLabel,3,1);
-
 
     scheduleStatsGroupBox->setLayout(layout);
 

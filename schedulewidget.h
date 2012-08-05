@@ -101,8 +101,8 @@ private:
 
     QLabel *donAverageLabel;
     QLabel *raAverageLabel;
-    QLabel *dALabel;//fixed label
-    QLabel *rALabel;//fixed label
+    QLabel *donAverageLabelFIXED;//fixed label
+    QLabel *raAverageLabelFIXED;//fixed label
 
 
 
