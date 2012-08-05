@@ -84,6 +84,11 @@ private:
     QPushButton *copyButton;
     QPushButton *pasteButton;
     QLabel *currentDateLabel;
+    QLabel *currentDateLabelFIXED;
+    QLabel *donsNeededLabel;
+    QLabel *rasNeededLabel;
+    QLabel *donsNeededLabelFIXED;
+    QLabel *rasNeededLabelFIXED;
 
 
     QRadioButton *totalRadioButton;
@@ -93,14 +98,12 @@ private:
     //QList<int> * weekendStaffShifts;
     QList<QLabel*> * shiftCountLabels;
 
+
     QLabel *donAverageLabel;
     QLabel *raAverageLabel;
     QLabel *dALabel;//fixed label
     QLabel *rALabel;//fixed label
-    QLabel *dNLabel;//fixed label
-    QLabel *rNLabel;//fixed label
-    QLabel *donsNeededLabel;
-    QLabel *rasNeededLabel;
+
 
 
     QGroupBox *OnDutyGroupBox;

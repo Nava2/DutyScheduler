@@ -106,7 +106,16 @@ void scheduleWidget::createScheduleControls()
     copyButton = new QPushButton("Copy");
     pasteButton = new QPushButton("Paste");
     currentDateLabel = new QLabel(QDate::shortDayName(startDate->dayOfWeek()) + " " + QDate::shortMonthName(startDate->month()) + " " + QString::number(startDate->day()));
+    currentDateLabelFIXED = new QLabel("Current Date:");
+    donsNeededLabelFIXED = new QLabel("Don-ons needed:");
+    rasNeededLabelFIXED = new QLabel("RAs needed :");
+    donsNeededLabel = new QLabel("0");
+    rasNeededLabel = new QLabel("0");
 
+    donsNeededLabelFIXED->setStatusTip("The number of DON-ons still needed for the selected day.");
+    rasNeededLabelFIXED->setStatusTip("The number of RAs still needed for the selected day.");
+    donsNeededLabel->setStatusTip("The number of DON-ons still needed for the selected day.");
+    rasNeededLabel->setStatusTip("The number of RAs still needed for the selected day.");
 
     exportButton->setStatusTip("Export the schedule as a Comma Separated File (\".csv\")");
     spDutyFlagButton->setStatusTip("Mark the selected date as Special Duty. No staff can be added to this day. Click again to un-mark as special duty.");
@@ -118,15 +127,18 @@ void scheduleWidget::createScheduleControls()
     connect(copyButton,SIGNAL(clicked()),this,SLOT(copySlot()));
     connect(pasteButton,SIGNAL(clicked()),this,SLOT(pasteSlot()));
 
-
-
     QGridLayout *layout = new QGridLayout;
 
     layout->addWidget(exportButton,0,0,1,2);
     layout->addWidget(spDutyFlagButton,1,0,1,2);
     layout->addWidget(copyButton,2,0);
     layout->addWidget(pasteButton,2,1);
-    layout->addWidget(currentDateLabel, 3,0,1,2);
+    layout->addWidget(currentDateLabel, 3,1);
+    layout->addWidget(currentDateLabelFIXED,3,0);
+    layout->addWidget(donsNeededLabelFIXED,4,0);
+    layout->addWidget(rasNeededLabelFIXED,5,0);
+    layout->addWidget(donsNeededLabel,4,1);
+    layout->addWidget(rasNeededLabel,5,1);
 
     scheduleControls->setLayout(layout);
 }
@@ -156,16 +168,6 @@ void scheduleWidget::createScheduleStats()
 
     teamStatsLabels = new QList<MyQLabel*>;
     shiftCountLabels = new QList<QLabel*>;
-
-    dNLabel = new QLabel("Don-ons needed:");
-    rNLabel = new QLabel("RAs needed :");
-    donsNeededLabel = new QLabel("0");
-    rasNeededLabel = new QLabel("0");
-
-    dNLabel->setStatusTip("The number of DON-ons still needed for the selected day.");
-    rNLabel->setStatusTip("The number of RAs still needed for the selected day.");
-    donsNeededLabel->setStatusTip("The number of DON-ons still needed for the selected day.");
-    rasNeededLabel->setStatusTip("The number of RAs still needed for the selected day.");
 
     QGridLayout *layout = new QGridLayout;
 
@@ -202,10 +204,7 @@ void scheduleWidget::createScheduleStats()
 
     }
 
-    layout->addWidget(dNLabel,0,0);
-    layout->addWidget(rNLabel,0,2);
-    layout->addWidget(donsNeededLabel,0,1);
-    layout->addWidget(rasNeededLabel,0,3);
+
     layout->addWidget(totalRadioButton,4,0);
     layout->addWidget(weekendRadioButton,4,1);
     layout->addWidget(rALabel,3,2);
