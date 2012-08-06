@@ -93,8 +93,6 @@ private:
     QLabel *rasNeededLabelFIXED;
 
 
-    QRadioButton *totalRadioButton;
-    QRadioButton *weekendRadioButton;
     QList<MyQLabel*> *teamStatsLabels;
     QList<QLabel*> * shiftCountLabels;
     //tableWidget stuff

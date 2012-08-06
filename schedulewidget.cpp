@@ -155,13 +155,6 @@ void scheduleWidget::createScheduleStats()
     raAverageLabelFIXED->setStatusTip("The average number of shifts for RAs. (Total or weekend depending on the selection)");
     donAverageLabelFIXED->setStatusTip("The average number of shifts for dons, no differentiation between AM and DON-on. (Total or weekend depending on the selection)");
 
-    totalRadioButton = new QRadioButton("Total");
-    weekendRadioButton = new QRadioButton("Weekend");
-    totalRadioButton->setChecked(true);
-
-    totalRadioButton->setStatusTip("Show how many total days each staff is currently on duty (including weekend days).");
-    weekendRadioButton->setStatusTip("Show how many weekend (Friday or Saturday) days each staff is currently on duty. One full weekend counts as 2 days.");
-
     statsTable = new QTableWidget(theTeam->count(),5);
     statsTable->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
     statsTable->setMinimumWidth(500);
@@ -186,7 +179,7 @@ void scheduleWidget::createScheduleStats()
         nameItem->setData(Qt::UserRole,theTeam->at(x)->getId());
         nameItem->setFlags(0x0);
         nameItem->setFlags(Qt::ItemIsEnabled);
-        nameItem->setTextAlignment(Qt::AlignHCenter);
+        nameItem->setTextAlignment(Qt::AlignCenter);
 
 
         //position
@@ -198,7 +191,7 @@ void scheduleWidget::createScheduleStats()
         positionItem->setData(Qt::UserRole,theTeam->at(x)->getId());
         positionItem->setFlags(0x0);
         positionItem->setFlags(Qt::ItemIsEnabled);
-        positionItem->setTextAlignment(Qt::AlignHCenter);
+        positionItem->setTextAlignment(Qt::AlignCenter);
 
         //total
         QTableWidgetItem *totalItem = new QTableWidgetItem();
@@ -206,7 +199,7 @@ void scheduleWidget::createScheduleStats()
         totalItem->setData(Qt::UserRole,theTeam->at(x)->getId());
         totalItem->setFlags(0x0);
         totalItem->setFlags(Qt::ItemIsEnabled);
-        totalItem->setTextAlignment(Qt::AlignHCenter);
+        totalItem->setTextAlignment(Qt::AlignCenter);
 
         //weekend
         QTableWidgetItem *weekendItem = new QTableWidgetItem();
@@ -214,7 +207,7 @@ void scheduleWidget::createScheduleStats()
         weekendItem->setData(Qt::UserRole,theTeam->at(x)->getId());
         weekendItem->setFlags(0x0);
         weekendItem->setFlags(Qt::ItemIsEnabled);
-        weekendItem->setTextAlignment(Qt::AlignHCenter);
+        weekendItem->setTextAlignment(Qt::AlignCenter);
 
         //AM
         QTableWidgetItem *amItem = new QTableWidgetItem();
@@ -222,7 +215,7 @@ void scheduleWidget::createScheduleStats()
         amItem->setData(Qt::UserRole,theTeam->at(x)->getId());
         amItem->setFlags(0x0);
         amItem->setFlags(Qt::ItemIsEnabled);
-        amItem->setTextAlignment(Qt::AlignHCenter);
+        amItem->setTextAlignment(Qt::AlignCenter);
 
 
         statsTableItems->append(nameItem);
@@ -244,8 +237,6 @@ void scheduleWidget::createScheduleStats()
     layout->addWidget(raAverageLabelFIXED,1,0);
     layout->addWidget(raAverageLabel,1,1);
 
-    layout->addWidget(totalRadioButton,2,0);
-    layout->addWidget(weekendRadioButton,2,2);
 
     layout->addWidget(statsTable,3,0,1,5);
 
@@ -1148,60 +1139,5 @@ void scheduleWidget::updateStats(bool inp)
     donAverageLabel->setText(QString::number(dAverage));
     raAverageLabel->setText(QString::number(rAverage));
 
-    /*
-    //old update stats for lables.
-    double dAverage = 0;
-    double rAverage = 0;
-    int rCount = 0;
-    int dCount = 0;
 
-    if (totalRadioButton->isChecked())
-    {
-        for(int x = 0; x < theTeam->count(); x++)
-        {
-            shiftCountLabels->at(x)->setText(QString::number(theTeam->at(x)->getShifts()));
-
-            if(theTeam->at(x)->getPosition())
-            {
-                dAverage += theTeam->at(x)->getShifts();
-                dCount++;
-            }
-            else
-            {
-                rAverage += theTeam->at(x)->getShifts();
-                rCount++;
-            }
-
-        }
-
-        rAverage = rAverage / rCount;
-        dAverage = dAverage / dCount;
-
-
-    }
-    else
-    {
-        for(int x = 0; x < theTeam->count(); x++)
-        {
-            shiftCountLabels->at(x)->setText(QString::number(theTeam->at(x)->getWeekendShifts()));
-
-            if(theTeam->at(x)->getPosition())
-            {
-                dAverage += theTeam->at(x)->getWeekendShifts();
-                dCount++;
-            }
-            else
-            {
-                rAverage += theTeam->at(x)->getWeekendShifts();
-                rCount++;
-            }
-        }
-
-        rAverage = rAverage / rCount;
-        dAverage = dAverage / dCount;
-
-    }
-
-    donAverageLabel->setText(QString::number(dAverage));
-    raAverageLabel->setText(QString::number(rAverage));*/
 }
