@@ -145,29 +145,16 @@ void scheduleWidget::createScheduleStats()
     scheduleStatsGroupBox = new QGroupBox("Stats");
     scheduleStatsGroupBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
-    donAverageLabel = new QLabel("0");
-    raAverageLabel = new QLabel("0");
-    raAverageLabelFIXED = new QLabel("RA Avg. shifts:");
-    donAverageLabelFIXED = new QLabel("Don Avg. shifts:");
-
-    donAverageWeekendLabel = new QLabel("0");
-    raAverageWeekendLabel = new QLabel("0");
-    raAverageWeekendLabelFIXED = new QLabel("RA Avg. Weekend shifts:");
-    donAverageWeekendLabelFIXED = new QLabel("Don Avg. Weekend shifts:");
-
-    donAverageLabel->setStatusTip("The average number of shifts for dons, no differentiation between AM and DON-on. (Total or weekend depending on the selection)");
-    raAverageLabel->setStatusTip("The average number of shifts for RAs. (Total or weekend depending on the selection)");
-    raAverageLabelFIXED->setStatusTip("The average number of shifts for RAs. (Total or weekend depending on the selection)");
-    donAverageLabelFIXED->setStatusTip("The average number of shifts for dons, no differentiation between AM and DON-on. (Total or weekend depending on the selection)");
-
-    donAverageWeekendLabel->setStatusTip("The average number of shifts for dons, no differentiation between AM and DON-on. (Total or weekend depending on the selection)");
-    raAverageWeekendLabel->setStatusTip("The average number of shifts for RAs. (Total or weekend depending on the selection)");
-    raAverageWeekendLabelFIXED->setStatusTip("The average number of shifts for RAs. (Total or weekend depending on the selection)");
-    donAverageWeekendLabelFIXED->setStatusTip("The average number of shifts for dons, no differentiation between AM and DON-on. (Total or weekend depending on the selection)");
+    Qt::ItemFlags flags = 0;
+    flags |= Qt::ItemIsEnabled;
 
     averagesTable = new QTableWidget(2,5);
-    averagesTable->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::MinimumExpanding);
+    averagesTable->setHorizontalHeaderLabels(QString(",Position,Total,Weekend,AM").split(",",QString::KeepEmptyParts));
+    averagesTable->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Fixed);
+    averagesTable->setMaximumHeight(80);
     averagesTable->setMinimumWidth(500);
+    averagesTable->setRowHeight(0,25);
+    averagesTable->setRowHeight(1,25);
     averagesTable->setSelectionMode(QAbstractItemView::NoSelection);
     averagesTable->setColumnWidth(0,120);
     averagesTable->setColumnWidth(1,50);
@@ -181,6 +168,18 @@ void scheduleWidget::createScheduleStats()
     donAverageWeekendItem = new QTableWidgetItem("0");
     amAverageItem = new QTableWidgetItem("0");
 
+    raAverageItem->setTextAlignment(Qt::AlignCenter);
+    donAverageItem->setTextAlignment(Qt::AlignCenter);
+    raAverageWeekendItem->setTextAlignment(Qt::AlignCenter);
+    donAverageWeekendItem->setTextAlignment(Qt::AlignCenter);
+    amAverageItem->setTextAlignment(Qt::AlignCenter);
+
+    raAverageItem->setFlags(flags);
+    donAverageItem->setFlags(flags);
+    raAverageWeekendItem->setFlags(flags);
+    donAverageWeekendItem->setFlags(flags);
+    amAverageItem->setFlags(flags);
+
     averagesTable->setItem(0,0,new QTableWidgetItem("Average"));
     averagesTable->setItem(1,0,new QTableWidgetItem("Average"));
     averagesTable->setItem(0,1,new QTableWidgetItem("Don"));
@@ -191,9 +190,10 @@ void scheduleWidget::createScheduleStats()
     averagesTable->setItem(1,2,raAverageItem);
     averagesTable->setItem(1,3,raAverageWeekendItem);
 
-    averagesTable->setHorizontalHeaderLabels(QString(",Position,Total,Weekend,AM").split(",",QString::KeepEmptyParts));
+
 
     statsTable = new QTableWidget(theTeam->count(),5);
+    statsTable->setHorizontalHeaderLabels(QString("Name,Position,Total Shifts,Weekend Shifts,AM Shifts").split(","));
     statsTable->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
     statsTable->setMinimumWidth(500);
     statsTable->setSelectionMode(QAbstractItemView::NoSelection);
@@ -203,23 +203,26 @@ void scheduleWidget::createScheduleStats()
     statsTable->setColumnWidth(3,90);
     statsTable->setColumnWidth(4,70);
 
+
     statsTableItems = new QList<QTableWidgetItem*>;
 
 
-    QStringList labels;                                                                         //set the top row titles
-    labels << "Name" << "Position" << "Total Shifts" << "Weekend Shifts" << "AM Shifts";
-    statsTable->setHorizontalHeaderLabels(labels);
 
     for (int x = 0; x < theTeam->count(); x++)
     {
+        statsTable->setRowHeight(x,20);
         //name
         QTableWidgetItem *nameItem = new QTableWidgetItem();
         nameItem->setText(theTeam->at(x)->getFirstName() + " " + theTeam->at(x)->getLastName().left(1));
         nameItem->setData(Qt::UserRole,theTeam->at(x)->getId());
-        nameItem->setFlags(0x0);
-        nameItem->setFlags(Qt::ItemIsEnabled);
-        nameItem->setTextAlignment(Qt::AlignCenter);
+        nameItem->setFlags(flags);
 
+        if(theTeam->at(x)->getPosition())
+        {
+            QFont font = nameItem->font();
+            font.setItalic(true);
+            nameItem->setFont(font);
+        }
 
         //position
         QTableWidgetItem *positionItem = new QTableWidgetItem();
@@ -228,34 +231,29 @@ void scheduleWidget::createScheduleStats()
         else
             positionItem->setText("RA");
         positionItem->setData(Qt::UserRole,theTeam->at(x)->getId());
-        positionItem->setFlags(0x0);
-        positionItem->setFlags(Qt::ItemIsEnabled);
-        positionItem->setTextAlignment(Qt::AlignCenter);
+        positionItem->setFlags(flags);
+
 
         //total
         QTableWidgetItem *totalItem = new QTableWidgetItem();
         totalItem->setText(QString::number(theTeam->at(x)->getShifts()));
         totalItem->setData(Qt::UserRole,theTeam->at(x)->getId());
-        totalItem->setFlags(0x0);
-        totalItem->setFlags(Qt::ItemIsEnabled);
+        totalItem->setFlags(flags);
         totalItem->setTextAlignment(Qt::AlignCenter);
 
         //weekend
         QTableWidgetItem *weekendItem = new QTableWidgetItem();
         weekendItem->setText(QString::number(theTeam->at(x)->getWeekendShifts()));
         weekendItem->setData(Qt::UserRole,theTeam->at(x)->getId());
-        weekendItem->setFlags(0x0);
-        weekendItem->setFlags(Qt::ItemIsEnabled);
+        weekendItem->setFlags(flags);
         weekendItem->setTextAlignment(Qt::AlignCenter);
 
         //AM
         QTableWidgetItem *amItem = new QTableWidgetItem();
         amItem->setText(QString::number(theTeam->at(x)->getAMShifts()));
         amItem->setData(Qt::UserRole,theTeam->at(x)->getId());
-        amItem->setFlags(0x0);
-        amItem->setFlags(Qt::ItemIsEnabled);
+        amItem->setFlags(flags);
         amItem->setTextAlignment(Qt::AlignCenter);
-
 
         statsTableItems->append(nameItem);
 
@@ -265,25 +263,14 @@ void scheduleWidget::createScheduleStats()
         statsTable->setItem(x,3,weekendItem);
         statsTable->setItem(x,4,amItem);
 
-
     }
-        //statsTable->setSortingEnabled(true);
+        statsTable->setSortingEnabled(true);
 
     QGridLayout *layout = new QGridLayout;
 
-    /*layout->addWidget(donAverageLabelFIXED,0,0);
-    layout->addWidget(donAverageLabel,0,1);
-    layout->addWidget(raAverageLabelFIXED,1,0);
-    layout->addWidget(raAverageLabel,1,1);
-    layout->addWidget(donAverageWeekendLabelFIXED,0,2);
-    layout->addWidget(donAverageWeekendLabel,0,3);
-    layout->addWidget(raAverageWeekendLabelFIXED,1,2);
-    layout->addWidget(raAverageWeekendLabel,1,3);*/
-
     layout->addWidget(averagesTable,0,0,1,5);
 
-
-    layout->addWidget(statsTable,2,0,1,5);
+    layout->addWidget(statsTable,1,0,1,5);
 
     scheduleStatsGroupBox->setLayout(layout);
 
@@ -323,9 +310,6 @@ void scheduleWidget::createLists()
 
     onDeckList->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
     onDutyList->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-
-    onDeckList->setMaximumWidth(180);
-    onDutyList->setMaximumWidth(180);
 
     onDeckList->setMinimumWidth(100);
     onDutyList->setMinimumWidth(100);
@@ -1152,10 +1136,12 @@ void scheduleWidget::updateStats(bool inp)
         dAverage = dAverage / dCount;
         rWAverage = rWAverage / rCount;
         dWAverage = dWAverage / dCount;
+        amAverage = amAverage / dCount;
 
-    donAverageLabel->setText(QString::number(dAverage));
-    raAverageLabel->setText(QString::number(rAverage));
+        donAverageItem->setText(QString::number(dAverage));
+        donAverageWeekendItem->setText(QString::number(dWAverage));
+        amAverageItem->setText(QString::number(amAverage));
+        raAverageItem->setText(QString::number(rAverage));
+        raAverageWeekendItem->setText(QString::number(rWAverage));
 
-    donAverageWeekendLabel->setText(QString::number(dWAverage));
-    raAverageWeekendLabel->setText(QString::number(rWAverage));
 }

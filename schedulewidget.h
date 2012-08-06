@@ -107,20 +107,6 @@ private:
     QTableWidgetItem * donAverageWeekendItem;
     QTableWidgetItem * amAverageItem;
 
-
-    QLabel *donAverageLabel;
-    QLabel *raAverageLabel;
-    QLabel *donAverageLabelFIXED;
-    QLabel *raAverageLabelFIXED;
-    QLabel *donAverageWeekendLabel;
-    QLabel *raAverageWeekendLabel;
-    QLabel *donAverageWeekendLabelFIXED;
-    QLabel *raAverageWeekendLabelFIXED;
-    QLabel *amAverageLabel;
-    QLabel *amAverageLabelFIXED;
-
-
-
     QGroupBox *OnDutyGroupBox;
     QGroupBox *OnDeckGroupBox;
     MyQListWidget *onDeckList;
