@@ -100,10 +100,24 @@ private:
     QList<QTableWidgetItem*> * statsTableItems;
     //
 
+    QTableWidget * averagesTable;
+    QTableWidgetItem * raAverageItem;
+    QTableWidgetItem * raAverageWeekendItem;
+    QTableWidgetItem * donAverageItem;
+    QTableWidgetItem * donAverageWeekendItem;
+    QTableWidgetItem * amAverageItem;
+
+
     QLabel *donAverageLabel;
     QLabel *raAverageLabel;
     QLabel *donAverageLabelFIXED;
     QLabel *raAverageLabelFIXED;
+    QLabel *donAverageWeekendLabel;
+    QLabel *raAverageWeekendLabel;
+    QLabel *donAverageWeekendLabelFIXED;
+    QLabel *raAverageWeekendLabelFIXED;
+    QLabel *amAverageLabel;
+    QLabel *amAverageLabelFIXED;
 
 
 

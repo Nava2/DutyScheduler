@@ -150,10 +150,48 @@ void scheduleWidget::createScheduleStats()
     raAverageLabelFIXED = new QLabel("RA Avg. shifts:");
     donAverageLabelFIXED = new QLabel("Don Avg. shifts:");
 
+    donAverageWeekendLabel = new QLabel("0");
+    raAverageWeekendLabel = new QLabel("0");
+    raAverageWeekendLabelFIXED = new QLabel("RA Avg. Weekend shifts:");
+    donAverageWeekendLabelFIXED = new QLabel("Don Avg. Weekend shifts:");
+
     donAverageLabel->setStatusTip("The average number of shifts for dons, no differentiation between AM and DON-on. (Total or weekend depending on the selection)");
     raAverageLabel->setStatusTip("The average number of shifts for RAs. (Total or weekend depending on the selection)");
     raAverageLabelFIXED->setStatusTip("The average number of shifts for RAs. (Total or weekend depending on the selection)");
     donAverageLabelFIXED->setStatusTip("The average number of shifts for dons, no differentiation between AM and DON-on. (Total or weekend depending on the selection)");
+
+    donAverageWeekendLabel->setStatusTip("The average number of shifts for dons, no differentiation between AM and DON-on. (Total or weekend depending on the selection)");
+    raAverageWeekendLabel->setStatusTip("The average number of shifts for RAs. (Total or weekend depending on the selection)");
+    raAverageWeekendLabelFIXED->setStatusTip("The average number of shifts for RAs. (Total or weekend depending on the selection)");
+    donAverageWeekendLabelFIXED->setStatusTip("The average number of shifts for dons, no differentiation between AM and DON-on. (Total or weekend depending on the selection)");
+
+    averagesTable = new QTableWidget(2,5);
+    averagesTable->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::MinimumExpanding);
+    averagesTable->setMinimumWidth(500);
+    averagesTable->setSelectionMode(QAbstractItemView::NoSelection);
+    averagesTable->setColumnWidth(0,120);
+    averagesTable->setColumnWidth(1,50);
+    averagesTable->setColumnWidth(2,90);
+    averagesTable->setColumnWidth(3,90);
+    averagesTable->setColumnWidth(4,70);
+
+    raAverageItem = new QTableWidgetItem("0");
+    donAverageItem = new QTableWidgetItem("0");
+    raAverageWeekendItem = new QTableWidgetItem("0");
+    donAverageWeekendItem = new QTableWidgetItem("0");
+    amAverageItem = new QTableWidgetItem("0");
+
+    averagesTable->setItem(0,0,new QTableWidgetItem("Average"));
+    averagesTable->setItem(1,0,new QTableWidgetItem("Average"));
+    averagesTable->setItem(0,1,new QTableWidgetItem("Don"));
+    averagesTable->setItem(1,1,new QTableWidgetItem("RA"));
+    averagesTable->setItem(0,2,donAverageItem);
+    averagesTable->setItem(0,3,donAverageWeekendItem);
+    averagesTable->setItem(0,4,amAverageItem);
+    averagesTable->setItem(1,2,raAverageItem);
+    averagesTable->setItem(1,3,raAverageWeekendItem);
+
+    averagesTable->setHorizontalHeaderLabels(QString(",Position,Total,Weekend,AM").split(",",QString::KeepEmptyParts));
 
     statsTable = new QTableWidget(theTeam->count(),5);
     statsTable->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
@@ -166,6 +204,7 @@ void scheduleWidget::createScheduleStats()
     statsTable->setColumnWidth(4,70);
 
     statsTableItems = new QList<QTableWidgetItem*>;
+
 
     QStringList labels;                                                                         //set the top row titles
     labels << "Name" << "Position" << "Total Shifts" << "Weekend Shifts" << "AM Shifts";
@@ -232,47 +271,19 @@ void scheduleWidget::createScheduleStats()
 
     QGridLayout *layout = new QGridLayout;
 
-    layout->addWidget(donAverageLabelFIXED,0,0);
+    /*layout->addWidget(donAverageLabelFIXED,0,0);
     layout->addWidget(donAverageLabel,0,1);
     layout->addWidget(raAverageLabelFIXED,1,0);
     layout->addWidget(raAverageLabel,1,1);
+    layout->addWidget(donAverageWeekendLabelFIXED,0,2);
+    layout->addWidget(donAverageWeekendLabel,0,3);
+    layout->addWidget(raAverageWeekendLabelFIXED,1,2);
+    layout->addWidget(raAverageWeekendLabel,1,3);*/
+
+    layout->addWidget(averagesTable,0,0,1,5);
 
 
-    layout->addWidget(statsTable,3,0,1,5);
-
-    /* label method of stats
-    teamStatsLabels = new QList<MyQLabel*>;
-    shiftCountLabels = new QList<QLabel*>;
-    for(int x=0; x<theTeam->count(); x++)
-    {
-        MyQLabel *staff = new MyQLabel();
-        staff->setText(theTeam->at(x)->getFirstName() + " " + theTeam->at(x)->getLastName());
-        connect(staff,SIGNAL(clicked()),this,SLOT(showStaffSchedule()));
-        staff->setStatusTip("Click here to view this staff member's individual schedule.");
-        teamStatsLabels->append(staff);
-
-        QLabel *totalLabel = new QLabel("0");
-        shiftCountLabels->append(totalLabel);
-        if(theTeam->count() > 16)
-        {
-            if(x < theTeam->count()/2)
-            {
-                layout->addWidget(staff,3+x,0);
-                layout->addWidget(totalLabel,3+x,1);
-            }
-            else
-            {
-                layout->addWidget(staff,3+x-(theTeam->count()/2),2);
-                layout->addWidget(totalLabel,3+x-(theTeam->count()/2),3);
-            }
-        }
-        else
-        {
-            layout->addWidget(staff,3+x,0);
-            layout->addWidget(totalLabel,3+x,1);
-        }
-
-    }*/
+    layout->addWidget(statsTable,2,0,1,5);
 
     scheduleStatsGroupBox->setLayout(layout);
 
@@ -1104,6 +1115,10 @@ void scheduleWidget::updateStats(bool inp)
 {
     double dAverage = 0;
     double rAverage = 0;
+    double dWAverage = 0;
+    double rWAverage = 0;
+    double amAverage = 0;
+
     int rCount = 0;
     int dCount = 0;
 
@@ -1120,11 +1135,14 @@ void scheduleWidget::updateStats(bool inp)
             if(theTeam->at(staffId)->getPosition())
             {
                 dAverage += theTeam->at(staffId)->getShifts();
+                dWAverage += theTeam->at(staffId)->getWeekendShifts();
+                amAverage += theTeam->at(staffId)->getAMShifts();
                 dCount++;
             }
             else
             {
                 rAverage += theTeam->at(staffId)->getShifts();
+                rWAverage += theTeam->at(staffId)->getWeekendShifts();
                 rCount++;
             }
 
@@ -1132,12 +1150,12 @@ void scheduleWidget::updateStats(bool inp)
 
         rAverage = rAverage / rCount;
         dAverage = dAverage / dCount;
-
-
-
+        rWAverage = rWAverage / rCount;
+        dWAverage = dWAverage / dCount;
 
     donAverageLabel->setText(QString::number(dAverage));
     raAverageLabel->setText(QString::number(rAverage));
 
-
+    donAverageWeekendLabel->setText(QString::number(dWAverage));
+    raAverageWeekendLabel->setText(QString::number(rWAverage));
 }
