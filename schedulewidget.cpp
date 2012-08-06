@@ -85,10 +85,6 @@ void scheduleWidget::createScheduleGroupBox()
     layout->addWidget(OnDeckGroupBox,0,2,3,1);
     layout->addWidget(scheduleControls,0,4);
     layout->addWidget(calendar,1,4);
-    //layout->addWidget(calendarStaff,1,4);
-    //layout->addWidget(AMGroupBox,2,0);
-    //layout->addWidget(OnDutyGroupBox,2,1,1,3);
-    //layout->addWidget(OnDeckGroupBox,3,0,2,4);
 
     setLayout(layout);
     setWindowTitle("Schedule Tool");
@@ -147,6 +143,7 @@ void scheduleWidget::createScheduleStats()
 {
 
     scheduleStatsGroupBox = new QGroupBox("Stats");
+    scheduleStatsGroupBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
     donAverageLabel = new QLabel("0");
     raAverageLabel = new QLabel("0");
@@ -165,10 +162,16 @@ void scheduleWidget::createScheduleStats()
     totalRadioButton->setStatusTip("Show how many total days each staff is currently on duty (including weekend days).");
     weekendRadioButton->setStatusTip("Show how many weekend (Friday or Saturday) days each staff is currently on duty. One full weekend counts as 2 days.");
 
-    //connect(totalRadioButton,SIGNAL(toggled(bool)),this,SLOT(updateStats(bool)));
-
     statsTable = new QTableWidget(theTeam->count(),5);
-    //statsTable->setSizePolicy(QSizePolicy::Maximum,QSizePolicy::Maximum);
+    statsTable->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+    statsTable->setMinimumWidth(500);
+    statsTable->setSelectionMode(QAbstractItemView::NoSelection);
+    statsTable->setColumnWidth(0,120);
+    statsTable->setColumnWidth(1,50);
+    statsTable->setColumnWidth(2,90);
+    statsTable->setColumnWidth(3,90);
+    statsTable->setColumnWidth(4,70);
+
     statsTableItems = new QList<QTableWidgetItem*>;
 
     QStringList labels;                                                                         //set the top row titles
@@ -181,6 +184,10 @@ void scheduleWidget::createScheduleStats()
         QTableWidgetItem *nameItem = new QTableWidgetItem();
         nameItem->setText(theTeam->at(x)->getFirstName() + " " + theTeam->at(x)->getLastName().left(1));
         nameItem->setData(Qt::UserRole,theTeam->at(x)->getId());
+        nameItem->setFlags(0x0);
+        nameItem->setFlags(Qt::ItemIsEnabled);
+        nameItem->setTextAlignment(Qt::AlignHCenter);
+
 
         //position
         QTableWidgetItem *positionItem = new QTableWidgetItem();
@@ -189,21 +196,33 @@ void scheduleWidget::createScheduleStats()
         else
             positionItem->setText("RA");
         positionItem->setData(Qt::UserRole,theTeam->at(x)->getId());
+        positionItem->setFlags(0x0);
+        positionItem->setFlags(Qt::ItemIsEnabled);
+        positionItem->setTextAlignment(Qt::AlignHCenter);
 
         //total
         QTableWidgetItem *totalItem = new QTableWidgetItem();
         totalItem->setText(QString::number(theTeam->at(x)->getShifts()));
         totalItem->setData(Qt::UserRole,theTeam->at(x)->getId());
+        totalItem->setFlags(0x0);
+        totalItem->setFlags(Qt::ItemIsEnabled);
+        totalItem->setTextAlignment(Qt::AlignHCenter);
 
         //weekend
         QTableWidgetItem *weekendItem = new QTableWidgetItem();
         weekendItem->setText(QString::number(theTeam->at(x)->getWeekendShifts()));
         weekendItem->setData(Qt::UserRole,theTeam->at(x)->getId());
+        weekendItem->setFlags(0x0);
+        weekendItem->setFlags(Qt::ItemIsEnabled);
+        weekendItem->setTextAlignment(Qt::AlignHCenter);
 
         //AM
         QTableWidgetItem *amItem = new QTableWidgetItem();
         amItem->setText(QString::number(theTeam->at(x)->getAMShifts()));
         amItem->setData(Qt::UserRole,theTeam->at(x)->getId());
+        amItem->setFlags(0x0);
+        amItem->setFlags(Qt::ItemIsEnabled);
+        amItem->setTextAlignment(Qt::AlignHCenter);
 
 
         statsTableItems->append(nameItem);
@@ -299,6 +318,15 @@ void scheduleWidget::createLists()
 
     onDeckList->setStatusTip("The staff who are able to work on the selected day. Click to add a staff to the duty list. Dons are italisized, right click to make AM.");
     onDutyList->setStatusTip("The staff who are on duty for the selected day. Click to remove a staff from being on duty. Dons are italisized, the AM is bolded.");
+
+    onDeckList->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+    onDutyList->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+
+    onDeckList->setMaximumWidth(180);
+    onDutyList->setMaximumWidth(180);
+
+    onDeckList->setMinimumWidth(100);
+    onDutyList->setMinimumWidth(100);
 
     setAsAMAction = new QAction("Set as AM", this);
 
@@ -638,16 +666,10 @@ void scheduleWidget::addStaff(QListWidgetItem *item)
         calendar->setDateTextFormat(calendar->selectedDate(),format);
     }
 
-    //update the stats counters
-    bool isWeekend = (calendar->selectedDate().dayOfWeek() == 5 || calendar->selectedDate().dayOfWeek() == 6);
 
+    bool isWeekend = (datesList->at(dateIndex)->getDate().dayOfWeek() == 5 || datesList->at(dateIndex)->getDate().dayOfWeek() == 6);
 
     theTeam->at(staffId)->addShift(isWeekend, false);
-
-    /*if (totalRadioButton->isChecked())
-        shiftCountLabels->at(staffId)->setText(QString::number(theTeam->at(staffId)->getShifts()));
-    else
-        shiftCountLabels->at(staffId)->setText(QString::number(theTeam->at(staffId)->getWeekendShifts()));*/
 
     updateStats(false);
 }
@@ -680,17 +702,9 @@ void scheduleWidget::removeStaff(QListWidgetItem *item)
 
     //update the stats counters
 
-
-    bool isWeekend = (calendar->selectedDate().dayOfWeek() == 5 || calendar->selectedDate().dayOfWeek() == 6);
-
-
+    bool isWeekend = (datesList->at(dateIndex)->getDate().dayOfWeek() == 5 || datesList->at(dateIndex)->getDate().dayOfWeek() == 6);
 
     theTeam->at(staffId)->removeShift(isWeekend, isAM);
-
-    /*if (totalRadioButton->isChecked())
-        shiftCountLabels->at(staffId)->setText(QString::number(theTeam->at(staffId)->getShifts()));
-    else
-        shiftCountLabels->at(staffId)->setText(QString::number(theTeam->at(staffId)->getWeekendShifts()));*/
 
     updateStats(false);
 }
@@ -734,14 +748,9 @@ void scheduleWidget::setAsAM()
 
     //update the stats counters
 
-    bool isWeekend = (calendar->selectedDate().dayOfWeek() == 5 || calendar->selectedDate().dayOfWeek() == 6);
+    bool isWeekend = (datesList->at(dateIndex)->getDate().dayOfWeek() == 5 || datesList->at(dateIndex)->getDate().dayOfWeek() == 6);
 
     theTeam->at(staffId)->addShift(isWeekend, true);
-
-   /* if (totalRadioButton->isChecked())
-        shiftCountLabels->at(staffId)->setText(QString::number(theTeam->at(staffId)->getShifts()));
-    else
-        shiftCountLabels->at(staffId)->setText(QString::number(theTeam->at(staffId)->getWeekendShifts()));*/
 
     updateStats(false);
 }
@@ -879,15 +888,9 @@ void scheduleWidget::setAsAM(int staffId)
 
     //update the stats counters
 
-
-    bool isWeekend = (calendar->selectedDate().dayOfWeek() == 5 || calendar->selectedDate().dayOfWeek() == 6);
+    bool isWeekend = (datesList->at(dateIndex)->getDate().dayOfWeek() == 5 || datesList->at(dateIndex)->getDate().dayOfWeek() == 6);
 
     theTeam->at(staffId)->addShift(isWeekend, true);
-
-    /*if (totalRadioButton->isChecked())
-        shiftCountLabels->at(staffId)->setText(QString::number(theTeam->at(staffId)->getShifts()));
-    else
-        shiftCountLabels->at(staffId)->setText(QString::number(theTeam->at(staffId)->getWeekendShifts()));*/
 
     updateStats(false);
 }
@@ -937,14 +940,9 @@ void scheduleWidget::addStaff(int staffId)
 
     //update the stats counters
 
-    bool isWeekend = (calendar->selectedDate().dayOfWeek() == 5 || calendar->selectedDate().dayOfWeek() == 6);
+    bool isWeekend = (datesList->at(dateIndex)->getDate().dayOfWeek() == 5 || datesList->at(dateIndex)->getDate().dayOfWeek() == 6);
 
     theTeam->at(staffId)->addShift(isWeekend, false);
-
-    //if (totalRadioButton->isChecked())
-      //  shiftCountLabels->at(staffId)->setText(QString::number(theTeam->at(staffId)->getShifts()));
-    //else
-      //  shiftCountLabels->at(staffId)->setText(QString::number(theTeam->at(staffId)->getWeekendShifts()));
 
     updateStats(false);
 }
@@ -1124,9 +1122,9 @@ void scheduleWidget::updateStats(bool inp)
             int staffId = statsTableItems->at(x)->data(Qt::UserRole).toInt();
             int row = statsTableItems->at(x)->row();
 
-            statsTable->itemAt(row,2)->setText(QString::number(theTeam->at(staffId)->getShifts()));
-            statsTable->itemAt(row,3)->setText(QString::number(theTeam->at(staffId)->getWeekendShifts()));
-            statsTable->itemAt(row,4)->setText(QString::number(theTeam->at(staffId)->getAMShifts()));
+            statsTable->item(row,2)->setText(QString::number(theTeam->at(staffId)->getShifts()));
+            statsTable->item(row,3)->setText(QString::number(theTeam->at(staffId)->getWeekendShifts()));
+            statsTable->item(row,4)->setText(QString::number(theTeam->at(staffId)->getAMShifts()));
 
             if(theTeam->at(staffId)->getPosition())
             {
