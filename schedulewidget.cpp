@@ -149,6 +149,7 @@ void scheduleWidget::createScheduleStats()
     flags |= Qt::ItemIsEnabled;
 
     averagesTable = new QTableWidget(2,5);
+    averagesTable->setStatusTip("This table shows the average number of shifts for various types of shifts for Dona and RAs. (Weekend shifts are included in 'total shifts')");
     averagesTable->setHorizontalHeaderLabels(QString(",Position,Total,Weekend,AM").split(",",QString::KeepEmptyParts));
     averagesTable->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Fixed);
     averagesTable->setMaximumHeight(80);
@@ -193,6 +194,8 @@ void scheduleWidget::createScheduleStats()
 
 
     statsTable = new QTableWidget(theTeam->count(),5);
+    statsTable->setStatusTip("This table shows the number of shifts assigned to each staff member. Click a staff member's name to show their individual schedule.");
+    connect(statsTable,SIGNAL(itemClicked(QTableWidgetItem*)),this,SLOT(showStaffSchedule(QTableWidgetItem*)));
     statsTable->setHorizontalHeaderLabels(QString("Name,Position,Total Shifts,Weekend Shifts,AM Shifts").split(","));
     statsTable->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
     statsTable->setMinimumWidth(500);
@@ -216,6 +219,7 @@ void scheduleWidget::createScheduleStats()
         nameItem->setText(theTeam->at(x)->getFirstName() + " " + theTeam->at(x)->getLastName().left(1));
         nameItem->setData(Qt::UserRole,theTeam->at(x)->getId());
         nameItem->setFlags(flags);
+        statsTableItems->append(nameItem);
 
         if(theTeam->at(x)->getPosition())
         {
@@ -230,32 +234,27 @@ void scheduleWidget::createScheduleStats()
             positionItem->setText("Don");
         else
             positionItem->setText("RA");
-        positionItem->setData(Qt::UserRole,theTeam->at(x)->getId());
+
         positionItem->setFlags(flags);
 
 
         //total
         QTableWidgetItem *totalItem = new QTableWidgetItem();
         totalItem->setText(QString::number(theTeam->at(x)->getShifts()));
-        totalItem->setData(Qt::UserRole,theTeam->at(x)->getId());
         totalItem->setFlags(flags);
         totalItem->setTextAlignment(Qt::AlignCenter);
 
         //weekend
         QTableWidgetItem *weekendItem = new QTableWidgetItem();
         weekendItem->setText(QString::number(theTeam->at(x)->getWeekendShifts()));
-        weekendItem->setData(Qt::UserRole,theTeam->at(x)->getId());
         weekendItem->setFlags(flags);
         weekendItem->setTextAlignment(Qt::AlignCenter);
 
         //AM
         QTableWidgetItem *amItem = new QTableWidgetItem();
         amItem->setText(QString::number(theTeam->at(x)->getAMShifts()));
-        amItem->setData(Qt::UserRole,theTeam->at(x)->getId());
         amItem->setFlags(flags);
         amItem->setTextAlignment(Qt::AlignCenter);
-
-        statsTableItems->append(nameItem);
 
         statsTable->setItem(x,0,nameItem);
         statsTable->setItem(x,1,positionItem);
@@ -657,7 +656,7 @@ void scheduleWidget::addStaff(QListWidgetItem *item)
 
     theTeam->at(staffId)->addShift(isWeekend, false);
 
-    updateStats(false);
+    updateStats();
 }
 
 void scheduleWidget::removeStaff(QListWidgetItem *item)
@@ -692,7 +691,7 @@ void scheduleWidget::removeStaff(QListWidgetItem *item)
 
     theTeam->at(staffId)->removeShift(isWeekend, isAM);
 
-    updateStats(false);
+    updateStats();
 }
 
 void scheduleWidget::setAsAM()
@@ -738,7 +737,7 @@ void scheduleWidget::setAsAM()
 
     theTeam->at(staffId)->addShift(isWeekend, true);
 
-    updateStats(false);
+    updateStats();
 }
 
 void scheduleWidget::showMenu(QPoint p)
@@ -792,10 +791,12 @@ void scheduleWidget::updateNeeded()
     rasNeededLabel->setText(QString::number(datesList->at(dateToIndex(calendar->selectedDate()))->getRasNeeded()));
 }
 
-void scheduleWidget::showStaffSchedule()
+void scheduleWidget::showStaffSchedule(QTableWidgetItem *item)
 {
-    int staffId = teamStatsLabels->indexOf((MyQLabel*)QObject::sender());
+    if(item->column() != 0)
+        return;
 
+    int staffId = item->data(Qt::UserRole).toInt();
     mySchedViewer *sv;
     sv = new mySchedViewer(theTeam->at(staffId)->getFirstName(),staffId,datesList);
     sv->setModal(false);
@@ -878,7 +879,7 @@ void scheduleWidget::setAsAM(int staffId)
 
     theTeam->at(staffId)->addShift(isWeekend, true);
 
-    updateStats(false);
+    updateStats();
 }
 
 
@@ -930,7 +931,7 @@ void scheduleWidget::addStaff(int staffId)
 
     theTeam->at(staffId)->addShift(isWeekend, false);
 
-    updateStats(false);
+    updateStats();
 }
 
 void scheduleWidget::exportSchedule()
@@ -1095,7 +1096,7 @@ void scheduleWidget::exportSchedule()
 
 }
 
-void scheduleWidget::updateStats(bool inp)
+void scheduleWidget::updateStats()
 {
     double dAverage = 0;
     double rAverage = 0;

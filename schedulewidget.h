@@ -10,7 +10,7 @@
 #include "sdate.h"
 #include "myqlistwidget.h"
 #include "myschedviewer.h"
-#include "myqlabel.h"
+
 
 QT_BEGIN_NAMESPACE
 class QCalendarWidget;
@@ -46,10 +46,10 @@ private slots:
     void addStaff(QListWidgetItem*);//return value is success or not
     void removeStaff(QListWidgetItem*);
     void showMenu(QPoint p);//user right clicked an item in a list.
-    void showStaffSchedule();
+    void showStaffSchedule(QTableWidgetItem*);
     void setAsAM();
     void setSpecialDuty();
-    void updateStats(bool);
+    void updateStats();
     void copySlot();
     void pasteSlot();
     void exportSchedule();
@@ -93,8 +93,6 @@ private:
     QLabel *rasNeededLabelFIXED;
 
 
-    QList<MyQLabel*> *teamStatsLabels;
-    QList<QLabel*> * shiftCountLabels;
     //tableWidget stuff
     QTableWidget * statsTable;
     QList<QTableWidgetItem*> * statsTableItems;
