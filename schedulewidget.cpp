@@ -98,9 +98,9 @@ void scheduleWidget::createScheduleControls()
     scheduleControls = new QGroupBox("Controls");
 
     exportButton = new QPushButton("Export Schedule");
-    spDutyFlagButton = new QPushButton("Flag selected date as Sp.Duty");
-    copyButton = new QPushButton("Copy");
-    pasteButton = new QPushButton("Paste");
+    spDutyFlagButton = new QPushButton("Set date as Special Duty");
+    copyButton = new QPushButton("Copy On Duty");
+    pasteButton = new QPushButton("Paste On Duty");
     currentDateLabel = new QLabel(QDate::shortDayName(startDate->dayOfWeek()) + " " + QDate::shortMonthName(startDate->month()) + " " + QString::number(startDate->day()));
     currentDateLabelFIXED = new QLabel("Current Date:");
     donsNeededLabelFIXED = new QLabel("Don-ons needed:");
@@ -153,7 +153,7 @@ void scheduleWidget::createScheduleStats()
     averagesTable->setHorizontalHeaderLabels(QString(",Position,Total,Weekend,AM").split(",",QString::KeepEmptyParts));
     averagesTable->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Fixed);
     averagesTable->setMaximumHeight(80);
-    averagesTable->setMinimumWidth(500);
+    averagesTable->setMinimumWidth(450);
     averagesTable->setRowHeight(0,25);
     averagesTable->setRowHeight(1,25);
     averagesTable->setSelectionMode(QAbstractItemView::NoSelection);
@@ -198,7 +198,7 @@ void scheduleWidget::createScheduleStats()
     connect(statsTable,SIGNAL(itemClicked(QTableWidgetItem*)),this,SLOT(showStaffSchedule(QTableWidgetItem*)));
     statsTable->setHorizontalHeaderLabels(QString("Name,Position,Total Shifts,Weekend Shifts,AM Shifts").split(","));
     statsTable->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-    statsTable->setMinimumWidth(500);
+    statsTable->setMinimumWidth(450);
     statsTable->setSelectionMode(QAbstractItemView::NoSelection);
     statsTable->setColumnWidth(0,120);
     statsTable->setColumnWidth(1,50);
@@ -1167,6 +1167,21 @@ void scheduleWidget::saveMidSchedule(QString fileName)
     for(int r = 0; r < 7; r++)
         ts << QString::number(rasNeeded[r]) << ":";
     ts << endl;
+
+    ts << "[NIGHTCLASS]" << endl;
+    //a line for each day of the week with the staff who can't work ids. Monday first.
+    //1-id:id:id:
+    //2-id:id:
+    // etc
+    for(int n = 0; n<7; n++)
+    {
+        ts << QString::number(n) << "-";
+        for(int i = 0; i < nightClasses[n]->count(); i++)
+        {
+            ts << QString::number(nightClasses[n]->at(i)) << ":";
+        }
+        ts << endl;
+    }
 
     ts << "[STAFF]" << endl;
     // ID:firstname:lastname:position

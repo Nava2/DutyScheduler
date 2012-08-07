@@ -46,6 +46,7 @@ void MainWindow::createActions()
     saveScheduleAct = new QAction("Save Schedule", this);
     saveScheduleAct->setStatusTip("Save the current schedule to work on it later.");
     connect(saveScheduleAct, SIGNAL(triggered()),this, SLOT(saveSchedule()));
+    saveScheduleAct->setDisabled(true);
 
     aboutAct = new QAction("Help Me!", this);
     connect(aboutAct, SIGNAL(triggered()),this, SLOT(about()));
@@ -171,6 +172,7 @@ void MainWindow::newSchedule()
     openStaffTeamAct->setDisabled(true);
     saveStaffTeamAct->setDisabled(true);
     saveAsStaffTeamAct->setDisabled(true);
+    saveScheduleAct->setEnabled(true);
 }
 
 void MainWindow::openSchedule()
