@@ -29,6 +29,9 @@ public:
     int getWeekday();
     int getRasNeeded();
     int getDonsNeeded();
+    QString getCantWork();
+    QString getDons();
+    QString getRas();
 
     QString exportOn();
 

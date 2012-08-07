@@ -1146,3 +1146,60 @@ void scheduleWidget::updateStats()
         raAverageWeekendItem->setText(QString::number(rWAverage));
 
 }
+
+void scheduleWidget::saveMidSchedule(QString fileName)
+{
+    QFile file(fileName);
+    if (!file.open(QFile::WriteOnly | QFile::Text))
+    {
+        QMessageBox::warning(this, "Save Schedule","Cannot write file.");
+        return;
+    }
+
+    QTextStream ts(&file);
+
+    ts << "start:" << startDate->toString("dd/MM/yyyy") << endl;
+    ts << "end:" << endDate->toString("dd/MM/yyyy") << endl;
+    ts << "[NEEDED]" << endl;
+    //x:y:z:a:b:c:d:1:2:3:4:5:6:7
+    for(int d = 0; d < 7; d++)
+        ts << QString::number(donsNeeded[d]) << ":";
+    for(int r = 0; r < 7; r++)
+        ts << QString::number(rasNeeded[r]) << ":";
+    ts << endl;
+
+    ts << "[STAFF]" << endl;
+    // ID:firstname:lastname:position
+    for(int x = 0; x < theTeam->count(); x++)
+    {
+        ts << QString::number(theTeam->at(x)->getId()) + ":"
+              + theTeam->at(x)->getFirstName() + ":"
+              + theTeam->at(x)->getLastName() + ":";
+
+        if(theTeam->at(x)->getPosition())
+            ts << "D" << endl;
+        else
+            ts << "R" << endl;
+    }
+
+    ts << "[DATES]" << endl;
+    // dd/MM/yyyy:isSpecial:cantwork,cantwork,cantwork:AM:don,don,don,don:ra,ra,ra,ra,ra
+    for(int x = 0; x < datesList->count(); x++)
+    {
+        ts << datesList->at(x)->getDate().toString("dd/MM/yyyy") << ":";
+
+        if(datesList->at(x)->isSpecial())
+            ts << "Y:";
+        else
+            ts << "N:";
+
+        ts << datesList->at(x)->getCantWork() << ":";
+        ts << QString::number(datesList->at(x)->getAM()) << ":";
+        ts << datesList->at(x)->getDons() << ":";
+        ts << datesList->at(x)->getRas() << endl;
+
+    }
+
+    file.close();
+
+}

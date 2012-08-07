@@ -39,6 +39,8 @@ class scheduleWidget : public QWidget
 public:
     scheduleWidget(QWidget *parent = 0);
     scheduleWidget(QString, QString, QWidget *parent = 0);
+    void saveMidSchedule(QString);
+
     ~scheduleWidget();
 
 private slots:
@@ -72,6 +74,7 @@ private:
 
     void setAsAM(int);
     void addStaff(int);
+
 
     QGroupBox *scheduleGroupBox;
     QGroupBox *datesGroupBox;

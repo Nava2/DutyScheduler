@@ -43,9 +43,9 @@ void MainWindow::createActions()
     newScheduleAct->setStatusTip("Create a new duty schedule");
     connect(newScheduleAct, SIGNAL(triggered()),this, SLOT(newSchedule()));
 
-    openScheduleAct = new QAction("Open Schedule", this);
-    openScheduleAct->setStatusTip("Open an existing schedule");
-    connect(openScheduleAct, SIGNAL(triggered()),this, SLOT(openSchedule()));
+    saveScheduleAct = new QAction("Save Schedule", this);
+    saveScheduleAct->setStatusTip("Save the current schedule to work on it later.");
+    connect(saveScheduleAct, SIGNAL(triggered()),this, SLOT(saveSchedule()));
 
     aboutAct = new QAction("Help Me!", this);
     connect(aboutAct, SIGNAL(triggered()),this, SLOT(about()));
@@ -62,7 +62,7 @@ void MainWindow::createMenu()
 
     scheduleMenu = menuBar()->addMenu("Schedule");
     scheduleMenu->addAction(newScheduleAct);
-    //scheduleMenu->addAction(openScheduleAct);
+    scheduleMenu->addAction(saveScheduleAct);
 
     helpMenu = menuBar()->addMenu("Help");
     helpMenu->addAction(aboutAct);
@@ -81,14 +81,13 @@ void MainWindow::openStaffTeam()
 {
     QString fileName = QFileDialog::getOpenFileName(this);
 
-    if (!fileName.isEmpty())
-        MainWindow::loadStaffTeamFile(fileName);
-
     if(fileName.right(4) != ".txt")
     {
         QMessageBox::warning(this, "Open Staff Team","Incorrect File, must have extention '.txt'.");
         return;
     }
+    if (!fileName.isEmpty())
+        MainWindow::loadStaffTeamFile(fileName);
 
 }
 
@@ -362,6 +361,38 @@ void MainWindow::saveStaffTeamFile(const QString &fileName)
     //statusBar()->showMessage(tr("File saved"), 2000);
 }
 
+void MainWindow::saveSchedule()
+{
+    QString fileName = QFileDialog::getSaveFileName(this);
+
+    if(fileName.right(4) != ".txt")
+    {
+        QMessageBox::warning(this, "Save Schedule","File must have extention '.txt'.");
+        return;
+    }
+
+    if (fileName.isEmpty())
+        return;
+
+    QFile file(fileName);
+    if (!file.open(QFile::WriteOnly | QFile::Text))
+    {
+        QMessageBox::warning(this, "Save Schedule","Cannot write file.");
+        return;
+    }
+    file.close();
+
+    s->saveMidSchedule(fileName);
+
+
+
+
+}
+
+void MainWindow::loadSchedule()
+{
+
+}
 
 
 

@@ -43,6 +43,9 @@ private slots:
     void saveStaffTeam();
     void saveAsStaffTeam();
 
+    void saveSchedule();
+    void loadSchedule();
+
 
 private:
 
@@ -70,7 +73,7 @@ private:
     QAction *saveStaffTeamAct;
     QAction *saveAsStaffTeamAct;
     QAction *newScheduleAct;
-    QAction *openScheduleAct;
+    QAction *saveScheduleAct;
     QAction *aboutAct;
 
 
