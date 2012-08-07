@@ -104,23 +104,23 @@ QString staff::getAvailability()
     return availability;
 }
 
-void staff::addShift(bool night, bool isAM)
+void staff::addShift(bool weekend, bool isAM)
 {
     if (isAM)
         numAMShifts++;
 
-    if (night)
+    if (weekend)
         numWeekendShifts++;
 
     numShifts++;
 }
 
-void staff::removeShift(bool night, bool isAM)
+void staff::removeShift(bool weekend, bool isAM)
 {
     if (isAM)
         numAMShifts--;
 
-    if (night)
+    if (weekend)
         numWeekendShifts--;
 
     numShifts--;

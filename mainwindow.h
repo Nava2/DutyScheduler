@@ -74,6 +74,7 @@ private:
     QAction *saveAsStaffTeamAct;
     QAction *newScheduleAct;
     QAction *saveScheduleAct;
+    QAction *openScheduleAct;
     QAction *aboutAct;
 
 

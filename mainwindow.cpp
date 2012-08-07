@@ -48,6 +48,11 @@ void MainWindow::createActions()
     connect(saveScheduleAct, SIGNAL(triggered()),this, SLOT(saveSchedule()));
     saveScheduleAct->setDisabled(true);
 
+    openScheduleAct = new QAction("Open Schedule", this);
+    openScheduleAct->setStatusTip("Open and existing schedule.");
+    connect(openScheduleAct, SIGNAL(triggered()),this, SLOT(loadSchedule()));
+
+
     aboutAct = new QAction("Help Me!", this);
     connect(aboutAct, SIGNAL(triggered()),this, SLOT(about()));
 
@@ -64,6 +69,8 @@ void MainWindow::createMenu()
     scheduleMenu = menuBar()->addMenu("Schedule");
     scheduleMenu->addAction(newScheduleAct);
     scheduleMenu->addAction(saveScheduleAct);
+    scheduleMenu->addAction(openScheduleAct);
+
 
     helpMenu = menuBar()->addMenu("Help");
     helpMenu->addAction(aboutAct);
@@ -413,7 +420,9 @@ void MainWindow::loadSchedule()
     }
     file.close();
 
-    //delete s and make a new scheduleWidget
+    delete s;
+    s = new scheduleWidget(fileName);
+    setCentralWidget(s);
 }
 
 
