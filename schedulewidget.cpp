@@ -68,6 +68,77 @@ scheduleWidget::scheduleWidget(QString input, QString staffteamfilename, QWidget
 
 scheduleWidget::~scheduleWidget()
 {
+    delete scheduleGroupBox;
+   delete datesGroupBox;
+    delete staffNeededGroupBox;
+    delete scheduleControls;
+    delete scheduleStatsGroupBox;
+    delete calendar;
+    delete AMGroupBox;
+
+    delete exportButton;
+    delete spDutyFlagButton;
+    delete copyButton;
+    delete pasteButton;
+    delete currentDateLabel;
+    delete currentDateLabelFIXED;
+    delete donsNeededLabel;
+    delete rasNeededLabel;
+    delete donsNeededLabelFIXED;
+    delete rasNeededLabelFIXED;
+
+
+    delete statsTable;
+
+    for (int x=0; x < statsTableItems->count(); x++)
+        delete statsTableItems->at(x);
+    delete statsTableItems;
+
+
+    delete averagesTable;
+    delete raAverageItem;
+    delete raAverageWeekendItem;
+    delete donAverageItem;
+    delete donAverageWeekendItem;
+    delete amAverageItem;
+
+    delete OnDutyGroupBox;
+    delete OnDeckGroupBox;
+    delete onDeckList;
+    delete onDutyList;
+
+    delete AMFont;
+    delete DonFont;
+
+    for(int x = 0; x < theTeam->count(); x++)
+        delete theTeam->at(x);
+    delete theTeam;
+
+    for(int x = 0; x < theExams->count(); x++)
+        delete theExams->at(x);
+    delete theExams;
+
+    delete startDate;
+    delete endDate;
+
+    for(int x = 0; x < 7; x++)
+        delete nightClasses[x];
+
+    for(int x = 0; x < onDeckItems->count(); x++)
+        delete onDeckItems->at(x);
+    delete onDeckItems;
+
+    for(int x = 0; x < onDutyItems->count(); x++)
+        delete onDutyItems->at(x);
+    delete onDutyItems;
+
+    for(int x = 0; x < datesList->count(); x++)
+        delete datesList->at(x);
+    delete datesList;
+
+    delete setAsAMAction;
+
+    delete copyList;
 
 }
 
@@ -1218,3 +1289,5 @@ void scheduleWidget::saveMidSchedule(QString fileName)
     file.close();
 
 }
+
+

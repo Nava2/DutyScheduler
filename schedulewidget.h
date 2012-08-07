@@ -40,6 +40,7 @@ public:
     scheduleWidget(QWidget *parent = 0);
     scheduleWidget(QString, QString, QWidget *parent = 0);
     void saveMidSchedule(QString);
+    scheduleWidget(QString, QWidget *parent = 0);
 
     ~scheduleWidget();
 

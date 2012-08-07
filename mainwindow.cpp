@@ -367,14 +367,15 @@ void MainWindow::saveSchedule()
 {
     QString fileName = QFileDialog::getSaveFileName(this);
 
+    if (fileName.isEmpty())
+        return;
+
     if(fileName.right(4) != ".txt")
     {
         QMessageBox::warning(this, "Save Schedule","File must have extention '.txt'.");
         return;
     }
 
-    if (fileName.isEmpty())
-        return;
 
     QFile file(fileName);
     if (!file.open(QFile::WriteOnly | QFile::Text))
@@ -393,7 +394,26 @@ void MainWindow::saveSchedule()
 
 void MainWindow::loadSchedule()
 {
+    QString fileName = QFileDialog::getOpenFileName(this);
 
+    if (fileName.isEmpty())
+        return;
+
+    if(fileName.right(4) != ".txt")
+    {
+        QMessageBox::warning(this, "Open Schedule","File must have extention '.txt'.");
+        return;
+    }
+
+    QFile file(fileName);
+    if (!file.open(QFile::ReadOnly | QFile::Text))
+    {
+        QMessageBox::warning(this, "Open Schedule","Cannot write file.");
+        return;
+    }
+    file.close();
+
+    //delete s and make a new scheduleWidget
 }
 
 
