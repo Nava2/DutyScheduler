@@ -774,9 +774,6 @@ void scheduleWidget::prepInterface()
                 inp.remove(")",Qt::CaseInsensitive);
                 int id = inp.toInt();
 
-                //if(!theExams->contains(id))
-                //    continue;
-
                 QDate date;
                 date = QDate::fromString(theExams->at(id)->getDate(),"dd/MM/yyyy");
 
@@ -1298,40 +1295,17 @@ void scheduleWidget::exportSchedule()
     for(int x = 0; x<7; x++)
         delete lists.at(x);
 
-    //old export format
-    /*ts << "\"Date\",\"AM\",\"Staff\"" << endl;
+    ts << endl << endl;
+    ts << "Don Average, Don Weekend Average, AM Average";
+    ts << donAverageItem->text() << "," << donAverageWeekendItem->text() << "," << amAverageItem->text() << endl << endl;
+    ts << "RA Average,RA Weekend Average" << endl;
+    ts << raAverageItem->text() << "," << raAverageWeekendItem->text() << endl << endl;
 
-    for(int x = 0; x < datesList->count(); x++)
-    {
-        QStringList inp = datesList->at(x)->exportOn().split(".",QString::KeepEmptyParts);
 
-        if (inp.count() != 3)
-        {
-            QString out = "\"" + datesList->at(x)->getDate().toString("dd/MM/yyyy") + "\",";
-            ts << out << endl;
-            continue;
-        }
+    ts << "Name,Position,Total Shifts,Weekend Shifts,AM Shifts" << endl;
+    for (int x = 0; x < theTeam->count(); x++)
+        ts << theTeam->at(x)->getShifts() << "," + theTeam->at(x)->getWeekendShifts() << "," << theTeam->at(x)->getAMShifts() << endl;
 
-        int AM = inp.first().toInt();
-
-        QStringList dons = inp.at(1).split(",",QString::SkipEmptyParts);
-
-        QStringList ras = inp.at(2).split(",",QString::SkipEmptyParts);
-
-        QString writeString = "\"" + datesList->at(x)->getDate().toString("dd/MM/yyyy") + "\",";
-
-        writeString += "\"" + theTeam->at(AM)->getFirstName() + " " + theTeam->at(AM)->getLastName() + "\",";
-
-        for (int y = 0; y < dons.count(); y++)
-            writeString += "\"" + theTeam->at(dons.at(y).toInt())->getFirstName() + " " + theTeam->at(dons.at(y).toInt())->getLastName() + "\",";
-
-        for (int z = 0; z < ras.count(); z++)
-            writeString += "\"" + theTeam->at(ras.at(z).toInt())->getFirstName() + " " + theTeam->at(ras.at(z).toInt())->getLastName() + "\",";
-
-        writeString.chop(1);
-
-        ts << writeString << endl;
-    }*/
     file.close();
 
 }
