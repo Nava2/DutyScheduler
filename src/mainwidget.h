@@ -2,7 +2,9 @@
 #define MAINWIDGET_H
 
 #include <QWidget>
+#include <QTableWidget>
 #include "staff.h"
+#include "stafftable.h"
 
 QT_BEGIN_NAMESPACE
 class QCalendarWidget;
@@ -71,7 +73,7 @@ private:
     void createNameGroupBox();
 
     QGroupBox *staffGroupBox;
-    QListWidget *staffTeamList;
+    StaffTable *staffTeamTable;
 
     QGroupBox *controlsGroupBox;
     QPushButton *addStaffButton;

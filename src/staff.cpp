@@ -56,6 +56,7 @@ QString staff::getFirstName()
 QString staff::getLastName()
 {    return lastName;   }
 
+/* true if don */
 bool staff::getPosition()
 {    return position;   }
 
