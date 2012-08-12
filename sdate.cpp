@@ -163,6 +163,9 @@ QString sDate::exportOn()
    for(int z = 0; z < rasOn->count(); z++)
        ret += QString::number(rasOn->at(z)) + ",";
 
+   if (ret.left(3) == "999")
+       ret = "";
+
    return ret;
 
 }

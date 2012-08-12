@@ -13,7 +13,6 @@ MainWindow::MainWindow(QWidget *parent)
     m = new mainWidget();
 
     setCentralWidget(m);
-
 }
 
 MainWindow::~MainWindow()
@@ -180,11 +179,7 @@ void MainWindow::newSchedule()
     saveStaffTeamAct->setDisabled(true);
     saveAsStaffTeamAct->setDisabled(true);
     saveScheduleAct->setEnabled(true);
-}
-
-void MainWindow::openSchedule()
-{
-
+    openScheduleAct->setDisabled(true);
 }
 
 void MainWindow::about()
@@ -423,6 +418,10 @@ void MainWindow::loadSchedule()
     delete s;
     s = new scheduleWidget(fileName);
     setCentralWidget(s);
+
+    openScheduleAct->setDisabled(true);
+    newScheduleAct->setDisabled(true);
+    saveScheduleAct->setEnabled(true);
 }
 
 

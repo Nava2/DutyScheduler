@@ -36,7 +36,7 @@ public:
 private slots:
 
     void newSchedule();
-    void openSchedule();
+
     void about();
     void newStaffTeam();
     void openStaffTeam();

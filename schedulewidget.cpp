@@ -1220,8 +1220,6 @@ void scheduleWidget::exportSchedule()
         lists.append(dailylist);
     }
 
-    //ts << "\"" + QDate::longMonthName(datesList->at(0)->getDate().month()) + "\"" << endl;
-
     QStringList writtenDates;
     writtenDates << "" << "" << "" << "" << "" << "" << "";
     int maxNeededForWeek = 0;
@@ -1242,14 +1240,19 @@ void scheduleWidget::exportSchedule()
             if(on == "special")
             {
                 lists.at(dayOfWeekCounter)->append("Special Duty");
-                continue;
             }
-            *lists.at(dayOfWeekCounter) = on.split(",",QString::SkipEmptyParts);
+            else if (on == "")
+            {
+                lists.at(dayOfWeekCounter)->append("No AM");
+            }
+            else
+            {
+                *lists.at(dayOfWeekCounter) = on.split(",",QString::SkipEmptyParts);
 
-            for(int z = 0; z < lists.at(dayOfWeekCounter)->count(); z++)             // swap the staff id's for their names in the string list
-                lists.at(dayOfWeekCounter)->replace(z, "\"" + theTeam->at(lists.at(dayOfWeekCounter)->at(z).toInt())->getFirstName()
-                                               + " " + theTeam->at(lists.at(dayOfWeekCounter)->at(z).toInt())->getLastName().left(1)+"\"");
-
+                for(int z = 0; z < lists.at(dayOfWeekCounter)->count(); z++)             // swap the staff id's for their names in the string list
+                    lists.at(dayOfWeekCounter)->replace(z, "\"" + theTeam->at(lists.at(dayOfWeekCounter)->at(z).toInt())->getFirstName()
+                                                   + " " + theTeam->at(lists.at(dayOfWeekCounter)->at(z).toInt())->getLastName().left(1)+"\"");
+            }
             if(lists.at(dayOfWeekCounter)->count() > maxNeededForWeek)               // this tells us how many rows will be needed this week.
                 maxNeededForWeek = lists.at(dayOfWeekCounter)->count();
 
@@ -1296,15 +1299,15 @@ void scheduleWidget::exportSchedule()
         delete lists.at(x);
 
     ts << endl << endl;
-    ts << "Don Average, Don Weekend Average, AM Average";
+    ts << "Don Average, Don Weekend Average, AM Average" << endl;
     ts << donAverageItem->text() << "," << donAverageWeekendItem->text() << "," << amAverageItem->text() << endl << endl;
     ts << "RA Average,RA Weekend Average" << endl;
     ts << raAverageItem->text() << "," << raAverageWeekendItem->text() << endl << endl;
 
 
     ts << "Name,Position,Total Shifts,Weekend Shifts,AM Shifts" << endl;
-    for (int x = 0; x < theTeam->count(); x++)
-        ts << theTeam->at(x)->getShifts() << "," + theTeam->at(x)->getWeekendShifts() << "," << theTeam->at(x)->getAMShifts() << endl;
+    for (int x = 0; x < statsTable->rowCount(); x++)
+        ts << statsTable->item(x,0)->text() << "," << statsTable->item(x,1)->text() << "," << statsTable->item(x,2)->text() << "," << statsTable->item(x,3)->text() << "," << statsTable->item(x,4)->text() << endl;
 
     file.close();
 
