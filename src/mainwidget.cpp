@@ -184,10 +184,10 @@ void mainWidget::clearSelections()
     firstNameEdit->setText("");
     lastNameEdit->setText("");
 
-    donRadio->setChecked(false);
+//    donRadio->setChecked(false);
     raRadio->setChecked(true);
 
-    maleRadio->setChecked(false);
+//    maleRadio->setChecked(false);
     femaleRadio->setChecked(true);
 
     for(int x=0; x<7; x++)
@@ -215,15 +215,9 @@ void mainWidget::updateSelections()
     firstNameEdit->setText(s->getFirstName());
     lastNameEdit->setText(s->getLastName());
 
-    if (s->getPosition())
-        donRadio->setChecked(true);
-    else
-        raRadio->setChecked(true);
+    donRadio->setChecked(s->getPosition()); // let the group box decide which is checked
+    maleRadio->setChecked(s->getGender());  // same here
 
-    if (s->getGender())
-        maleRadio->setChecked(true);
-    else
-        femaleRadio->setChecked(true);
 
     //Night Classes
     int nights = s->getNightClass();
