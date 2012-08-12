@@ -1,18 +1,12 @@
 #include "exam.h"
 
 exam::exam()
-{
-    id = 99999;
-    date = "";
-    night = false;
-}
+    : id(99999), date(""), night(false)
+{ }
 
-exam::exam(int i, QString d, bool n)
-{
-    id = i;
-    date = d;
-    night = n;
-}
+exam::exam(int _id, QString _date, bool _night)
+    : id (_id), date(_date), night(_night)
+{ }
 
 void exam::setDate(QString d)
 {

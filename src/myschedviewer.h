@@ -15,7 +15,7 @@ class mySchedViewer : public QDialog
 {
     Q_OBJECT
 public:
-    explicit mySchedViewer(QString name, int staffID, QList<sDate*> *datesList, QWidget *parent = 0);
+    explicit mySchedViewer(QString name, int staffID, QList<sDate*> *datesList, QWidget *parent = NULL);
     ~mySchedViewer();
 
 private:

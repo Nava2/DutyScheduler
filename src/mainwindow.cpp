@@ -1,14 +1,11 @@
 #include "mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
+    : QMainWindow(parent), currentStaffTeamFile(""), usingStaffTeamFile("")
 {
     createActions();
     createMenu();
     (void)statusBar();
-
-    currentStaffTeamFile = "";
-    usingStaffTeamFile = "";
 
     m = new mainWidget();
 
@@ -139,7 +136,8 @@ void MainWindow::newSchedule()
     msgBox2.setInformativeText("Select the staff team to use for your new schedule.");
     msgBox2.setStandardButtons(QMessageBox::Ok);
     msgBox2.setDefaultButton(QMessageBox::Ok);
-    int msgbox_ret2 = msgBox2.exec();
+//    int msgbox_ret2 = msgBox2.exec();
+    msgBox2.exec(); // ignore the return for now?
 
     QString StaffTeamFilename = QFileDialog::getOpenFileName(this);
     qDebug() << StaffTeamFilename;
