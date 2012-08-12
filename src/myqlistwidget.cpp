@@ -30,7 +30,7 @@ bool MyQListWidget::eventFilter(QObject *obj, QEvent *event)
 
 
     }
-    else
-        return QListWidget::eventFilter(obj, event);
+
+    return QListWidget::eventFilter(obj, event);
 }
 
