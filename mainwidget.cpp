@@ -209,24 +209,23 @@ void mainWidget::updateSelections()
     clearSelections();
     //get the id of the selected staff member
     int id = staffTeamList->currentItem()->data(Qt::UserRole).toInt();
-    staff *s = theTeam->at(id);
 
     //now update the right hand stuff so that it matches the selected staff
-    firstNameEdit->setText(s->getFirstName());
-    lastNameEdit->setText(s->getLastName());
+    firstNameEdit->setText(theTeam->at(id)->getFirstName());
+    lastNameEdit->setText(theTeam->at(id)->getLastName());
 
-    if (s->getPosition())
+    if (theTeam->at(id)->getPosition())
         donRadio->setChecked(true);
     else
         raRadio->setChecked(true);
 
-    if (s->getGender())
+    if (theTeam->at(id)->getGender())
         maleRadio->setChecked(true);
     else
         femaleRadio->setChecked(true);
 
     //Night Classes
-    int nights = s->getNightClass();
+    int nights = theTeam->at(id)->getNightClass();
     int mask = 0x01;
     for (int x = 0; x<7; x++)
     {
@@ -240,7 +239,7 @@ void mainWidget::updateSelections()
 
     //Availability
 
-    QStringList avail = s->getAvailability().split(',',QString::SkipEmptyParts);
+    QStringList avail = theTeam->at(id)->getAvailability().split(',',QString::SkipEmptyParts);
 
     QDate d;
     for(int y = 0; y<4; y++)
@@ -259,7 +258,7 @@ void mainWidget::updateSelections()
 
 
     //EXAMS
-    QString e = s->getExams();
+    QString e = theTeam->at(id)->getExams();
     QStringList exams = e.split(',',QString::SkipEmptyParts);
     int exams_int[exams.size()];
 
@@ -510,6 +509,23 @@ void mainWidget::createStaffControls()
 // GETTERS/SETTERS for staff and exams
 void mainWidget::reset()
 {
+
+
+    QList<staff *>::iterator it_s = theTeam->begin();
+    for(; it_s != theTeam->end(); )
+    {
+        delete *it_s;
+        it_s = theTeam->erase(it_s);
+    }
+
+    QList<exam *>::iterator it_e = theExams->begin();
+    for(; it_e != theExams->end(); )
+    {
+        delete *it_e;
+        it_e = theExams->erase(it_e);
+    }
+
+
     delete theTeam;
     delete theExams;
 
