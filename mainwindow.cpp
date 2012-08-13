@@ -136,9 +136,17 @@ void MainWindow::newSchedule()
 
     scheduleWizzard sw;
     int ret = sw.exec();
-    //qDebug() << QString::number(ret);
+
     if (ret == 0)
         return;
+
+    QString wizzard = sw.getValues();
+
+    if(wizzard == "")
+    {
+        QMessageBox::warning(this, "ERROR","Bad date inputs.");
+        return;
+    }
 
     QMessageBox msgBox2;
     msgBox2.setText("New Schedule");
@@ -148,7 +156,7 @@ void MainWindow::newSchedule()
     int msgbox_ret2 = msgBox2.exec();
 
     QString StaffTeamFilename = QFileDialog::getOpenFileName(this);
-    qDebug() << StaffTeamFilename;
+
 
     if (StaffTeamFilename.isEmpty())
         return;
@@ -170,7 +178,7 @@ void MainWindow::newSchedule()
 
     m->reset();
 
-    s = new scheduleWidget(sw.getValues(), StaffTeamFilename);
+    s = new scheduleWidget(wizzard, StaffTeamFilename);
     setCentralWidget(s);
 
     newScheduleAct->setDisabled(true);
