@@ -12,4 +12,4 @@
 *.a
 
 #user pro file
-*.pro.user
+*.user
