@@ -15,7 +15,6 @@ SOURCES += main.cpp \
     sdate.cpp \
     schedulewizzard.cpp \
     schedulewidget.cpp \
-    schedule.cpp \
     mainwindow.cpp \
     mainwidget.cpp \
     exam.cpp \
@@ -28,7 +27,6 @@ HEADERS  += \
     sdate.h \
     schedulewizzard.h \
     schedulewidget.h \
-    schedule.h \
     mainwindow.h \
     mainwidget.h \
     exam.h \

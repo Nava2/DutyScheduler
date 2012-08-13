@@ -11,19 +11,28 @@ mainWidget::mainWidget(QWidget *parent)
 
 mainWidget::~mainWidget()
 {
-    while (!theTeam->isEmpty())
+    QList<staff*>::iterator it_s = theTeam->begin();
+    for(; it_s != theTeam->end(); )
     {
-        staff *s = theTeam->takeLast();
-        delete s;
+        delete *it_s;
+        it_s = theTeam->erase(it_s);
     }
     delete theTeam;
 
-    while (!theExams->isEmpty())
+    QList<exam*>::iterator it_e = theExams->begin();
+    for(; it_e != theExams->end(); )
     {
-        exam *e = theExams->takeLast();
-        delete e;
+        delete *it_e;
+        it_e = theExams->erase(it_e);
     }
     delete theExams;
+
+    staffTeamList->clear();
+    delete staffTeamList;
+
+    examsList->clear();
+    delete examsList;
+
 }
 
 //SLOTS
@@ -31,16 +40,6 @@ void mainWidget::updateStaffMember()
 {
     if(firstNameEdit->text() == "" || lastNameEdit->text() == "")
         return;
-
-    /*QMessageBox msgBox;
-    msgBox.setText("Are you sure?");
-    msgBox.setInformativeText("Do you want to update " + staffTeamList->currentItem()->text() + "?");
-    msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-    msgBox.setDefaultButton(QMessageBox::No);
-    int msgbox_ret = msgBox.exec();
-
-    if (msgbox_ret == 0x10000)
-        return;*/
 
     bool g;//gender
     if(maleRadio->isChecked())
@@ -533,6 +532,8 @@ void mainWidget::reset()
     theExams = new QList<exam*>;
 
     staffTeamList->clear();
+
+    examsList->clear();
 }
 
 QList<staff*> * mainWidget::getStaff()

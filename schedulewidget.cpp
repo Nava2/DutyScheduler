@@ -237,77 +237,73 @@ scheduleWidget::scheduleWidget(QString fileName, QWidget *parent) // this constr
 
 scheduleWidget::~scheduleWidget()
 {
-    delete scheduleGroupBox;
-   delete datesGroupBox;
-    delete staffNeededGroupBox;
-    delete scheduleControls;
-    delete scheduleStatsGroupBox;
-    delete calendar;
-    delete AMGroupBox;
+    QList<QTableWidgetItem*>::iterator it_i = statsTableItems->begin();
 
-    delete exportButton;
-    delete spDutyFlagButton;
-    delete copyButton;
-    delete pasteButton;
-    delete currentDateLabel;
-    delete currentDateLabelFIXED;
-    delete donsNeededLabel;
-    delete rasNeededLabel;
-    delete donsNeededLabelFIXED;
-    delete rasNeededLabelFIXED;
-
-
-    delete statsTable;
-
-    for (int x=0; x < statsTableItems->count(); x++)
-        delete statsTableItems->at(x);
+    for (; it_i != statsTableItems->end();)
+    {
+        delete *it_i;
+        it_i = statsTableItems->erase(it_i);
+    }
     delete statsTableItems;
 
 
-    delete averagesTable;
-    delete raAverageItem;
-    delete raAverageWeekendItem;
-    delete donAverageItem;
-    delete donAverageWeekendItem;
-    delete amAverageItem;
-
-    delete OnDutyGroupBox;
-    delete OnDeckGroupBox;
-    delete onDeckList;
-    delete onDutyList;
-
-    delete AMFont;
-    delete DonFont;
-
-    for(int x = 0; x < theTeam->count(); x++)
-        delete theTeam->at(x);
+    QList<staff*>::iterator it_s = theTeam->begin();
+    for(; it_s != theTeam->end(); )
+    {
+        delete *it_s;
+        it_s = theTeam->erase(it_s);
+    }
     delete theTeam;
 
-    for(int x = 0; x < theExams->count(); x++)
-        delete theExams->at(x);
+    QList<exam*>::iterator it_e = theExams->begin();
+    for(; it_e != theExams->end(); )
+    {
+        delete *it_e;
+        it_e = theExams->erase(it_e);
+    }
     delete theExams;
 
     delete startDate;
     delete endDate;
 
     for(int x = 0; x < 7; x++)
+    {
+        nightClasses[x]->clear();
         delete nightClasses[x];
+    }
 
-    for(int x = 0; x < onDeckItems->count(); x++)
-        delete onDeckItems->at(x);
+
+    QList<QListWidgetItem*>::iterator it_i2 = onDeckItems->begin();
+    for (; it_i2 != onDeckItems->end();)
+    {
+        delete *it_i2;
+        it_i2 = onDeckItems->erase(it_i2);
+    }
     delete onDeckItems;
 
-    for(int x = 0; x < onDutyItems->count(); x++)
-        delete onDutyItems->at(x);
+    QList<QListWidgetItem*>::iterator it_i3 = onDutyItems->begin();
+    for (; it_i3 != onDutyItems->end();)
+    {
+        delete *it_i3;
+        it_i3 = onDutyItems->erase(it_i3);
+    }
     delete onDutyItems;
 
-    for(int x = 0; x < datesList->count(); x++)
-        delete datesList->at(x);
+
+    QList<sDate*>::iterator it_d = datesList->begin();
+    for(; it_d != datesList->end();)
+    {
+        delete *it_d;
+        it_d = datesList->erase(it_d);
+    }
     delete datesList;
 
     delete setAsAMAction;
 
+    copyList->clear();
     delete copyList;
+
+
 
 }
 

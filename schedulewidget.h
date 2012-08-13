@@ -114,9 +114,6 @@ private:
     MyQListWidget *onDeckList;
     MyQListWidget *onDutyList;
 
-    QFont *AMFont;
-    QFont *DonFont;
-
     QList<staff*> *theTeam;
     QList<exam*> *theExams;
 

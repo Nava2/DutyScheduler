@@ -5,7 +5,7 @@
 scheduleWizzard::scheduleWizzard(QWidget *parent) :
     QDialog(parent)
 {
-
+    setAttribute(Qt::WA_DeleteOnClose);
     createDatesGroupBox();
     createStaffNeededGroupBox();
 
