@@ -88,7 +88,7 @@ void mainWidget::updateStaffMember()
     QListWidgetItem *i = staffTeamList->currentItem();//get the list item from the list widget
     int id = i->data(Qt::UserRole).toInt();//the list item's user data is the staff id
     i->setText(firstNameEdit->text() + " " + lastNameEdit->text()); //change the text in the list
-    theTeam->at(id)->update(firstNameEdit->text(),lastNameEdit->text(),p,g,n); //change the actual staff object
+    theTeam->at(id)->update(firstNameEdit->text().trimmed(),lastNameEdit->text().trimmed(),p,g,n); //change the actual staff object
     theTeam->at(id)->setAvailability(a);// set the avail
     theTeam->at(id)->setExams(e);//set exams
     clearSelections();
@@ -125,7 +125,7 @@ void mainWidget::addStaffMember()
 
     // MAKE THE STAFF
     staff *s;//make a staff member pointer
-    s = new staff(theTeam->size(),firstNameEdit->text(),lastNameEdit->text(),p,g,n);
+    s = new staff(theTeam->size(),firstNameEdit->text().trimmed(),lastNameEdit->text().trimmed(),p,g,n);
 
     //AVAILABILITY
     QString a = "";
