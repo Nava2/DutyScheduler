@@ -126,6 +126,7 @@ void MainWindow::saveAsStaffTeam()
 void MainWindow::newSchedule()
 {
     QMessageBox msgBox;
+    msgBox.setWindowTitle("Duty Schedule Tool");
     msgBox.setText("Any unsaved staff team data will be lost. Continue?");
     msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
     msgBox.setDefaultButton(QMessageBox::No);
@@ -144,13 +145,13 @@ void MainWindow::newSchedule()
 
     if(wizzard == "")
     {
-        QMessageBox::warning(this, "ERROR","Bad date inputs.");
+        QMessageBox::warning(this, "Duty Schedule Tool","ERROR: Bad date inputs.");
         return;
     }
 
     QMessageBox msgBox2;
-    msgBox2.setText("New Schedule");
-    msgBox2.setInformativeText("Select the staff team to use for your new schedule.");
+    msgBox2.setWindowTitle("Duty Schedule Tool");
+    msgBox2.setText("Select the staff team to use for your new schedule.");
     msgBox2.setStandardButtons(QMessageBox::Ok);
     msgBox2.setDefaultButton(QMessageBox::Ok);
     int msgbox_ret2 = msgBox2.exec();
@@ -172,7 +173,7 @@ void MainWindow::newSchedule()
 
     if (!StaffTeamFile.open(QFile::ReadOnly | QFile::Text))
     {
-        QMessageBox::warning(this, "Duty Scheduler","Cannot read file.");
+        QMessageBox::warning(this, "Duty Schedule Tool","Cannot read file.");
         return;
     }
     StaffTeamFile.close();
@@ -194,7 +195,7 @@ void MainWindow::newSchedule()
 
 void MainWindow::about()
 {
-    QMessageBox::about(this, "The Duty Schedule Tool", "This tool is intended to assist with the process of creating a duty schedule. \n\nFor quick help, hover your mouse over a button or field that you are unsure about and a description will appear in the status bar at the bottom of the application.");
+    QMessageBox::about(this, "Duty Schedule Tool", "This tool is intended to assist with the process of creating a duty schedule. \n\nFor quick help, hover your mouse over a button or field that you are unsure about and a description will appear in the status bar at the bottom of the application.");
 }
 
 
@@ -205,7 +206,7 @@ void MainWindow::loadStaffTeamFile(const QString &fileName)
     QFile file(fileName);
     if (!file.open(QFile::ReadOnly | QFile::Text))
     {
-        QMessageBox::warning(this, "Duty Scheduler","Cannot read file.");
+        QMessageBox::warning(this, "Duty Schedule Tool","Cannot read file.");
         return;
     }
 

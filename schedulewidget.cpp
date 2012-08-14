@@ -563,7 +563,7 @@ void scheduleWidget::loadStaffTeamData(QString filename)
     QFile file(filename);
     if (!file.open(QFile::ReadOnly | QFile::Text))
     {
-        QMessageBox::warning(this, "Duty Scheduler","Cannot read file.");
+        QMessageBox::warning(this, "Duty Schedule Tool","Cannot read staff team file.");
         return;
     }
 
@@ -1159,8 +1159,8 @@ void scheduleWidget::exportSchedule()
         if(!datesList->at(checkFull)->isFull() && !datesList->at(checkFull)->isSpecial())
         {
             QMessageBox msgBox;
-            msgBox.setText("Warning");
-            msgBox.setInformativeText("Some dates of the schedule are not full. Do you want to export anyway?");
+            msgBox.setWindowTitle("Duty Schedule Tool");
+            msgBox.setText("Warning: Some dates of the schedule are not full. Do you want to export anyway?");
             msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
             msgBox.setDefaultButton(QMessageBox::No);
             int msgbox_ret = msgBox.exec();
