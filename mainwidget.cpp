@@ -183,10 +183,8 @@ void mainWidget::clearSelections()
     firstNameEdit->setText("");
     lastNameEdit->setText("");
 
-    donRadio->setChecked(false);
     raRadio->setChecked(true);
 
-    maleRadio->setChecked(false);
     femaleRadio->setChecked(true);
 
     for(int x=0; x<7; x++)
@@ -213,15 +211,8 @@ void mainWidget::updateSelections(QListWidgetItem * item)
     firstNameEdit->setText(theTeam->at(id)->getFirstName());
     lastNameEdit->setText(theTeam->at(id)->getLastName());
 
-    if (theTeam->at(id)->getPosition())
-        donRadio->setChecked(true);
-    else
-        raRadio->setChecked(true);
-
-    if (theTeam->at(id)->getGender())
-        maleRadio->setChecked(true);
-    else
-        femaleRadio->setChecked(true);
+    donRadio->setChecked(theTeam->at(id)->getPosition());
+    maleRadio->setChecked(theTeam->at(id)->getGender());
 
     //Night Classes
     int nights = theTeam->at(id)->getNightClass();
@@ -339,9 +330,7 @@ void mainWidget::createStaffElements()
     staffTeamList->setSelectionMode(QAbstractItemView::SingleSelection);
     staffTeamList->setStatusTip("The list of staff members of this team.");
     // connect so that when the user changes the selection in the list the right hand side updates.
-    //connect(staffTeamList,SIGNAL(itemSelectionChanged()),this,SLOT(updateSelections()));
     connect(staffTeamList,SIGNAL(itemClicked(QListWidgetItem*)),this,SLOT(updateSelections(QListWidgetItem*)));
-    //connect(staffTeamList, SIGNAL(itemClicked(QListWidgetItem*)),this,SLOT(updateSelections()));
 
     //set up the layout
     QGridLayout *layout = new QGridLayout;
