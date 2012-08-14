@@ -188,8 +188,6 @@ scheduleWidget::scheduleWidget(QString fileName, QWidget *parent) // this constr
     onDeckItems = new QList<QListWidgetItem*>;
     onDutyItems = new QList<QListWidgetItem*>;
 
-    QFont font;
-
     for(int x = 0; x < theTeam->count(); x++)
     {
         // make the ondeck list
@@ -209,10 +207,8 @@ scheduleWidget::scheduleWidget(QString fileName, QWidget *parent) // this constr
 
         if(theTeam->at(x)->getPosition())
         {
-            font = item->font();
-            font.setItalic(true);
-            item->setFont(font);
-            item2->setFont(font);
+            item->setBackgroundColor(Qt::lightGray);
+            item2->setBackgroundColor(Qt::lightGray);
         }
     }
     for(int x = 0; x < datesList->count(); x++)
@@ -457,13 +453,6 @@ void scheduleWidget::createScheduleStats()
         nameItem->setFlags(flags);
         statsTableItems->append(nameItem);
 
-        if(theTeam->at(x)->getPosition())
-        {
-            QFont font = nameItem->font();
-            font.setItalic(true);
-            nameItem->setFont(font);
-        }
-
         //position
         QTableWidgetItem *positionItem = new QTableWidgetItem();
         if(theTeam->at(x)->getPosition())
@@ -698,8 +687,6 @@ void scheduleWidget::prepInterface()
     onDeckItems = new QList<QListWidgetItem*>;
     onDutyItems = new QList<QListWidgetItem*>;
 
-    QFont font;
-
     for(int x = 0; x < theTeam->count(); x++)
     {
         // make the ondeck list
@@ -719,10 +706,8 @@ void scheduleWidget::prepInterface()
 
         if(theTeam->at(x)->getPosition())
         {
-            font = item->font();
-            font.setItalic(true);
-            item->setFont(font);
-            item2->setFont(font);
+            item->setBackgroundColor(Qt::lightGray);
+            item2->setBackgroundColor(Qt::lightGray);
         }
 
 

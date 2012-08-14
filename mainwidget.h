@@ -17,7 +17,6 @@ class QLabel;
 class QLineEdit;
 class QListWidget;
 class QListWidgetItem;
-class QList<char>;
 class QMessageBox;
 class QPushButton;
 class QRadioButton;
