@@ -207,8 +207,8 @@ scheduleWidget::scheduleWidget(QString fileName, QWidget *parent) // this constr
 
         if(theTeam->at(x)->getPosition())
         {
-            item->setBackgroundColor(Qt::lightGray);
-            item2->setBackgroundColor(Qt::lightGray);
+            item->setBackgroundColor(QColor(255,0,0,127));
+            item2->setBackgroundColor(QColor(255,0,0,127));
         }
     }
     for(int x = 0; x < datesList->count(); x++)
@@ -706,8 +706,8 @@ void scheduleWidget::prepInterface()
 
         if(theTeam->at(x)->getPosition())
         {
-            item->setBackgroundColor(Qt::lightGray);
-            item2->setBackgroundColor(Qt::lightGray);
+            item->setBackgroundColor(QColor(255,0,0,127));
+            item2->setBackgroundColor(QColor(255,0,0,127));
         }
 
 
