@@ -529,8 +529,8 @@ void scheduleWidget::createLists()
     onDeckList = new MyQListWidget();
     onDutyList = new MyQListWidget();
 
-    onDeckList->setStatusTip("The staff who are able to work on the selected day. Click to add a staff to the duty list. Dons are italisized, right click to make AM.");
-    onDutyList->setStatusTip("The staff who are on duty for the selected day. Click to remove a staff from being on duty. Dons are italisized, the AM is bolded.");
+    onDeckList->setStatusTip("The staff who are able to work on the selected day. Click to add a staff to the duty list. Right click a don to make them AM.");
+    onDutyList->setStatusTip("The staff who are on duty for the selected day. Click to remove a staff from being on duty. The AM is bolded.");
 
     onDeckList->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
     onDutyList->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
