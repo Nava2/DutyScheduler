@@ -158,6 +158,7 @@ void MainWindow::newSchedule()
     QString StaffTeamFilename = QFileDialog::getOpenFileName(this);
 
 
+
     if (StaffTeamFilename.isEmpty())
         return;
 
@@ -166,6 +167,7 @@ void MainWindow::newSchedule()
         QMessageBox::warning(this, "Load Staff Team","Incorrect File, must have extention '.txt'.");
         return;
     }
+
     QFile StaffTeamFile(StaffTeamFilename);
 
     if (!StaffTeamFile.open(QFile::ReadOnly | QFile::Text))
@@ -173,13 +175,13 @@ void MainWindow::newSchedule()
         QMessageBox::warning(this, "Duty Scheduler","Cannot read file.");
         return;
     }
-
     StaffTeamFile.close();
 
     m->reset();
 
     s = new scheduleWidget(wizzard, StaffTeamFilename);
-    setCentralWidget(s);
+     setCentralWidget(s);
+
 
     newScheduleAct->setDisabled(true);
     newStaffTeamAct->setDisabled(true);

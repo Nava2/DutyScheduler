@@ -203,11 +203,11 @@ void mainWidget::clearSelections()
     examNightCheck->setChecked(false);
 }
 
-void mainWidget::updateSelections()
+void mainWidget::updateSelections(QListWidgetItem * item)
 {
     clearSelections();
     //get the id of the selected staff member
-    int id = staffTeamList->currentItem()->data(Qt::UserRole).toInt();
+    int id = item->data(Qt::UserRole).toInt();
 
     //now update the right hand stuff so that it matches the selected staff
     firstNameEdit->setText(theTeam->at(id)->getFirstName());
@@ -339,7 +339,8 @@ void mainWidget::createStaffElements()
     staffTeamList->setSelectionMode(QAbstractItemView::SingleSelection);
     staffTeamList->setStatusTip("The list of staff members of this team.");
     // connect so that when the user changes the selection in the list the right hand side updates.
-    connect(staffTeamList,SIGNAL(itemSelectionChanged()),this,SLOT(updateSelections()));
+    //connect(staffTeamList,SIGNAL(itemSelectionChanged()),this,SLOT(updateSelections()));
+    connect(staffTeamList,SIGNAL(itemClicked(QListWidgetItem*)),this,SLOT(updateSelections(QListWidgetItem*)));
     //connect(staffTeamList, SIGNAL(itemClicked(QListWidgetItem*)),this,SLOT(updateSelections()));
 
     //set up the layout
@@ -530,6 +531,7 @@ void mainWidget::reset()
 
     theTeam = new QList<staff*>;
     theExams = new QList<exam*>;
+
 
     staffTeamList->clear();
 

@@ -46,7 +46,7 @@ private slots:
     void addStaffMember();
     void removeStaffMember();
     void clearSelections();
-    void updateSelections();
+    void updateSelections(QListWidgetItem*);
     void addExam();
     void removeExam();
 
