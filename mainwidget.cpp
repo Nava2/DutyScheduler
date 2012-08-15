@@ -446,8 +446,8 @@ void mainWidget::createExamScheduleGroupBox()
     examsList = new QListWidget;
     examDateEdit = new QDateEdit;
     examNightCheck = new QCheckBox(tr("Night Exam"));
-    addExamButton = new QPushButton(tr("ADD"));
-    removeExamButton = new QPushButton(tr("REMOVE"));
+    addExamButton = new QPushButton(tr("ADD EXAM"));
+    removeExamButton = new QPushButton(tr("REMOVE EXAM"));
     examDateEdit->setDate(QDate::currentDate());
     examDateEdit->setCalendarPopup(true);
 
@@ -471,10 +471,10 @@ void mainWidget::createStaffControls()
 {
     controlsGroupBox = new QGroupBox();
 
-    addStaffButton = new QPushButton(tr("<< ADD"));
-    updateStaffButton = new QPushButton(tr("< UPDATE"));
-    removeStaffButton = new QPushButton(tr("REMOVE"));
-    clearButton = new QPushButton(tr("CLEAR"));
+    addStaffButton = new QPushButton(tr("<< ADD STAFF"));
+    updateStaffButton = new QPushButton(tr("< UPDATE STAFF"));
+    removeStaffButton = new QPushButton(tr("REMOVE STAFF"));
+    clearButton = new QPushButton(tr("CLEAR INPUTS"));
 
     addStaffButton->setStatusTip("Take the data currently on the right and add this staff to the list.");
     updateStaffButton->setStatusTip("Change the data for the selected staff member to whatever is entered on the right.");
