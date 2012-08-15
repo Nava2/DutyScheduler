@@ -265,7 +265,11 @@ void MainWindow::loadStaffTeamFile(const QString &fileName)
             avail = "";
             exams = "";
 
-
+            if(current_Line.count() < 6)
+            {
+                QMessageBox::warning(this,"ERROR", "ERROR: BAD INPUT FILE. PLEASE RESTART THE PROGRAM.");
+                return;
+            }
             id = current_Line.at(0).toInt();
             first = current_Line.at(1);
             last = current_Line.at(2);
@@ -312,6 +316,11 @@ void MainWindow::loadStaffTeamFile(const QString &fileName)
         }
         else // we are now looking at exam data
         {
+            if(current_Line.count() != 3)
+            {
+                QMessageBox::warning(this,"ERROR", "ERROR: BAD INPUT FILE. PLEASE RESTART THE PROGRAM.");
+                return;
+            }
             id = current_Line.at(0).toInt();
             date = current_Line.at(1);
 
@@ -329,7 +338,6 @@ void MainWindow::loadStaffTeamFile(const QString &fileName)
     m->load(staffList, examList);
     currentStaffTeamFile = fileName;
 
-    //statusBar()->showMessage(tr("File loaded"), 2000);
 }
 
 void MainWindow::saveStaffTeamFile(const QString &fileName)

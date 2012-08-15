@@ -620,6 +620,12 @@ void scheduleWidget::loadStaffTeamData(QString filename)
             avail = "";
             exams = "";
 
+            if(current_Line.count() < 6)
+            {
+                QMessageBox::warning(this,"ERROR", "ERROR: BAD INPUT FILE. PLEASE RESTART THE PROGRAM.");
+                return;
+            }
+
             id = current_Line.at(0).toInt();
             first = current_Line.at(1);
             last = current_Line.at(2);
@@ -666,6 +672,12 @@ void scheduleWidget::loadStaffTeamData(QString filename)
         }
         else if(examSchedule) // we are now looking at exam data
         {
+            if(current_Line.count() != 3)
+            {
+                QMessageBox::warning(this,"ERROR", "ERROR: BAD INPUT FILE. PLEASE RESTART THE PROGRAM.");
+                return;
+            }
+
             id = current_Line.at(0).toInt();
             date = current_Line.at(1);
 
