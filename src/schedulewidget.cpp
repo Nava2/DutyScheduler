@@ -954,17 +954,29 @@ void scheduleWidget::exportSchedule()
         }
     }
 
-    QFileDialog dialog(this);
-    dialog.setNameFilter("Comma Separated (*.csv)");
+    QString exportFilename = QFileDialog::getSaveFileName(
+            this,
+            tr("Export Schedule"),
+            QDir::currentPath(),
+            tr("Comma Separated (*.csv)") );
 
-    QString exportFilename = dialog.getSaveFileName();
     if (exportFilename.isEmpty())
         return;
 
     if (exportFilename.right(4) != ".csv")
     {
-        QMessageBox::warning(this, "Export Schedule","Filename must be of type \".csv\"");
-        return;
+        int index = exportFilename.lastIndexOf('.');
+
+        if (index == -1) {
+            // not found, assume it was correct
+            exportFilename += ".csv";
+        } else {
+            QString sub = exportFilename.right(exportFilename.length() - index);
+            if (sub != ".csv") {
+                QMessageBox::warning(this, "Export Schedule","Filename must be of type \".csv\" (found: \"" + sub + "\")");
+                return;
+            }
+        }
     }
 
     QFile file(exportFilename);

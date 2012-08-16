@@ -33,6 +33,37 @@ public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+    /**
+      Takes in an extension of .EXTENSION form (period included), checks it against the file.
+      It will assume the extension is correct if none is present.
+      */
+    static bool
+    CheckFileExtension(QWidget *parent, QString ext, QString &fileName) {
+
+        if (fileName.isEmpty()) {
+            QMessageBox::warning(parent, "Warning",
+                                 "Empty filename.");
+            return false;
+        }
+
+        int index = fileName.lastIndexOf('.');
+
+        if (index == -1) {
+            // not found, assume it was correct
+            fileName += ext;
+        } else {
+            QString sub = fileName.right(fileName.length() - index);
+            if (sub != ext) {
+                QMessageBox::warning(parent, "Warning",
+                                     "Filename must be of type \"" + ext
+                                     + "\" (found: \"" + sub + "\")");
+                return false;
+            }
+        }
+
+        return true;
+    }
+
 private slots:
 
     void newSchedule();

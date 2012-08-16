@@ -79,17 +79,18 @@ void MainWindow::newStaffTeam()
 
 void MainWindow::openStaffTeam()
 {
-    QString fileName = QFileDialog::getOpenFileName(this);
+    QString fileName = QFileDialog::getOpenFileName(
+            this,
+            tr("Open Staff Team"),
+            QDir::currentPath(),
+            tr("Staff Team File (*.txt)") );
 
-    if (!fileName.isEmpty())
-        MainWindow::loadStaffTeamFile(fileName);
-
-    if(fileName.right(4) != ".txt")
-    {
-        QMessageBox::warning(this, "Open Staff Team","Incorrect File, must have extention '.txt'.");
+    if (!CheckFileExtension(this, ".txt", fileName)) {
         return;
     }
 
+    // if we got here.. it was a valid file
+    MainWindow::loadStaffTeamFile(fileName);
 }
 
 void MainWindow::saveStaffTeam()
@@ -102,14 +103,11 @@ void MainWindow::saveStaffTeam()
 
 void MainWindow::saveAsStaffTeam()
 {
-    QString fileName = QFileDialog::getSaveFileName(this);
-
-    if (fileName.isEmpty())
-        return;
-
-    if(fileName.right(4) != ".txt")
-    {
-        QMessageBox::warning(this, "Save Staff Team","Incorrect File, must have extention '.txt'.");
+    QString fileName = QFileDialog::getSaveFileName(this,
+                                                    tr("Save Staff Team"),
+                                                    QDir::currentPath(),
+                                                    tr("Staff Team File (*.txt)"));
+    if (!CheckFileExtension(this, ".txt", fileName)) {
         return;
     }
 
@@ -141,18 +139,17 @@ void MainWindow::newSchedule()
     msgBox2.setDefaultButton(QMessageBox::Ok);
     int msgbox_ret2 = msgBox2.exec();
 
-    QString StaffTeamFilename = QFileDialog::getOpenFileName(this);
-    qDebug() << StaffTeamFilename;
+    QString fileName = QFileDialog::getOpenFileName(
+            this,
+            tr("Open Staff Team"),
+            QDir::currentPath(),
+            tr("Staff Team File (*.txt)") );
 
-    if (StaffTeamFilename.isEmpty())
-        return;
-
-    if(StaffTeamFilename.right(4) != ".txt")
-    {
-        QMessageBox::warning(this, "Load Staff Team","Incorrect File, must have extention '.txt'.");
+    if (!CheckFileExtension(this, ".txt", fileName)) {
         return;
     }
-    QFile StaffTeamFile(StaffTeamFilename);
+
+    QFile StaffTeamFile(fileName);
 
     if (!StaffTeamFile.open(QFile::ReadOnly | QFile::Text))
     {
@@ -164,7 +161,7 @@ void MainWindow::newSchedule()
 
     m->reset();
 
-    s = new scheduleWidget(sw.getValues(), StaffTeamFilename);
+    s = new scheduleWidget(sw.getValues(), fileName);
     setCentralWidget(s);
 
     newScheduleAct->setDisabled(true);
