@@ -2,6 +2,7 @@
 #define STAFF_H
 
 #include <QString>
+#include <QVariant>
 #include "exam.h"
 
 class staff
@@ -10,7 +11,10 @@ class staff
 public:
     staff();
     staff(int, QString, QString, bool, bool, int);
+    staff(const QVariantMap &);
     ~staff();
+
+    void toJson(QVariantMap &);
 
     //getters
     int getId();

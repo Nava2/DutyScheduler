@@ -2,12 +2,16 @@
 #define EXAM_H
 
 #include <QString>
+#include <QVariantMap>
 
 class exam
 {
 public:
     exam();
     exam(int, QString, bool);
+
+    exam(const QVariantMap &);
+    void toJson(QVariantMap &);
 
     void setDate(QString);
     void setNight(bool);

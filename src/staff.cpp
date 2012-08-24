@@ -1,5 +1,8 @@
 #include "staff.h"
 
+#include <QVariantMap>
+#include <QVariant>
+
 staff::staff()
 {
     id = 127;
@@ -30,9 +33,32 @@ staff::staff(int i, QString first, QString last, bool pos, bool gen, int night)
     numAMShifts = 0;
 }
 
+staff::staff(const QVariantMap &json) {
+
+    id = json["id"].toInt();
+    firstName = json["first_name"].toString();
+    lastName = json["last_name"].toString();
+    position = json["position"].toBool();
+    gender = json["gender"].toBool();
+    nightClass = json["night"].toInt();
+    exams = json["exams"].toString();
+    availability = json["availability"].toString();
+}
+
 staff::~staff()
 {
 
+}
+
+void staff::toJson(QVariantMap &json) {
+    json["id"] = id;
+    json["first_name"] = firstName;
+    json["last_name"] = lastName;
+    json["position"] = position;
+    json["gender"] = gender;
+    json["night"] = nightClass;
+    json["exams"] = exams;
+    json["availability"] = availability;
 }
 
 void staff::update(QString first, QString last, bool pos, bool gen, int night)

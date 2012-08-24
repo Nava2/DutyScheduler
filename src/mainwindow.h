@@ -49,6 +49,10 @@ private:
     // file management
     void loadStaffTeamFile(const QString &fileName);
     void saveStaffTeamFile(const QString &fileName);
+
+    void loadStaffTeamJson(const QString &fileName);
+    void saveStaffTeamJson(const QString &);
+
     QList<staff*> * sList;
     QList<exam*> * eList;
     QString currentStaffTeamFile;

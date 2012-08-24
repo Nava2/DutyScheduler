@@ -1,5 +1,9 @@
 #include "mainwindow.h"
 
+#include <QVariantMap>
+#include <QVariant>
+#include "json.h"
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
@@ -81,15 +85,21 @@ void MainWindow::openStaffTeam()
 {
     QString fileName = QFileDialog::getOpenFileName(this);
 
-    if (!fileName.isEmpty())
-        MainWindow::loadStaffTeamFile(fileName);
-
-    if(fileName.right(4) != ".txt")
-    {
-        QMessageBox::warning(this, "Open Staff Team","Incorrect File, must have extention '.txt'.");
+    if (fileName.isEmpty()) {
+        QMessageBox::warning(this, "Open Staff Team","Incorrect File must be valid file.");
         return;
     }
 
+
+    if(fileName.right(4) == ".txt")
+    {
+        MainWindow::loadStaffTeamFile(fileName);
+    } else if (fileName.right(5) == ".json") {
+        MainWindow::loadStaffTeamJson(fileName);
+    } else {
+        QMessageBox::warning(this, "Open Staff Team","Incorrect File invalid extension.");
+        return;
+    }
 }
 
 void MainWindow::saveStaffTeam()
@@ -107,13 +117,16 @@ void MainWindow::saveAsStaffTeam()
     if (fileName.isEmpty())
         return;
 
-    if(fileName.right(4) != ".txt")
+    if(fileName.right(4) == ".txt" )
     {
+        saveStaffTeamFile(fileName);
+    } else if ( fileName.right(5) == ".json") {
+        saveStaffTeamJson(fileName);
+    } else {
         QMessageBox::warning(this, "Save Staff Team","Incorrect File, must have extention '.txt'.");
         return;
     }
 
-    MainWindow::saveStaffTeamFile(fileName);
 }
 
 
@@ -184,7 +197,53 @@ void MainWindow::about()
     QMessageBox::about(this, "The Duty Schedule Tool", "This tool is intended to assist with the process of creating a duty schedule. \n\nFor quick help, hover your mouse over a button or field that you are unsure about and a description will appear in the status bar at the bottom of the application.");
 }
 
+void MainWindow::loadStaffTeamJson(const QString &path) {
+    QFile file(path);
+    if (!file.open(QFile::ReadOnly | QFile::Text))
+    {
+        QMessageBox::warning(this, "Duty Scheduler","Cannot read file.");
+        return;
+    }
 
+    m->reset();
+
+    QByteArray data = file.readAll();
+    QString str_data(data);
+
+    qDebug() << str_data;
+
+    bool ok = false;
+    QVariantMap v = QtJson::Json::parse(str_data, ok).toMap();
+
+    if (!ok) {
+        QMessageBox::warning(this, "Duty Scheduler", "Could not parse Json file");
+        return;
+    }
+
+    QList<staff*> *staffList = new QList<staff*>;
+    QList<exam*> *examList = new QList<exam*>;
+
+    QVariantList team = v["team"].toList();
+
+    QVariantList::Iterator team_it = team.begin();
+    for ( ; team_it != team.end(); team_it++) {
+        staff *pStaff = new staff((*team_it).toMap());
+        staffList->append(pStaff);
+    }
+
+    QVariantList exams = v["exams"].toList();
+
+    QVariantList::Iterator exam_it = exams.begin();
+    for ( ; exam_it != exams.end(); exam_it++) {
+        exam *pExam = new exam((*exam_it).toMap());
+        examList->append(pExam);
+    }
+
+    m->load(staffList, examList);
+    currentStaffTeamFile = path;
+
+    file.close();
+}
 
 //FILE HANDLERS
 void MainWindow::loadStaffTeamFile(const QString &fileName)
@@ -359,6 +418,60 @@ void MainWindow::saveStaffTeamFile(const QString &fileName)
 
     file.close();
     currentStaffTeamFile = fileName;
+    //statusBar()->showMessage(tr("File saved"), 2000);
+}
+
+void MainWindow::saveStaffTeamJson(const QString &path) {
+    QFile file(path);
+    if (!file.open(QFile::WriteOnly | QFile::Text))
+    {
+        QMessageBox::warning(this, "Save Staff Team File","Cannot write file.");
+        return;
+    }
+
+    sList = m->getStaff();
+    eList = m->getExams();
+
+    QVariantMap out;
+
+    QVariantList o_sList;
+
+    QList<staff *>::iterator staff_it = sList->begin();
+    for ( ; staff_it != sList->end(); staff_it++) {
+        staff * pStaff = *staff_it;
+
+        QVariantMap sMap;
+        pStaff->toJson(sMap);
+
+        o_sList.append(sMap);
+    }
+
+    out["team"] = o_sList;
+
+    QVariantList o_sExams;
+
+    QList<exam *>::iterator exam_it = eList->begin();
+    for ( ; exam_it != eList->end(); exam_it++) {
+        exam *pExam = *exam_it;
+
+        QVariantMap eMap;
+        pExam->toJson(eMap);
+
+        o_sExams.append(eMap);
+    }
+
+    out["exams"] = o_sExams;
+
+    bool ok = false;
+    QByteArray ba = QtJson::Json::serialize(out, ok);
+
+    if (ok) {
+        file.write(ba);
+
+        currentStaffTeamFile = path;
+    }
+
+    file.close();
     //statusBar()->showMessage(tr("File saved"), 2000);
 }
 
