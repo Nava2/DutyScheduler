@@ -79,11 +79,14 @@ scheduleWidget::scheduleWidget(QString fileName, QWidget *parent) // this constr
     QTextStream ts(&file);
 
     QStringList inp = ts.readLine().split(":",QString::SkipEmptyParts);     //get start date
+
     QDate date = QDate::fromString(inp.at(1),"dd/MM/yyyy");
+
     startDate = new QDate();
     startDate->setDate(date.year(),date.month(),date.day());
 
     inp = ts.readLine().split(":",QString::SkipEmptyParts);                 //get end date
+
     date = QDate::fromString(inp.at(1),"dd/MM/yyyy");
     endDate = new QDate();
     endDate->setDate(date.year(),date.month(),date.day());
@@ -233,6 +236,7 @@ scheduleWidget::scheduleWidget(QString fileName, QWidget *parent) // this constr
 
 scheduleWidget::~scheduleWidget()
 {
+
     QList<QTableWidgetItem*>::iterator it_i = statsTableItems->begin();
 
     for (; it_i != statsTableItems->end();)

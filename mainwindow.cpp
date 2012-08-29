@@ -434,8 +434,11 @@ void MainWindow::loadSchedule()
     }
     file.close();
 
-    delete s;
+    if (centralWidget() == s)
+        delete s;
+
     s = new scheduleWidget(fileName);
+
     setCentralWidget(s);
 
     openScheduleAct->setDisabled(true);
