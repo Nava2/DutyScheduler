@@ -205,17 +205,20 @@ void MainWindow::loadStaffTeamJson(const QString &path) {
         return;
     }
 
+    // reset the widget
     m->reset();
 
+    // read the whole file into the QByteArray then put it into a string for
+    // parsing
     QByteArray data = file.readAll();
     QString str_data(data);
 
-    qDebug() << str_data;
-
+    // parse using json.h
     bool ok = false;
     QVariantMap v = QtJson::Json::parse(str_data, ok).toMap();
 
     if (!ok) {
+        // no idea why it would, unless someone muddled on their own
         QMessageBox::warning(this, "Duty Scheduler", "Could not parse Json file");
         return;
     }
@@ -223,22 +226,28 @@ void MainWindow::loadStaffTeamJson(const QString &path) {
     QList<staff*> *staffList = new QList<staff*>;
     QList<exam*> *examList = new QList<exam*>;
 
+    // read the teams
     QVariantList team = v["team"].toList();
 
+    // for each member, create a new object initialized to the values in the
+    // maps' storage
     QVariantList::Iterator team_it = team.begin();
     for ( ; team_it != team.end(); team_it++) {
         staff *pStaff = new staff((*team_it).toMap());
         staffList->append(pStaff);
     }
 
+    // read exam objects
     QVariantList exams = v["exams"].toList();
 
+    // repeat the same steps as the staff members
     QVariantList::Iterator exam_it = exams.begin();
     for ( ; exam_it != exams.end(); exam_it++) {
         exam *pExam = new exam((*exam_it).toMap());
         examList->append(pExam);
     }
 
+    // save to the widget
     m->load(staffList, examList);
     currentStaffTeamFile = path;
 
