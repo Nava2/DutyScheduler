@@ -11,19 +11,28 @@ mainWidget::mainWidget(QWidget *parent)
 
 mainWidget::~mainWidget()
 {
-    while (!theTeam->isEmpty())
+    QList<staff*>::iterator it_s = theTeam->begin();
+    for(; it_s != theTeam->end(); )
     {
-        staff *s = theTeam->takeLast();
-        delete s;
+        delete *it_s;
+        it_s = theTeam->erase(it_s);
     }
     delete theTeam;
 
-    while (!theExams->isEmpty())
+    QList<exam*>::iterator it_e = theExams->begin();
+    for(; it_e != theExams->end(); )
     {
-        exam *e = theExams->takeLast();
-        delete e;
+        delete *it_e;
+        it_e = theExams->erase(it_e);
     }
     delete theExams;
+
+    staffTeamList->clear();
+    delete staffTeamList;
+
+    examsList->clear();
+    delete examsList;
+
 }
 
 //SLOTS
@@ -31,16 +40,6 @@ void mainWidget::updateStaffMember()
 {
     if(firstNameEdit->text() == "" || lastNameEdit->text() == "")
         return;
-
-    /*QMessageBox msgBox;
-    msgBox.setText("Are you sure?");
-    msgBox.setInformativeText("Do you want to update " + staffTeamList->currentItem()->text() + "?");
-    msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-    msgBox.setDefaultButton(QMessageBox::No);
-    int msgbox_ret = msgBox.exec();
-
-    if (msgbox_ret == 0x10000)
-        return;*/
 
     bool g;//gender
     if(maleRadio->isChecked())
@@ -88,7 +87,7 @@ void mainWidget::updateStaffMember()
     QListWidgetItem *i = staffTeamList->currentItem();//get the list item from the list widget
     int id = i->data(Qt::UserRole).toInt();//the list item's user data is the staff id
     i->setText(firstNameEdit->text() + " " + lastNameEdit->text()); //change the text in the list
-    theTeam->at(id)->update(firstNameEdit->text(),lastNameEdit->text(),p,g,n); //change the actual staff object
+    theTeam->at(id)->update(firstNameEdit->text().trimmed(),lastNameEdit->text().trimmed(),p,g,n); //change the actual staff object
     theTeam->at(id)->setAvailability(a);// set the avail
     theTeam->at(id)->setExams(e);//set exams
     clearSelections();
@@ -125,7 +124,7 @@ void mainWidget::addStaffMember()
 
     // MAKE THE STAFF
     staff *s;//make a staff member pointer
-    s = new staff(theTeam->size(),firstNameEdit->text(),lastNameEdit->text(),p,g,n);
+    s = new staff(theTeam->size(),firstNameEdit->text().trimmed(),lastNameEdit->text().trimmed(),p,g,n);
 
     //AVAILABILITY
     QString a = "";
@@ -184,10 +183,8 @@ void mainWidget::clearSelections()
     firstNameEdit->setText("");
     lastNameEdit->setText("");
 
-    donRadio->setChecked(false);
     raRadio->setChecked(true);
 
-    maleRadio->setChecked(false);
     femaleRadio->setChecked(true);
 
     for(int x=0; x<7; x++)
@@ -204,29 +201,21 @@ void mainWidget::clearSelections()
     examNightCheck->setChecked(false);
 }
 
-void mainWidget::updateSelections()
+void mainWidget::updateSelections(QListWidgetItem * item)
 {
     clearSelections();
     //get the id of the selected staff member
-    int id = staffTeamList->currentItem()->data(Qt::UserRole).toInt();
-    staff *s = theTeam->at(id);
+    int id = item->data(Qt::UserRole).toInt();
 
     //now update the right hand stuff so that it matches the selected staff
-    firstNameEdit->setText(s->getFirstName());
-    lastNameEdit->setText(s->getLastName());
+    firstNameEdit->setText(theTeam->at(id)->getFirstName());
+    lastNameEdit->setText(theTeam->at(id)->getLastName());
 
-    if (s->getPosition())
-        donRadio->setChecked(true);
-    else
-        raRadio->setChecked(true);
-
-    if (s->getGender())
-        maleRadio->setChecked(true);
-    else
-        femaleRadio->setChecked(true);
+    donRadio->setChecked(theTeam->at(id)->getPosition());
+    maleRadio->setChecked(theTeam->at(id)->getGender());
 
     //Night Classes
-    int nights = s->getNightClass();
+    int nights = theTeam->at(id)->getNightClass();
     int mask = 0x01;
     for (int x = 0; x<7; x++)
     {
@@ -240,7 +229,7 @@ void mainWidget::updateSelections()
 
     //Availability
 
-    QStringList avail = s->getAvailability().split(',',QString::SkipEmptyParts);
+    QStringList avail = theTeam->at(id)->getAvailability().split(',',QString::SkipEmptyParts);
 
     QDate d;
     for(int y = 0; y<4; y++)
@@ -259,7 +248,7 @@ void mainWidget::updateSelections()
 
 
     //EXAMS
-    QString e = s->getExams();
+    QString e = theTeam->at(id)->getExams();
     QStringList exams = e.split(',',QString::SkipEmptyParts);
     int exams_int[exams.size()];
 
@@ -341,8 +330,7 @@ void mainWidget::createStaffElements()
     staffTeamList->setSelectionMode(QAbstractItemView::SingleSelection);
     staffTeamList->setStatusTip("The list of staff members of this team.");
     // connect so that when the user changes the selection in the list the right hand side updates.
-    connect(staffTeamList,SIGNAL(itemSelectionChanged()),this,SLOT(updateSelections()));
-    //connect(staffTeamList, SIGNAL(itemClicked(QListWidgetItem*)),this,SLOT(updateSelections()));
+    connect(staffTeamList,SIGNAL(itemClicked(QListWidgetItem*)),this,SLOT(updateSelections(QListWidgetItem*)));
 
     //set up the layout
     QGridLayout *layout = new QGridLayout;
@@ -458,8 +446,8 @@ void mainWidget::createExamScheduleGroupBox()
     examsList = new QListWidget;
     examDateEdit = new QDateEdit;
     examNightCheck = new QCheckBox(tr("Night Exam"));
-    addExamButton = new QPushButton(tr("ADD"));
-    removeExamButton = new QPushButton(tr("REMOVE"));
+    addExamButton = new QPushButton(tr("ADD EXAM"));
+    removeExamButton = new QPushButton(tr("REMOVE EXAM"));
     examDateEdit->setDate(QDate::currentDate());
     examDateEdit->setCalendarPopup(true);
 
@@ -483,10 +471,10 @@ void mainWidget::createStaffControls()
 {
     controlsGroupBox = new QGroupBox();
 
-    addStaffButton = new QPushButton(tr("<< ADD"));
-    updateStaffButton = new QPushButton(tr("< UPDATE"));
-    removeStaffButton = new QPushButton(tr("REMOVE"));
-    clearButton = new QPushButton(tr("CLEAR"));
+    addStaffButton = new QPushButton(tr("<< ADD STAFF"));
+    updateStaffButton = new QPushButton(tr("< UPDATE STAFF"));
+    removeStaffButton = new QPushButton(tr("REMOVE STAFF"));
+    clearButton = new QPushButton(tr("CLEAR INPUTS"));
 
     addStaffButton->setStatusTip("Take the data currently on the right and add this staff to the list.");
     updateStaffButton->setStatusTip("Change the data for the selected staff member to whatever is entered on the right.");
@@ -510,13 +498,33 @@ void mainWidget::createStaffControls()
 // GETTERS/SETTERS for staff and exams
 void mainWidget::reset()
 {
+
+
+    QList<staff *>::iterator it_s = theTeam->begin();
+    for(; it_s != theTeam->end(); )
+    {
+        delete *it_s;
+        it_s = theTeam->erase(it_s);
+    }
+
+    QList<exam *>::iterator it_e = theExams->begin();
+    for(; it_e != theExams->end(); )
+    {
+        delete *it_e;
+        it_e = theExams->erase(it_e);
+    }
+
+
     delete theTeam;
     delete theExams;
 
     theTeam = new QList<staff*>;
     theExams = new QList<exam*>;
 
+
     staffTeamList->clear();
+
+    examsList->clear();
 }
 
 QList<staff*> * mainWidget::getStaff()

@@ -163,22 +163,54 @@ QString sDate::exportOn()
    for(int z = 0; z < rasOn->count(); z++)
        ret += QString::number(rasOn->at(z)) + ",";
 
+   if (ret.left(3) == "999")
+       ret = "";
+
    return ret;
 
-    //this export separates dons and ras
-   /*QString ret = "";
+}
 
-   ret += QString::number(AM) + ".";
+QString sDate::getCantWork()
+{
+    QString ret = "";
 
-   for(int x = 0; x < donsOn->count(); x++)
-       ret += QString::number(donsOn->at(x)) + ",";
+    if (cantWork->isEmpty())
+        return ret;
 
-   ret += ".";
+    for (int x = 0; x < cantWork->count(); x++)
+        ret += QString::number(cantWork->at(x)) + ",";
 
-   for(int z = 0; z < rasOn->count(); z++)
-       ret += QString::number(rasOn->at(z)) + ",";
+    ret.chop(1);
 
-   ret += ".";
+    return ret;
+}
 
-   return ret;*/
+QString sDate::getDons()
+{
+    QString ret = "";
+
+    if (donsOn->isEmpty())
+        return ret;
+
+    for (int x = 0; x < donsOn->count(); x++)
+        ret += QString::number(donsOn->at(x)) + ",";
+
+    ret.chop(1);
+
+    return ret;
+}
+
+QString sDate::getRas()
+{
+    QString ret = "";
+
+    if (rasOn->isEmpty())
+        return ret;
+
+    for (int x = 0; x < rasOn->count(); x++)
+        ret += QString::number(rasOn->at(x)) + ",";
+
+    ret.chop(1);
+
+    return ret;
 }

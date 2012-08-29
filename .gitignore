@@ -7,10 +7,13 @@ build/*
 *.lo
 *.o
 
-# Compiled Dynamic libraries
+#Compiled Dynamic Libraries
 *.so
 
-# Compiled Static libraries
+#Compiled Static LIbraries
 *.lai
 *.la
 *.a
+
+#user pro file
+*.user

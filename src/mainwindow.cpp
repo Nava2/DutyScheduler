@@ -17,7 +17,6 @@ MainWindow::MainWindow(QWidget *parent)
     m = new mainWidget();
 
     setCentralWidget(m);
-
 }
 
 MainWindow::~MainWindow()
@@ -47,9 +46,15 @@ void MainWindow::createActions()
     newScheduleAct->setStatusTip("Create a new duty schedule");
     connect(newScheduleAct, SIGNAL(triggered()),this, SLOT(newSchedule()));
 
+    saveScheduleAct = new QAction("Save Schedule", this);
+    saveScheduleAct->setStatusTip("Save the current schedule to work on it later.");
+    connect(saveScheduleAct, SIGNAL(triggered()),this, SLOT(saveSchedule()));
+    saveScheduleAct->setDisabled(true);
+
     openScheduleAct = new QAction("Open Schedule", this);
-    openScheduleAct->setStatusTip("Open an existing schedule");
-    connect(openScheduleAct, SIGNAL(triggered()),this, SLOT(openSchedule()));
+    openScheduleAct->setStatusTip("Open and existing schedule.");
+    connect(openScheduleAct, SIGNAL(triggered()),this, SLOT(loadSchedule()));
+
 
     aboutAct = new QAction("Help Me!", this);
     connect(aboutAct, SIGNAL(triggered()),this, SLOT(about()));
@@ -66,7 +71,9 @@ void MainWindow::createMenu()
 
     scheduleMenu = menuBar()->addMenu("Schedule");
     scheduleMenu->addAction(newScheduleAct);
-    //scheduleMenu->addAction(openScheduleAct);
+    scheduleMenu->addAction(saveScheduleAct);
+    scheduleMenu->addAction(openScheduleAct);
+
 
     helpMenu = menuBar()->addMenu("Help");
     helpMenu->addAction(aboutAct);
@@ -133,6 +140,7 @@ void MainWindow::saveAsStaffTeam()
 void MainWindow::newSchedule()
 {
     QMessageBox msgBox;
+    msgBox.setWindowTitle("Duty Schedule Tool");
     msgBox.setText("Any unsaved staff team data will be lost. Continue?");
     msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
     msgBox.setDefaultButton(QMessageBox::No);
@@ -143,19 +151,28 @@ void MainWindow::newSchedule()
 
     scheduleWizzard sw;
     int ret = sw.exec();
-    //qDebug() << QString::number(ret);
+
     if (ret == 0)
         return;
 
+    QString wizzard = sw.getValues();
+
+    if(wizzard == "")
+    {
+        QMessageBox::warning(this, "Duty Schedule Tool","ERROR: Bad date inputs.");
+        return;
+    }
+
     QMessageBox msgBox2;
-    msgBox2.setText("New Schedule");
-    msgBox2.setInformativeText("Select the staff team to use for your new schedule.");
+    msgBox2.setWindowTitle("Duty Schedule Tool");
+    msgBox2.setText("Select the staff team to use for your new schedule.");
     msgBox2.setStandardButtons(QMessageBox::Ok);
     msgBox2.setDefaultButton(QMessageBox::Ok);
     int msgbox_ret2 = msgBox2.exec();
 
     QString StaffTeamFilename = QFileDialog::getOpenFileName(this);
-    qDebug() << StaffTeamFilename;
+
+
 
     if (StaffTeamFilename.isEmpty())
         return;
@@ -165,36 +182,34 @@ void MainWindow::newSchedule()
         QMessageBox::warning(this, "Load Staff Team","Incorrect File, must have extention '.txt'.");
         return;
     }
+
     QFile StaffTeamFile(StaffTeamFilename);
 
     if (!StaffTeamFile.open(QFile::ReadOnly | QFile::Text))
     {
-        QMessageBox::warning(this, "Duty Scheduler","Cannot read file.");
+        QMessageBox::warning(this, "Duty Schedule Tool","Cannot read file.");
         return;
     }
-
     StaffTeamFile.close();
 
     m->reset();
 
-    s = new scheduleWidget(sw.getValues(), StaffTeamFilename);
-    setCentralWidget(s);
+    s = new scheduleWidget(wizzard, StaffTeamFilename);
+     setCentralWidget(s);
+
 
     newScheduleAct->setDisabled(true);
     newStaffTeamAct->setDisabled(true);
     openStaffTeamAct->setDisabled(true);
     saveStaffTeamAct->setDisabled(true);
     saveAsStaffTeamAct->setDisabled(true);
-}
-
-void MainWindow::openSchedule()
-{
-
+    saveScheduleAct->setEnabled(true);
+    openScheduleAct->setDisabled(true);
 }
 
 void MainWindow::about()
 {
-    QMessageBox::about(this, "The Duty Schedule Tool", "This tool is intended to assist with the process of creating a duty schedule. \n\nFor quick help, hover your mouse over a button or field that you are unsure about and a description will appear in the status bar at the bottom of the application.");
+    QMessageBox::about(this, "Duty Schedule Tool", "This tool is intended to assist with the process of creating a duty schedule. \n\nFor quick help, hover your mouse over a button or field that you are unsure about and a description will appear in the status bar at the bottom of the application.");
 }
 
 void MainWindow::loadStaffTeamJson(const QString &path) {
@@ -260,7 +275,7 @@ void MainWindow::loadStaffTeamFile(const QString &fileName)
     QFile file(fileName);
     if (!file.open(QFile::ReadOnly | QFile::Text))
     {
-        QMessageBox::warning(this, "Duty Scheduler","Cannot read file.");
+        QMessageBox::warning(this, "Duty Schedule Tool","Cannot read file.");
         return;
     }
 
@@ -319,7 +334,11 @@ void MainWindow::loadStaffTeamFile(const QString &fileName)
             avail = "";
             exams = "";
 
-
+            if(current_Line.count() < 6)
+            {
+                QMessageBox::warning(this,"ERROR", "ERROR: BAD INPUT FILE. PLEASE RESTART THE PROGRAM.");
+                return;
+            }
             id = current_Line.at(0).toInt();
             first = current_Line.at(1);
             last = current_Line.at(2);
@@ -366,6 +385,11 @@ void MainWindow::loadStaffTeamFile(const QString &fileName)
         }
         else // we are now looking at exam data
         {
+            if(current_Line.count() != 3)
+            {
+                QMessageBox::warning(this,"ERROR", "ERROR: BAD INPUT FILE. PLEASE RESTART THE PROGRAM.");
+                return;
+            }
             id = current_Line.at(0).toInt();
             date = current_Line.at(1);
 
@@ -383,7 +407,6 @@ void MainWindow::loadStaffTeamFile(const QString &fileName)
     m->load(staffList, examList);
     currentStaffTeamFile = fileName;
 
-    //statusBar()->showMessage(tr("File loaded"), 2000);
 }
 
 void MainWindow::saveStaffTeamFile(const QString &fileName)
@@ -484,6 +507,67 @@ void MainWindow::saveStaffTeamJson(const QString &path) {
     //statusBar()->showMessage(tr("File saved"), 2000);
 }
 
+void MainWindow::saveSchedule()
+{
+    QString fileName = QFileDialog::getSaveFileName(this);
+
+    if (fileName.isEmpty())
+        return;
+
+    if(fileName.right(4) != ".txt")
+    {
+        QMessageBox::warning(this, "Save Schedule","File must have extention '.txt'.");
+        return;
+    }
+
+
+    QFile file(fileName);
+    if (!file.open(QFile::WriteOnly | QFile::Text))
+    {
+        QMessageBox::warning(this, "Save Schedule","Cannot write file.");
+        return;
+    }
+    file.close();
+
+    s->saveMidSchedule(fileName);
+
+
+
+
+}
+
+void MainWindow::loadSchedule()
+{
+    QString fileName = QFileDialog::getOpenFileName(this);
+
+    if (fileName.isEmpty())
+        return;
+
+    if(fileName.right(4) != ".txt")
+    {
+        QMessageBox::warning(this, "Open Schedule","File must have extention '.txt'.");
+        return;
+    }
+
+    QFile file(fileName);
+    if (!file.open(QFile::ReadOnly | QFile::Text))
+    {
+        QMessageBox::warning(this, "Open Schedule","Cannot write file.");
+        return;
+    }
+    file.close();
+
+    if (centralWidget() == s)
+        delete s;
+
+    s = new scheduleWidget(fileName);
+
+    setCentralWidget(s);
+
+    openScheduleAct->setDisabled(true);
+    newScheduleAct->setDisabled(true);
+    saveScheduleAct->setEnabled(true);
+}
 
 
 

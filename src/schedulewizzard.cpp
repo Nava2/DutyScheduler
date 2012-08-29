@@ -142,6 +142,9 @@ QString scheduleWizzard::getValues()
 {
     QString ret = "";
 
+    if(startDateEdit->date().daysTo(endDateEdit->date()) < 1)
+        return ret;
+
     ret += startDateEdit->date().toString("dd/MM/yyyy") + ",";
     ret += endDateEdit->date().toString("dd/MM/yyyy") + ",";
 

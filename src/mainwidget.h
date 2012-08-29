@@ -17,7 +17,6 @@ class QLabel;
 class QLineEdit;
 class QListWidget;
 class QListWidgetItem;
-class QList<char>;
 class QMessageBox;
 class QPushButton;
 class QRadioButton;
@@ -47,7 +46,7 @@ private slots:
     void addStaffMember();
     void removeStaffMember();
     void clearSelections();
-    void updateSelections();
+    void updateSelections(QListWidgetItem*);
     void addExam();
     void removeExam();
 
