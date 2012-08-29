@@ -1,4 +1,8 @@
-#Compiled Object Files
+# Qt stuff
+build/*
+*.pro.user
+
+# Compiled Object files
 *.slo
 *.lo
 *.o
