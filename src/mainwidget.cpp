@@ -537,13 +537,25 @@ QList<exam*> * mainWidget::getExams()
     return theExams;
 }
 
+QList<int> mainWidget::getTeamIDs() {
+    QList<int> out;
+
+    for (int i = 0; i < staffTeamList->count(); i++) {
+        out[i] = staffTeamList->item(i)->data(Qt::UserRole).toInt();
+    }
+
+    return out;
+}
+
 QString mainWidget::getTeam()
 {
     QString teamList = "";
 
-    for (int x = 0; x < staffTeamList->count(); x++)
+    QList<int> ids = getTeamIDs();
+
+    foreach(int id, ids)
     {
-        teamList = teamList + staffTeamList->item(x)->data(Qt::UserRole).toString() + ",";
+        teamList += QString::number(id) + ",";
     }
 
     return teamList;

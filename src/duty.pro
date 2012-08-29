@@ -21,7 +21,8 @@ SOURCES += main.cpp \
     myqlistwidget.cpp \
     myschedviewer.cpp \
     myqlabel.cpp \
-    json.cpp
+    json.cpp \
+    iohandler.cpp
 
 HEADERS  += \
     staff.h \
@@ -34,4 +35,5 @@ HEADERS  += \
     myqlistwidget.h \
     myschedviewer.h \
     myqlabel.h \
-    json.h
+    json.h \
+    iohandler.h

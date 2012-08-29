@@ -36,6 +36,7 @@ public:
     void reset();
     QList<staff*> * getStaff();
     QList<exam*> * getExams();
+    QList<int> getTeamIDs();
     QString getTeam();
     void load(QList<staff*> * staffList, QList<exam*> * examList);
 

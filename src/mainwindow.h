@@ -24,6 +24,7 @@
 #include "exam.h"
 #include "staff.h"
 #include "sdate.h"
+#include "iohandler.h"
 
 class MainWindow : public QMainWindow
 {
@@ -41,7 +42,7 @@ private slots:
     void newStaffTeam();
     void openStaffTeam();
     void saveStaffTeam();
-    void saveAsStaffTeam();
+    void saveAsStaffTeam(const QString &fileName);
 
     void saveSchedule();
     void loadSchedule();
@@ -50,11 +51,7 @@ private slots:
 private:
 
     // file management
-    void loadStaffTeamFile(const QString &fileName);
-    void saveStaffTeamFile(const QString &fileName);
-
-    void loadStaffTeamJson(const QString &fileName);
-    void saveStaffTeamJson(const QString &);
+    IOHandler iohandle;
 
     QList<staff*> * sList;
     QList<exam*> * eList;
