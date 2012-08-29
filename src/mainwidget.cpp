@@ -541,7 +541,7 @@ QList<int> mainWidget::getTeamIDs() {
     QList<int> out;
 
     for (int i = 0; i < staffTeamList->count(); i++) {
-        out[i] = staffTeamList->item(i)->data(Qt::UserRole).toInt();
+        out.append(staffTeamList->item(i)->data(Qt::UserRole).toInt());
     }
 
     return out;

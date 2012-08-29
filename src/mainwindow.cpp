@@ -95,12 +95,7 @@ void MainWindow::openStaffTeam() {
     QList<exam *> *examList = new QList<exam *>;
 
     // get the file name, use currentStaffTeamFile if possible
-    QString fileName;
-    if (currentStaffTeamFile.isEmpty()) {
-     fileName = QFileDialog::getSaveFileName(this);
-    } else {
-     fileName = currentStaffTeamFile;
-    }
+    QString fileName = QFileDialog::getOpenFileName(this);
 
     bool ok = iohandle.loadStaffTeam(fileName, *staffList, *examList);
 
@@ -126,10 +121,15 @@ void MainWindow::saveStaffTeam()
         currentStaffTeamFile = QFileDialog::getSaveFileName(this);
     }
 
-    saveAsStaffTeam(currentStaffTeamFile);
+    saveStaffTeamName(currentStaffTeamFile);
 }
 
-void MainWindow::saveAsStaffTeam(const QString &fileName)
+void MainWindow::saveAsStaffTeam() {
+    currentStaffTeamFile = QFileDialog::getSaveFileName(this);
+    saveStaffTeamName(currentStaffTeamFile);
+}
+
+void MainWindow::saveStaffTeamName(const QString &fileName)
 {
     QList<staff *> *_sList = m->getStaff();
     QList<exam *> *_eList = m->getExams();

@@ -42,7 +42,8 @@ private slots:
     void newStaffTeam();
     void openStaffTeam();
     void saveStaffTeam();
-    void saveAsStaffTeam(const QString &fileName);
+    void saveAsStaffTeam();
+    void saveStaffTeamName(const QString &fileName);
 
     void saveSchedule();
     void loadSchedule();
