@@ -2,6 +2,10 @@
 
 #include <QVariantMap>
 #include <QVariant>
+
+#include <QFileInfo>
+#include <QFile>
+
 #include "json.h"
 
 MainWindow::MainWindow(QWidget *parent)
@@ -95,7 +99,13 @@ void MainWindow::openStaffTeam() {
     QList<exam *> *examList = new QList<exam *>;
 
     // get the file name, use currentStaffTeamFile if possible
-    QString fileName = QFileDialog::getOpenFileName(this);
+    QString fileName("");
+    if (currentStaffTeamFile.isEmpty()) {
+        fileName = QFileDialog::getOpenFileName(this, "Open Staff Team..", QDir::home().path());
+    } else {
+        fileName = QFileDialog::getOpenFileName(this, "Open Staff Team..",
+                                                QFileInfo(currentStaffTeamFile).dir().path());
+    }
 
     bool ok = iohandle.loadStaffTeam(fileName, *staffList, *examList);
 
@@ -118,14 +128,21 @@ void MainWindow::openStaffTeam() {
 void MainWindow::saveStaffTeam()
 {
     if (currentStaffTeamFile.isEmpty()) {
-        currentStaffTeamFile = QFileDialog::getSaveFileName(this);
+        currentStaffTeamFile = QFileDialog::getSaveFileName(this, "Save as..", QDir::home().path());
     }
 
     saveStaffTeamName(currentStaffTeamFile);
 }
 
 void MainWindow::saveAsStaffTeam() {
-    currentStaffTeamFile = QFileDialog::getSaveFileName(this);
+    if (!currentStaffTeamFile.isEmpty()) {
+        QFileInfo f(currentStaffTeamFile);
+        currentStaffTeamFile = QFileDialog::getSaveFileName(this,
+                                                            "Save as..",
+                                                            f.dir().path());
+    } else {
+        currentStaffTeamFile = QFileDialog::getSaveFileName(this);
+    }
     saveStaffTeamName(currentStaffTeamFile);
 }
 
@@ -133,17 +150,17 @@ void MainWindow::saveStaffTeamName(const QString &fileName)
 {
     QList<staff *> *_sList = m->getStaff();
     QList<exam *> *_eList = m->getExams();
-    QList<int> ids = m->getTeamIDs();
+//    QList<int> ids = m->getTeamIDs();
 
-    // sort the _sList to store them in order of ID
-    for (int i = 0; i < ids.size(); i++) {
-        int id = ids[i];
-        for (int j = i; j < _sList->size(); j++) {
-            if (id == _sList->at(j)->getId()) {
-                _sList->swap(i, j);
-            }
-        }
-    }
+//    // sort the _sList to store them in order of ID
+//    for (int i = 0; i < ids.size(); i++) {
+//        int id = ids[i];
+//        for (int j = i; j < _sList->size(); j++) {
+//            if (id == _sList->at(j)->getId()) {
+//                _sList->swap(i, j);
+//            }
+//        }
+//    }
 
     bool ok = iohandle.saveStaffTeam(fileName, *_sList, *_eList);
 
