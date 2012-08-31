@@ -110,12 +110,12 @@ void MainWindow::openStaffTeam() {
     bool ok = iohandle.loadStaffTeam(fileName, *staffList, *examList);
 
     if (!ok) {
-     // baaaad
-     QString msg, error;
-     iohandle.getErrorInfo(msg, error);
-     QMessageBox::warning(this, msg, error);
+        // baaaad
+        QString msg, error;
+        iohandle.getErrorInfo(msg, error);
+        QMessageBox::warning(this, msg, error);
 
-     return;
+        return;
     }
 
     m->reset();
