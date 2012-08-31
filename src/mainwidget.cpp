@@ -306,6 +306,14 @@ void mainWidget::removeExam()
     delete i;
 }
 
+void mainWidget::addAvailabilityRow() {
+    qDebug() << "ADD AVAIL ROW";
+}
+
+void mainWidget::rmAvailabilityRow() {
+    qDebug() << "RM AVAIL ROW";
+}
+
 
 
 
@@ -410,34 +418,57 @@ void mainWidget::createNightClassGroupBox()
 
 }
 
+void mainWidget::createAvailabilitySubgroupBox(const int &index, QGridLayout *parentLayout, QDateEdit *dateEdit, QGroupBox *groupBox) {
+    dateEdit->setCalendarPopup(true);
+    dateEdit->setDate(QDate::currentDate());
+
+    groupBox->setCheckable(true);
+    groupBox->setChecked(false);
+
+    QGridLayout *subLayout = new QGridLayout;
+
+    subLayout->addWidget(dateEdit);
+    groupBox->setLayout(subLayout);
+
+    parentLayout->addWidget(groupBox,((index>>1) & 0x01), (index & 0x01)); // left is even, right is odd
+}
+
 void mainWidget::createAvailabilityGroupBox()
 {
     availabilityGroupBox = new QGroupBox(tr("Dates Unavailable"));
-    availabilityGroupBox->setStatusTip("These are the dates that the selected staff member is unavailable. ex. A wedding, academic commitment, etc.");
 
-    QGridLayout *availabilityLayout = new QGridLayout;
-    QGridLayout *subLayout;
-    for(int x = 0; x<4; x++)
+    QGridLayout *topLayout = new QGridLayout;
+
+    QScrollArea *scroll = new QScrollArea;
+    availabilitySubLayout = new QGridLayout;
+    scroll->setLayout(availabilitySubLayout);
+    scroll->setStatusTip("These are the dates that the selected staff member is unavailable. ex. A wedding, academic commitment, etc.");
+
+
+    for (int x = 0; x < 4; x++)
     {
-        arrayDateEdit[x] = new QDateEdit;
-        arrayGroupBox[x] = new QGroupBox;
+        QDateEdit *de = new QDateEdit;
+        QGroupBox *gb = new QGroupBox;
+        arrayDateEdit.append(de);
+        arrayGroupBox.append(gb);
 
-        arrayDateEdit[x]->setCalendarPopup(true);
-        arrayDateEdit[x]->setDate(QDate::currentDate());
-
-        arrayGroupBox[x]->setCheckable(true);
-        arrayGroupBox[x]->setChecked(false);
-
-        subLayout = new QGridLayout;
-
-        subLayout->addWidget(arrayDateEdit[x]);
-        arrayGroupBox[x]->setLayout(subLayout);
-
-        availabilityLayout->addWidget(arrayGroupBox[x],((x>>1) & 0x01), (x & 0x01));
-
+        createAvailabilitySubgroupBox(x, availabilitySubLayout, de, gb);
     }
 
-    availabilityGroupBox->setLayout(availabilityLayout);
+    topLayout->addWidget(scroll, 0, 0, 1, -1);
+
+    addAvailabilityRowButton = new QPushButton("+");
+    addAvailabilityRowButton->setToolTip("Click to add a row to availability options.");
+    rmAvailabilityRowButton = new QPushButton("-");
+    rmAvailabilityRowButton->setToolTip("Click to remove a row from availability options.");
+
+    connect(addAvailabilityRowButton, SIGNAL(clicked()), this, SLOT(addAvailabilityRow()));
+    connect(rmAvailabilityRowButton, SIGNAL(clicked()), this, SLOT(rmAvailabilityRow()));
+
+    topLayout->addWidget(addAvailabilityRowButton, 1, 1, 1, 1);
+    topLayout->addWidget(rmAvailabilityRowButton, 1, 2, 1, 1);
+
+    availabilityGroupBox->setLayout(topLayout);
 }
 
 void mainWidget::createExamScheduleGroupBox()

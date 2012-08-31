@@ -50,6 +50,9 @@ private slots:
     void addExam();
     void removeExam();
 
+    void addAvailabilityRow();
+    void rmAvailabilityRow();
+
 private:
 
 
@@ -64,6 +67,9 @@ private:
     void createPositionGroupBox();
     void createGenderGroupBox();
     void createNightClassGroupBox();
+    // creates a subgroup bod for the Availability
+    static
+    void createAvailabilitySubgroupBox(const int &index, QGridLayout *parentLayout, QDateEdit *dateEdit, QGroupBox *groupBox);
     void createAvailabilityGroupBox();
     void createExamScheduleGroupBox();
     void createStaffControls();
@@ -97,8 +103,11 @@ private:
 
 
     QGroupBox *availabilityGroupBox;
-    QGroupBox *arrayGroupBox[4];
-    QDateEdit *arrayDateEdit[4];
+    QGridLayout *availabilitySubLayout;
+    QList<QGroupBox *> arrayGroupBox;
+    QList<QDateEdit *> arrayDateEdit;
+    QPushButton *addAvailabilityRowButton;
+    QPushButton *rmAvailabilityRowButton;
 
     QGroupBox *examScheduleGroupBox;
     QListWidget *examsList;
