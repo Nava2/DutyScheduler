@@ -53,6 +53,10 @@ bool IOHandler::loadStaffTeam(const QString &fileName, QList<staff*> &staffList,
         result = false;
     }
 
+    if (result) {
+        currentStaffFile = file;
+    }
+
     return result;
 }
 
@@ -218,6 +222,8 @@ bool IOHandler::loadStaffTeamFile(QFile &file, QList<staff *> &staffList, QList<
             examList.append(e);
         }
     }
+
+    currentStaffFile = file;
 
     return true;
 }

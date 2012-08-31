@@ -21,6 +21,9 @@ public:
 
 private:
     QString errorMsg, errorTitle;
+
+    QString currentStaffFile;
+
     void setErrorInfo(const QString &msg, const QString &title);
 
     // json
