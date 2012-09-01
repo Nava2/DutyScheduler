@@ -2,6 +2,8 @@
 #define MAINWIDGET_H
 
 #include <QWidget>
+#include <QtGui>
+
 #include "staff.h"
 
 QT_BEGIN_NAMESPACE
@@ -69,7 +71,8 @@ private:
     void createNightClassGroupBox();
     // creates a subgroup bod for the Availability
     static
-    void createAvailabilitySubgroupBox(const int &index, QGridLayout *parentLayout, QDateEdit *dateEdit, QGroupBox *groupBox);
+    void fillAvailabilitySubgroupBox(const int &i, QGridLayout *parentLayout, const QList<QDateEdit *> &dateEdits, const QList<QGroupBox *> &groupBoxs);
+    void adjustAvailabilityRows(int count);
     void createAvailabilityGroupBox();
     void createExamScheduleGroupBox();
     void createStaffControls();
@@ -104,6 +107,7 @@ private:
 
     QGroupBox *availabilityGroupBox;
     QGridLayout *availabilitySubLayout;
+    QScrollArea *availabilityScrollArea;
     QList<QGroupBox *> arrayGroupBox;
     QList<QDateEdit *> arrayDateEdit;
     QPushButton *addAvailabilityRowButton;

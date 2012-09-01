@@ -1,5 +1,10 @@
 #include "staff.h"
 
+#include <QString>
+#include <QStringList>
+#include <QList>
+#include <QDateTime>
+
 staff::staff()
 {
     id = 127;
@@ -9,7 +14,6 @@ staff::staff()
     gender = false;
     nightClass = 0;
     exams = "";
-    availability = "";
     numShifts = 0;
     numWeekendShifts = 0;
     numAMShifts = 0;
@@ -24,7 +28,6 @@ staff::staff(int i, QString first, QString last, bool pos, bool gen, int night)
     gender = gen;
     nightClass = night;
     exams = "";
-    availability = "";
     numShifts = 0;
     numWeekendShifts = 0;
     numAMShifts = 0;
@@ -94,14 +97,44 @@ QString staff::getExams()
     return exams;
 }
 
-void staff::setAvailability(QString inp)
+void staff::setAvailability(const QList<QDate> &dtList)
 {
-   availability = inp;
+    availList.clear();
+
+    foreach(QDate dt, dtList) {
+        availList.append(dt);
+    }
 }
 
-QString staff::getAvailability()
+void staff::setAvailability(const QString &str) {
+    availList.clear();
+
+    QStringList dates = str.split(",", QString::SkipEmptyParts);
+    foreach (QString dt, dates) {
+        availList.append(QDate::fromString(dt, "dd/MM/yyyy"));
+    }
+}
+
+void staff::appendAvail(const QDate &dt) {
+    availList.append(dt);
+}
+
+void staff::removeAvail(const QDate &dt) {
+    availList.removeAll(dt);
+}
+
+QList<QDate> staff::getAvailability()
 {
-    return availability;
+    return availList;
+}
+
+QString staff::getAvailabilityStr() {
+    QString out("");
+    foreach (QDate dt, availList) {
+        out += dt.toString("dd/MM/yyyy") + ",";
+    }
+
+    return out;
 }
 
 void staff::addShift(bool weekend, bool isAM)

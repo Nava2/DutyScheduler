@@ -368,7 +368,7 @@ void MainWindow::saveStaffTeamFile(const QString &fileName)
            << QString(sList->at(t_ids[x])->getPosition()?"D":"R") << ","
            << QString(sList->at(t_ids[x])->getGender()?"M":"F") << ","
            << QString::number(sList->at(t_ids[x])->getNightClass()) << ","
-           << sList->at(t_ids[x])->getAvailability()
+           << sList->at(t_ids[x])->getAvailabilityStr()
            << sList->at(t_ids[x])->getExams() << endl;
     }
     ts << "[EXAMS]" << endl;

@@ -20,7 +20,8 @@ SOURCES += main.cpp \
     exam.cpp \
     myqlistwidget.cpp \
     myschedviewer.cpp \
-    myqlabel.cpp
+    myqlabel.cpp \
+    availabilitywidget.cpp
 
 HEADERS  += \
     staff.h \
@@ -32,4 +33,5 @@ HEADERS  += \
     exam.h \
     myqlistwidget.h \
     myschedviewer.h \
-    myqlabel.h
+    myqlabel.h \
+    availabilitywidget.h

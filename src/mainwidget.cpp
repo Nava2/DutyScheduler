@@ -1,4 +1,6 @@
 #include <QtGui>
+#include <QtGlobal>
+
 #include "mainwidget.h"
 
 mainWidget::mainWidget(QWidget *parent)
@@ -201,6 +203,19 @@ void mainWidget::clearSelections()
     examNightCheck->setChecked(false);
 }
 
+void mainWidget::adjustAvailabilityRows(int count) {
+    int num_slots = (count % 2 == 0) ? count : count + 1 ; // round up to even number
+
+    // adjust rows
+    while ( arrayGroupBox.size() < num_slots ) {
+        addAvailabilityRow();
+    }
+
+    while ( arrayGroupBox.size() > qMax(num_slots, 4) ) {
+        rmAvailabilityRow();
+    }
+}
+
 void mainWidget::updateSelections(QListWidgetItem * item)
 {
     clearSelections();
@@ -229,23 +244,25 @@ void mainWidget::updateSelections(QListWidgetItem * item)
 
     //Availability
 
-    QStringList avail = theTeam->at(id)->getAvailability().split(',',QString::SkipEmptyParts);
+    // QQQ
 
-    QDate d;
-    for(int y = 0; y<4; y++)
-    {
-        if (avail.isEmpty())
-        {
-            arrayGroupBox[y]->setChecked(false);
-        }
-        else
-        {
-            arrayGroupBox[y]->setChecked(true);
-            d = QDate::fromString(avail.takeFirst(),"dd/MM/yyyy");
-            arrayDateEdit[y]->setDate(d);
+    QList<QDate > avail = theTeam->at(id)->getAvailability();
+
+    int num_slots = (avail.size() % 2 == 0) ? avail.size() : avail.size() + 1; // round up to even number
+
+    adjustAvailabilityRows(num_slots);
+
+    for (int i = 0; i < qMax(4, num_slots); i++) {
+        if (i > num_slots || i >= avail.size()) {
+            // num_slots < 4 :(
+            arrayGroupBox[i]->setChecked(false);
+            arrayDateEdit[i]->setDate(QDate::currentDate());
+        } else {
+            // num_slots > 4 !
+            arrayGroupBox[i]->setChecked(true);
+            arrayDateEdit[i]->setDate(avail[i]);
         }
     }
-
 
     //EXAMS
     QString e = theTeam->at(id)->getExams();
@@ -308,6 +325,18 @@ void mainWidget::removeExam()
 
 void mainWidget::addAvailabilityRow() {
     qDebug() << "ADD AVAIL ROW";
+
+    for (int x = 0; x < 2; x++)
+    {
+        QDateEdit *de = new QDateEdit;
+        QGroupBox *gb = new QGroupBox;
+        arrayDateEdit.append(de);
+        arrayGroupBox.append(gb);
+    }
+
+    fillAvailabilitySubgroupBox(availabilitySubLayout, arrayDateEdit, arrayGroupBox);
+
+    availabilityScrollArea->setLayout(availabilitySubLayout);
 }
 
 void mainWidget::rmAvailabilityRow() {
@@ -418,7 +447,9 @@ void mainWidget::createNightClassGroupBox()
 
 }
 
-void mainWidget::createAvailabilitySubgroupBox(const int &index, QGridLayout *parentLayout, QDateEdit *dateEdit, QGroupBox *groupBox) {
+void mainWidget::fillAvailabilitySubgroupBox(const int &i, QGridLayout *parentLayout,
+                                               const QList<QDateEdit *> &dateEdits,
+                                               const QList<QGroupBox *> &groupBoxs) {
     dateEdit->setCalendarPopup(true);
     dateEdit->setDate(QDate::currentDate());
 
@@ -430,7 +461,8 @@ void mainWidget::createAvailabilitySubgroupBox(const int &index, QGridLayout *pa
     subLayout->addWidget(dateEdit);
     groupBox->setLayout(subLayout);
 
-    parentLayout->addWidget(groupBox,((index>>1) & 0x01), (index & 0x01)); // left is even, right is odd
+    parentLayout->addWidget(groupBox,((i>>1) & 0x01), (i & 0x01)); // left is even, right is odd
+    qDebug() << i << " : " << ((i >> 1) & 0x01) << " -- " << (i & 0x01);
 }
 
 void mainWidget::createAvailabilityGroupBox()
@@ -439,12 +471,14 @@ void mainWidget::createAvailabilityGroupBox()
 
     QGridLayout *topLayout = new QGridLayout;
 
-    QScrollArea *scroll = new QScrollArea;
+    availabilityScrollArea = new QScrollArea;
     availabilitySubLayout = new QGridLayout;
-    scroll->setLayout(availabilitySubLayout);
-    scroll->setStatusTip("These are the dates that the selected staff member is unavailable. ex. A wedding, academic commitment, etc.");
+    availabilityScrollArea->setLayout(availabilitySubLayout);
+    availabilityScrollArea->setStatusTip("These are the dates that the selected staff member is unavailable. ex. A wedding, academic commitment, etc.");
 
 
+    arrayGroupBox.clear();
+    arrayDateEdit.clear();
     for (int x = 0; x < 4; x++)
     {
         QDateEdit *de = new QDateEdit;
@@ -452,10 +486,12 @@ void mainWidget::createAvailabilityGroupBox()
         arrayDateEdit.append(de);
         arrayGroupBox.append(gb);
 
-        createAvailabilitySubgroupBox(x, availabilitySubLayout, de, gb);
+        fillAvailabilitySubgroupBox(x, availabilitySubLayout, arrayDateEdit, arrayGroupBox);
     }
 
-    topLayout->addWidget(scroll, 0, 0, 1, -1);
+
+
+    topLayout->addWidget(availabilityScrollArea, 0, 0, 1, -1);
 
     addAvailabilityRowButton = new QPushButton("+");
     addAvailabilityRowButton->setToolTip("Click to add a row to availability options.");
