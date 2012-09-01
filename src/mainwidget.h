@@ -5,6 +5,7 @@
 #include <QtGui>
 
 #include "staff.h"
+#include "availabilitywidget.h"
 
 QT_BEGIN_NAMESPACE
 class QCalendarWidget;
@@ -52,13 +53,9 @@ private slots:
     void addExam();
     void removeExam();
 
-    void addAvailabilityRow();
-    void rmAvailabilityRow();
+
 
 private:
-
-
-
     //DATA
     QList<exam*> *theExams;
     QList<staff*> *theTeam;
@@ -69,11 +66,6 @@ private:
     void createPositionGroupBox();
     void createGenderGroupBox();
     void createNightClassGroupBox();
-    // creates a subgroup bod for the Availability
-    static
-    void fillAvailabilitySubgroupBox(const int &i, QGridLayout *parentLayout, const QList<QDateEdit *> &dateEdits, const QList<QGroupBox *> &groupBoxs);
-    void adjustAvailabilityRows(int count);
-    void createAvailabilityGroupBox();
     void createExamScheduleGroupBox();
     void createStaffControls();
     void createNameGroupBox();
@@ -104,14 +96,7 @@ private:
     QGroupBox *nightClassGroupBox;
     QCheckBox *nightClassCheckBoxes[7];
 
-
-    QGroupBox *availabilityGroupBox;
-    QGridLayout *availabilitySubLayout;
-    QScrollArea *availabilityScrollArea;
-    QList<QGroupBox *> arrayGroupBox;
-    QList<QDateEdit *> arrayDateEdit;
-    QPushButton *addAvailabilityRowButton;
-    QPushButton *rmAvailabilityRowButton;
+    AvailabilityWidget *availWidget;
 
     QGroupBox *examScheduleGroupBox;
     QListWidget *examsList;
