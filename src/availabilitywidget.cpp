@@ -87,16 +87,16 @@ void AvailabilityWidget::setToAvail(const QList<QDate> &avail) {
 
     adjustRowCount(num_slots);
 
-    dayCount = 0;
-
     for (int i = 0; i < qMax(4, num_slots); i++) {
         if (i > num_slots || i >= avail.size()) {
             // num_slots < 4 :(
-            arrayGroupBox[i]->setChecked(false);
+            if (arrayGroupBox[i]->isChecked())
+                arrayGroupBox[i]->setChecked(false);
             arrayDateEdit[i]->setDate(QDate::currentDate());
         } else {
             // num_slots > 4 !
-            arrayGroupBox[i]->setChecked(true);
+            if (!arrayGroupBox[i]->isChecked())
+                arrayGroupBox[i]->setChecked(true);
             arrayDateEdit[i]->setDate(avail[i]);
         }
     }
@@ -118,8 +118,6 @@ QList<QDate > AvailabilityWidget::getAvail() {
 void AvailabilityWidget::reset() {
     // TODO Make this resort back to 4?
     adjustRowCount(4);
-
-    dayCount = 0;
 
     for(int y = 0; y < arrayGroupBox.size(); y++)
     {
@@ -160,10 +158,6 @@ void AvailabilityWidget::onGroupBoxChecked(bool on) {
 }
 
 void AvailabilityWidget::addRow() {
-    qDebug() << "ADD AVAIL ROW";
-
-//    internalLayout->setSizeConstraint(QLayout::SetNoConstraint);
-
     for (int x = 0; x < 2; x++)
     {
         QDateEdit *de = new QDateEdit;
@@ -181,8 +175,6 @@ void AvailabilityWidget::addRow() {
 }
 
 void AvailabilityWidget::removeRow() {
-    qDebug() << "RM AVAIL ROW";
-
     if (arrayGroupBox.size() <= 4) {
         qDebug() << "Cannot have less than 2 rows.";
         return;
