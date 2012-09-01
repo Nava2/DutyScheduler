@@ -54,7 +54,7 @@ bool IOHandler::loadStaffTeam(const QString &fileName, QList<staff*> &staffList,
     }
 
     if (result) {
-        currentStaffFile = file;
+        currentStaffFile = fileName;
     }
 
     return result;
@@ -223,7 +223,7 @@ bool IOHandler::loadStaffTeamFile(QFile &file, QList<staff *> &staffList, QList<
         }
     }
 
-    currentStaffFile = file;
+    currentStaffFile = file.fileName();
 
     return true;
 }
@@ -269,7 +269,7 @@ bool IOHandler::saveStaffTeamFile(QFile &file, const QList<staff *> &staffList, 
            << QString(t_staff->getPosition()?"D":"R") << ","
            << QString(t_staff->getGender()?"M":"F") << ","
            << QString::number(t_staff->getNightClass()) << ","
-           << t_staff->getAvailability()
+           << t_staff->getAvailabilityStr()
            << t_staff->getExams() << endl;
     }
 

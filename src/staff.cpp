@@ -44,7 +44,10 @@ staff::staff(const QVariantMap &json) {
     gender = json["gender"].toBool();
     nightClass = json["night"].toInt();
     exams = json["exams"].toString();
-    availability = json["availability"].toString();
+
+    foreach (QVariant qv, json["avail"].toList()) {
+        availList.append(qv.toDate());
+    }
 }
 
 staff::~staff()
@@ -60,7 +63,13 @@ void staff::toJson(QVariantMap &json) {
     json["gender"] = gender;
     json["night"] = nightClass;
     json["exams"] = exams;
-    json["availability"] = availability;
+
+    QVariantList list;
+    foreach (QDate d, availList) {
+        list.append(QVariant(d));
+    }
+
+    json["avail"] = list;
 }
 
 void staff::update(QString first, QString last, bool pos, bool gen, int night)

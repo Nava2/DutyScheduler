@@ -22,7 +22,7 @@ SOURCES += main.cpp \
     myschedviewer.cpp \
     myqlabel.cpp \
     json.cpp \
-    iohandler.cpp
+    iohandler.cpp \
     availabilitywidget.cpp
 
 HEADERS  += \
@@ -37,5 +37,5 @@ HEADERS  += \
     myschedviewer.h \
     myqlabel.h \
     json.h \
-    iohandler.h
+    iohandler.h \
     availabilitywidget.h
