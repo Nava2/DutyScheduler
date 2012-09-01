@@ -11,6 +11,7 @@
 #include <QGridLayout>
 #include <QScrollArea>
 #include <QPushButton>
+#include <QLabel>
 
 
 class AvailabilityWidget : public QGroupBox
@@ -20,7 +21,7 @@ public:
     explicit AvailabilityWidget(QWidget *parent = 0);
 
 
-    void fillAvailabilitySubgroupBox(const int &i, QGridLayout *parentLayout,
+    void buildSubgroupBox(const int &i, QGridLayout *parentLayout,
                                                    QDateEdit *dateEdit,
                                                    QGroupBox *groupBox);
 
@@ -36,8 +37,11 @@ signals:
 public slots:
     void addRow();
     void removeRow();
+    void onGroupBoxChecked(bool on);
 
 private:
+    void updateCountLabel();
+
     QGridLayout *topLayout;
     QGridLayout *internalLayout;
     QScrollArea *scrollArea;
@@ -45,10 +49,12 @@ private:
 
 
     int rowNum;
+    int dayCount;
     QList<QGroupBox *> arrayGroupBox;
     QList<QDateEdit *> arrayDateEdit;
     QPushButton *addRowButton;
     QPushButton *rmRowButton;
+    QLabel *countLabel;
     
 };
 

@@ -10,7 +10,7 @@
 #include <QString>
 
 AvailabilityWidget::AvailabilityWidget(QWidget *parent) :
-    QGroupBox(tr("Dates Unavailable"), parent), rowNum(0)
+    QGroupBox(tr("Dates Unavailable"), parent), rowNum(0), dayCount(0)
 {
     topLayout = new QGridLayout;
 
@@ -35,11 +35,13 @@ AvailabilityWidget::AvailabilityWidget(QWidget *parent) :
         arrayDateEdit.append(de);
         arrayGroupBox.append(gb);
 
-        fillAvailabilitySubgroupBox(x, internalLayout, de, gb);
+        buildSubgroupBox(x, internalLayout, de, gb);
         scrollFrame->adjustSize();
     }
 
     topLayout->addWidget(scrollArea, 0, 0, 1, -1);
+
+    countLabel = new QLabel("Count: 0");
 
     addRowButton = new QPushButton("+");
     addRowButton->setToolTip("Click to add a row to availability options.");
@@ -49,6 +51,7 @@ AvailabilityWidget::AvailabilityWidget(QWidget *parent) :
     connect(addRowButton, SIGNAL(clicked()), this, SLOT(addRow()));
     connect(rmRowButton, SIGNAL(clicked()), this, SLOT(removeRow()));
 
+    topLayout->addWidget(countLabel, 1, 0, 1, 1, Qt::AlignLeft);
     topLayout->addWidget(addRowButton, 1, 1, 1, 1);
     topLayout->addWidget(rmRowButton, 1, 2, 1, 1);
 
@@ -57,7 +60,7 @@ AvailabilityWidget::AvailabilityWidget(QWidget *parent) :
     rmRowButton->setEnabled(rowNum > 2);
 }
 
-void AvailabilityWidget::fillAvailabilitySubgroupBox(const int &i, QGridLayout *parentLayout,
+void AvailabilityWidget::buildSubgroupBox(const int &i, QGridLayout *parentLayout,
                                                QDateEdit *dateEdit,
                                                QGroupBox *groupBox) {
     dateEdit->setCalendarPopup(true);
@@ -68,6 +71,7 @@ void AvailabilityWidget::fillAvailabilitySubgroupBox(const int &i, QGridLayout *
     groupBox->setChecked(false);
     groupBox->setMinimumHeight(50);
     groupBox->setTitle(QString::number(i+1));
+    connect(groupBox, SIGNAL(toggled(bool)), this, SLOT(onGroupBoxChecked(bool)));
 
     QGridLayout *subLayout = new QGridLayout;
 
@@ -83,6 +87,8 @@ void AvailabilityWidget::setToAvail(const QList<QDate> &avail) {
 
     adjustRowCount(num_slots);
 
+    dayCount = 0;
+
     for (int i = 0; i < qMax(4, num_slots); i++) {
         if (i > num_slots || i >= avail.size()) {
             // num_slots < 4 :(
@@ -94,6 +100,8 @@ void AvailabilityWidget::setToAvail(const QList<QDate> &avail) {
             arrayDateEdit[i]->setDate(avail[i]);
         }
     }
+
+    updateCountLabel();
 }
 
 QList<QDate > AvailabilityWidget::getAvail() {
@@ -111,11 +119,15 @@ void AvailabilityWidget::reset() {
     // TODO Make this resort back to 4?
     adjustRowCount(4);
 
+    dayCount = 0;
+
     for(int y = 0; y < arrayGroupBox.size(); y++)
     {
         arrayDateEdit[y]->setDate(QDate::currentDate());
         arrayGroupBox[y]->setChecked(false);
     }
+
+    updateCountLabel();
 }
 
 void AvailabilityWidget::adjustRowCount(int count) {
@@ -129,6 +141,22 @@ void AvailabilityWidget::adjustRowCount(int count) {
     while ( arrayGroupBox.size() > qMax(num_slots, 4) ) {
         removeRow();
     }
+
+    updateCountLabel();
+}
+
+void AvailabilityWidget::updateCountLabel() {
+    countLabel->setText("Count: " + QString::number(dayCount));
+}
+
+void AvailabilityWidget::onGroupBoxChecked(bool on) {
+    if (on) {
+        dayCount++;
+    } else {
+        dayCount--;
+    }
+
+    updateCountLabel();
 }
 
 void AvailabilityWidget::addRow() {
@@ -143,7 +171,7 @@ void AvailabilityWidget::addRow() {
         arrayDateEdit.append(de);
         arrayGroupBox.append(gb);
 
-        fillAvailabilitySubgroupBox(rowNum*2+x, internalLayout, de, gb);
+        buildSubgroupBox(rowNum*2+x, internalLayout, de, gb);
         scrollFrame->adjustSize();
     }
 
@@ -169,6 +197,9 @@ void AvailabilityWidget::removeRow() {
         arrayGroupBox.removeLast();
         internalLayout->removeWidget(gb);
 
+        if (gb->isChecked())
+            dayCount--;
+
         // delete after so the removeWidget call isn't messed up
         delete de;
         delete gb;
@@ -177,4 +208,6 @@ void AvailabilityWidget::removeRow() {
     rowNum--;
 
     rmRowButton->setEnabled(rowNum > 2);
+
+    updateCountLabel();
 }

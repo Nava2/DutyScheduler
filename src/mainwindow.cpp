@@ -154,7 +154,8 @@ void MainWindow::newSchedule()
     msgBox2.setText("Select the staff team to use for your new schedule.");
     msgBox2.setStandardButtons(QMessageBox::Ok);
     msgBox2.setDefaultButton(QMessageBox::Ok);
-    int msgbox_ret2 = msgBox2.exec();
+//    int msgbox_ret2 =
+    msgBox2.exec();
 
     QString StaffTeamFilename = QFileDialog::getOpenFileName(this);
 
