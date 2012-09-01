@@ -53,6 +53,8 @@ AvailabilityWidget::AvailabilityWidget(QWidget *parent) :
     topLayout->addWidget(rmRowButton, 1, 2, 1, 1);
 
     setLayout(topLayout);
+
+    rmRowButton->setEnabled(rowNum > 2);
 }
 
 void AvailabilityWidget::fillAvailabilitySubgroupBox(const int &i, QGridLayout *parentLayout,
@@ -107,6 +109,8 @@ QList<QDate > AvailabilityWidget::getAvail() {
 
 void AvailabilityWidget::reset() {
     // TODO Make this resort back to 4?
+    adjustRowCount(4);
+
     for(int y = 0; y < arrayGroupBox.size(); y++)
     {
         arrayDateEdit[y]->setDate(QDate::currentDate());
@@ -144,8 +148,33 @@ void AvailabilityWidget::addRow() {
     }
 
     rowNum++;
+
+    rmRowButton->setEnabled(rowNum > 2);
 }
 
 void AvailabilityWidget::removeRow() {
     qDebug() << "RM AVAIL ROW";
+
+    if (arrayGroupBox.size() <= 4) {
+        qDebug() << "Cannot have less than 2 rows.";
+        return;
+    }
+
+    for (int i = 0; i < 2; i++) {
+        QDateEdit *de = arrayDateEdit.last();
+        arrayDateEdit.removeLast();
+
+
+        QGroupBox *gb = arrayGroupBox.last();
+        arrayGroupBox.removeLast();
+        internalLayout->removeWidget(gb);
+
+        // delete after so the removeWidget call isn't messed up
+        delete de;
+        delete gb;
+    }
+
+    rowNum--;
+
+    rmRowButton->setEnabled(rowNum > 2);
 }
