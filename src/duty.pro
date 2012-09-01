@@ -23,6 +23,7 @@ SOURCES += main.cpp \
     myqlabel.cpp \
     json.cpp \
     iohandler.cpp
+    availabilitywidget.cpp
 
 HEADERS  += \
     staff.h \
@@ -37,3 +38,4 @@ HEADERS  += \
     myqlabel.h \
     json.h \
     iohandler.h
+    availabilitywidget.h

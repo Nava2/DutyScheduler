@@ -3,6 +3,8 @@
 
 #include <QString>
 #include <QVariant>
+#include <QDate>
+
 #include "exam.h"
 
 class staff
@@ -24,7 +26,7 @@ public:
     bool getGender();
     int getNightClass();
     QString getExams();
-    QString getAvailability();
+
     int getShifts();
     int getWeekendShifts();
     int getAMShifts();
@@ -39,7 +41,14 @@ public:
     void setGender(bool);
     void setNightClass(int);
     void setExams(QString);
-    void setAvailability(QString);
+
+    void setAvailability(const QList<QDate> &dtList);
+    void setAvailability(const QString &);
+    QList<QDate> getAvailability();
+    QString getAvailabilityStr();
+    void appendAvail(const QDate &dt);
+    void removeAvail(const QDate &dt);
+
     void addShift(bool, bool);
     void removeShift(bool, bool);
 
@@ -53,7 +62,8 @@ private:
     bool gender;
     int nightClass;
     QString exams; // "(id),(id2),(id5),"
-    QString availability;// "dd/MM/yyyy,dd/MM/yyyy," etc
+//     QString availability;// "dd/MM/yyyy,dd/MM/yyyy," etc
+    QList<QDate > availList;
     int numShifts;
     int numWeekendShifts;
     int numAMShifts;

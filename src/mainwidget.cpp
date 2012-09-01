@@ -1,4 +1,6 @@
 #include <QtGui>
+#include <QtGlobal>
+
 #include "mainwidget.h"
 
 mainWidget::mainWidget(QWidget *parent)
@@ -66,14 +68,7 @@ void mainWidget::updateStaffMember()
     }
 
     //AVAILABILITY
-    QString a = "";
-    //add availability to the staff object
-    for (int y = 0; y<4; y++)
-    {
-        if (arrayGroupBox[y]->isChecked())
-            a += arrayDateEdit[y]->date().toString("dd/MM/yyyy,");
-
-    }
+    // done in one call later..
 
     //EXAMS
     QString e = "";
@@ -88,7 +83,7 @@ void mainWidget::updateStaffMember()
     int id = i->data(Qt::UserRole).toInt();//the list item's user data is the staff id
     i->setText(firstNameEdit->text() + " " + lastNameEdit->text()); //change the text in the list
     theTeam->at(id)->update(firstNameEdit->text().trimmed(),lastNameEdit->text().trimmed(),p,g,n); //change the actual staff object
-    theTeam->at(id)->setAvailability(a);// set the avail
+    theTeam->at(id)->setAvailability(availWidget->getAvail());// set the avail
     theTeam->at(id)->setExams(e);//set exams
     clearSelections();
 }
@@ -127,14 +122,7 @@ void mainWidget::addStaffMember()
     s = new staff(theTeam->size(),firstNameEdit->text().trimmed(),lastNameEdit->text().trimmed(),p,g,n);
 
     //AVAILABILITY
-    QString a = "";
-    for (int y = 0; y<4; y++)
-    {
-        if (arrayGroupBox[y]->isChecked())
-            a += arrayDateEdit[y]->date().toString("dd/MM/yyyy,");
-
-    }
-    s->setAvailability(a);
+    s->setAvailability(availWidget->getAvail());
 
     //EXAMS
     QString e = "";
@@ -190,11 +178,7 @@ void mainWidget::clearSelections()
     for(int x=0; x<7; x++)
         nightClassCheckBoxes[x]->setChecked(false);
 
-    for(int y=0; y<4; y++)
-    {
-        arrayDateEdit[y]->setDate(QDate::currentDate());
-        arrayGroupBox[y]->setChecked(false);
-    }
+    availWidget->reset();
 
     examsList->clear();
     examDateEdit->setDate(QDate::currentDate());
@@ -229,23 +213,11 @@ void mainWidget::updateSelections(QListWidgetItem * item)
 
     //Availability
 
-    QStringList avail = theTeam->at(id)->getAvailability().split(',',QString::SkipEmptyParts);
+    // QQQ
 
-    QDate d;
-    for(int y = 0; y<4; y++)
-    {
-        if (avail.isEmpty())
-        {
-            arrayGroupBox[y]->setChecked(false);
-        }
-        else
-        {
-            arrayGroupBox[y]->setChecked(true);
-            d = QDate::fromString(avail.takeFirst(),"dd/MM/yyyy");
-            arrayDateEdit[y]->setDate(d);
-        }
-    }
+    QList<QDate > avail = theTeam->at(id)->getAvailability();
 
+    availWidget->setToAvail(avail);
 
     //EXAMS
     QString e = theTeam->at(id)->getExams();
@@ -307,11 +279,6 @@ void mainWidget::removeExam()
 }
 
 
-
-
-
-
-
 // GUI STUFF
 void mainWidget::createStaffElements()
 {
@@ -319,7 +286,6 @@ void mainWidget::createStaffElements()
     createPositionGroupBox();
     createGenderGroupBox();
     createNightClassGroupBox();
-    createAvailabilityGroupBox();
     createExamScheduleGroupBox();
     createStaffControls();
     createNameGroupBox();
@@ -332,6 +298,9 @@ void mainWidget::createStaffElements()
     // connect so that when the user changes the selection in the list the right hand side updates.
     connect(staffTeamList,SIGNAL(itemClicked(QListWidgetItem*)),this,SLOT(updateSelections(QListWidgetItem*)));
 
+    // availability widget:
+    availWidget = new AvailabilityWidget;
+
     //set up the layout
     QGridLayout *layout = new QGridLayout;
     layout->addWidget(staffTeamList,0,0,6,1);
@@ -340,7 +309,7 @@ void mainWidget::createStaffElements()
     layout->addWidget(positionGroupBox,1,2,1,1);
     layout->addWidget(genderGroupBox,1,3,1,1);
     layout->addWidget(nightClassGroupBox,2,2,1,2);
-    layout->addWidget(availabilityGroupBox,3,2,1,2);
+    layout->addWidget(availWidget,3,2,1,2);
     layout->addWidget(examScheduleGroupBox,4,2,1,2);
     setLayout(layout);
 
@@ -410,35 +379,7 @@ void mainWidget::createNightClassGroupBox()
 
 }
 
-void mainWidget::createAvailabilityGroupBox()
-{
-    availabilityGroupBox = new QGroupBox(tr("Dates Unavailable"));
-    availabilityGroupBox->setStatusTip("These are the dates that the selected staff member is unavailable. ex. A wedding, academic commitment, etc.");
 
-    QGridLayout *availabilityLayout = new QGridLayout;
-    QGridLayout *subLayout;
-    for(int x = 0; x<4; x++)
-    {
-        arrayDateEdit[x] = new QDateEdit;
-        arrayGroupBox[x] = new QGroupBox;
-
-        arrayDateEdit[x]->setCalendarPopup(true);
-        arrayDateEdit[x]->setDate(QDate::currentDate());
-
-        arrayGroupBox[x]->setCheckable(true);
-        arrayGroupBox[x]->setChecked(false);
-
-        subLayout = new QGridLayout;
-
-        subLayout->addWidget(arrayDateEdit[x]);
-        arrayGroupBox[x]->setLayout(subLayout);
-
-        availabilityLayout->addWidget(arrayGroupBox[x],((x>>1) & 0x01), (x & 0x01));
-
-    }
-
-    availabilityGroupBox->setLayout(availabilityLayout);
-}
 
 void mainWidget::createExamScheduleGroupBox()
 {

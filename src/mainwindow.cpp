@@ -266,7 +266,8 @@ void MainWindow::newSchedule()
     msgBox2.setText("Select the staff team to use for your new schedule.");
     msgBox2.setStandardButtons(QMessageBox::Ok);
     msgBox2.setDefaultButton(QMessageBox::Ok);
-    int msgbox_ret2 = msgBox2.exec();
+//    int msgbox_ret2 =
+    msgBox2.exec();
 
     QString StaffTeamFilename = QFileDialog::getOpenFileName(this);
 
@@ -309,8 +310,5 @@ void MainWindow::about()
 {
     QMessageBox::about(this, "Duty Schedule Tool", "This tool is intended to assist with the process of creating a duty schedule. \n\nFor quick help, hover your mouse over a button or field that you are unsure about and a description will appear in the status bar at the bottom of the application.");
 }
-
-
-
 
 

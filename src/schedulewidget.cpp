@@ -1,4 +1,9 @@
 #include <QtGui>
+
+#include <QDateTime>
+#include <QList>
+#include <QString>
+
 #include "schedulewidget.h"
 
 
@@ -739,18 +744,14 @@ void scheduleWidget::prepInterface()
                     // unavailable on this night
                     nightClasses[y]->append(theTeam->at(x)->getId());
                 }
-                mask *= 2;
+                mask <<= 1;
             }
         }
 
-        // get the staff's four dates of availabillity
-        QString avail = theTeam->at(x)->getAvailability();
-        QStringList availList = avail.split(",",QString::SkipEmptyParts);
-        QDate date;
-        for (int z = 0; z < availList.size(); z++)
+        // get the staff's dates of availabillity
+        QList<QDate > availList = theTeam->at(x)->getAvailability();
+        foreach (QDate date, availList)
         {
-            date = date.fromString(availList.at(z),"dd/MM/yyyy");
-
             if(date.daysTo(*startDate) > 0 || date.daysTo(*endDate) < 0)
                 continue;
 

@@ -2,7 +2,10 @@
 #define MAINWIDGET_H
 
 #include <QWidget>
+#include <QtGui>
+
 #include "staff.h"
+#include "availabilitywidget.h"
 
 QT_BEGIN_NAMESPACE
 class QCalendarWidget;
@@ -51,10 +54,9 @@ private slots:
     void addExam();
     void removeExam();
 
+
+
 private:
-
-
-
     //DATA
     QList<exam*> *theExams;
     QList<staff*> *theTeam;
@@ -65,7 +67,6 @@ private:
     void createPositionGroupBox();
     void createGenderGroupBox();
     void createNightClassGroupBox();
-    void createAvailabilityGroupBox();
     void createExamScheduleGroupBox();
     void createStaffControls();
     void createNameGroupBox();
@@ -96,10 +97,7 @@ private:
     QGroupBox *nightClassGroupBox;
     QCheckBox *nightClassCheckBoxes[7];
 
-
-    QGroupBox *availabilityGroupBox;
-    QGroupBox *arrayGroupBox[4];
-    QDateEdit *arrayDateEdit[4];
+    AvailabilityWidget *availWidget;
 
     QGroupBox *examScheduleGroupBox;
     QListWidget *examsList;
