@@ -38,10 +38,13 @@ staff::staff(int i, QString first, QString last, bool pos, bool gen, int night)
 staff::staff(const QVariantMap &json) {
 
     id = json["id"].toInt();
-    firstName = json["first_name"].toString();
-    lastName = json["last_name"].toString();
-    position = json["position"].toBool();
-    gender = json["gender"].toBool();
+
+    QVariantMap name = json["name"].toMap();
+    firstName = name["f"].toString();
+    lastName = name["l"].toString();
+
+    position = json["pos"].toBool();
+    gender = json["gndr"].toBool();
     nightClass = json["night"].toInt();
     exams = json["exams"].toString();
 
@@ -57,10 +60,14 @@ staff::~staff()
 
 void staff::toJson(QVariantMap &json) {
     json["id"] = id;
-    json["first_name"] = firstName;
-    json["last_name"] = lastName;
-    json["position"] = position;
-    json["gender"] = gender;
+
+    QVariantMap name;
+    name["f"] = firstName;
+    name["l"] = lastName;
+    json["name"] = name;
+
+    json["pos"] = position;
+    json["gndr"] = gender;
     json["night"] = nightClass;
     json["exams"] = exams;
 
