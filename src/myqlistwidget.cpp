@@ -28,7 +28,7 @@ bool MyQListWidget::eventFilter(QObject *obj, QEvent *event)
             return false;
         }
 
-
+        return true;
     }
     else
         return QListWidget::eventFilter(obj, event);

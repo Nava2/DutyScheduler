@@ -39,11 +39,13 @@ void scheduleWizzard::createDatesGroupBox()
 
     startDateLabel = new QLabel("Start:");
     endDateLabel = new QLabel("End:");
-    startDateEdit = new QDateEdit();
-    endDateEdit = new QDateEdit();
+    startDateEdit = new QDateEdit;
+    endDateEdit = new QDateEdit;
 
     startDateEdit->setDate(QDate::currentDate());
+    startDateEdit->setCalendarPopup(true);
     endDateEdit->setDate(startDateEdit->date().addMonths(1));
+    endDateEdit->setCalendarPopup(true);
 
     QGridLayout *layout = new QGridLayout;
 

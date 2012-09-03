@@ -65,18 +65,16 @@ void AvailabilityWidget::buildSubgroupBox(const int &i, QGridLayout *parentLayou
                                                QGroupBox *groupBox) {
     dateEdit->setCalendarPopup(true);
     dateEdit->setDate(QDate::currentDate());
-    dateEdit->setMinimumHeight(30);
 
     groupBox->setCheckable(true);
     groupBox->setChecked(false);
-    groupBox->setMinimumHeight(50);
     groupBox->setTitle(QString::number(i+1));
     connect(groupBox, SIGNAL(toggled(bool)), this, SLOT(onGroupBoxChecked(bool)));
 
-    QGridLayout *subLayout = new QGridLayout;
+    QHBoxLayout *lay = new QHBoxLayout;
+    lay->addWidget(dateEdit);
 
-    subLayout->addWidget(dateEdit);
-    groupBox->setLayout(subLayout);
+    groupBox->setLayout(lay);
 
 //    parentLayout->addWidget(groupBox, ((i>>1) & 0x01), (i & 0x01)); // left is even, right is odd
     parentLayout->addWidget(groupBox, i / 2, i % 2);
