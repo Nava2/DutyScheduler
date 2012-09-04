@@ -27,10 +27,7 @@ bool MyQListWidget::eventFilter(QObject *obj, QEvent *event)
             emit rightClickSignal(mouseEvent->pos());
             return false;
         }
-
-        return true;
     }
-    else
-        return QListWidget::eventFilter(obj, event);
-}
 
+    return QListWidget::eventFilter(obj, event);
+}
