@@ -582,15 +582,16 @@ void ScheduleWidget::prepInterface()
     onDeckItems = new QList<QListWidgetItem*>;
     onDutyItems = new QList<QListWidgetItem*>;
 
-    foreach(Staff *pStaff, *theTeam) {
+    foreach (Staff *pStaff, *theTeam) {
         // make the ondeck list
         QListWidgetItem *item = new QListWidgetItem();
         item->setText(pStaff->getFirstName() + " " + pStaff->getLastName());
-        qDebug() << pStaff->getId() << ") " << item->text();
         item->setData(Qt::UserRole, pStaff->getId());
+
+        qDebug() << item->data(Qt::UserRole) << ")\t" << item->text();
+
         onDeckItems->append(item);
-        item->setHidden(false);
-        onDeckList->insertItem(0,item);
+        onDeckList->insertItem(0, item);
 
         // make the onduty list
         QListWidgetItem *item2 = new QListWidgetItem();
@@ -677,17 +678,13 @@ void ScheduleWidget::dateClicked(QDate dateSelected)
     currentDateLabel->setText(QDate::shortDayName(dateSelected.dayOfWeek()) + " " + QDate::shortMonthName(dateSelected.month()) + " " + QString::number(dateSelected.day()));
 
     int dateIndex = dateToIndex(dateSelected); // get the index of the date in "datesList"
-    int id;
-
-    QListWidgetItem *deckItem;
-    QListWidgetItem *dutyItem;
 
     for(int x = 0; x<theTeam->count(); x++)
     {
-        deckItem = onDeckItems->at(x);
-        dutyItem = onDutyItems->at(x);
+        QListWidgetItem *deckItem = onDeckItems->at(x);
+        QListWidgetItem *dutyItem = onDutyItems->at(x);
 
-        id = deckItem->data(Qt::UserRole).toInt();
+        int id = deckItem->data(Qt::UserRole).toInt();
         QFont font = dutyItem->font();
         //check who's on duty already
         if (datesList->at(dateIndex)->isOn(id))
@@ -701,21 +698,20 @@ void ScheduleWidget::dateClicked(QDate dateSelected)
 
             dutyItem->setHidden(false);
             deckItem->setHidden(true);
+        } else {
+            font.setBold(false);
+            dutyItem->setFont(font);
+            dutyItem->setHidden(true); //so this person is not onduty.
 
-            continue;
-        }
-        font.setBold(false);
-        dutyItem->setFont(font);
-        dutyItem->setHidden(true); //so this person is not onduty.
-
-        // check availabilities
-        if (nightClasses[dateSelected.dayOfWeek()-1]->contains(id) || datesList->at(dateIndex)->staffCantWork(id))
-        {
-            deckItem->setHidden(true);
-        }
-        else
-        {
-            deckItem->setHidden(false);
+            // check availabilities
+            if (nightClasses[dateSelected.dayOfWeek()-1]->contains(id) || datesList->at(dateIndex)->staffCantWork(id))
+            {
+                deckItem->setHidden(true);
+            }
+            else
+            {
+                deckItem->setHidden(false);
+            }
         }
     }
 
@@ -725,7 +721,6 @@ void ScheduleWidget::dateClicked(QDate dateSelected)
 
 void ScheduleWidget::addStaff(QListWidgetItem *item)
 {
-
     int staffId = onDeckList->currentItem()->data(Qt::UserRole).toInt();
     int dateIndex = dateToIndex(calendar->selectedDate());
     bool pos = theTeam->at(staffId)->getPosition();
