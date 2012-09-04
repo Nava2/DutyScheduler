@@ -29,19 +29,19 @@ class QSpinBox;
 class QVBodLayout;
 QT_END_NAMESPACE
 
-class mainWidget : public QWidget
+class MainWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    mainWidget(QWidget *parent = 0);
-    ~mainWidget();
+    MainWidget(QWidget *parent = 0);
+    ~MainWidget();
     void reset();
-    QList<staff*> * getStaff();
-    QList<exam*> * getExams();
+    QList<Staff*> * getStaff();
+    QList<Exam*> * getExams();
     QList<int> getTeamIDs();
     QString getTeam();
-    void load(QList<staff*> * staffList, QList<exam*> * examList);
+    void load(QList<Staff*> * staffList, QList<Exam*> * examList);
 
 
 private slots:
@@ -58,8 +58,8 @@ private slots:
 
 private:
     //DATA
-    QList<exam*> *theExams;
-    QList<staff*> *theTeam;
+    QList<Exam*> *theExams;
+    QList<Staff*> *theTeam;
 
     //GUI
     void createStaffElements();

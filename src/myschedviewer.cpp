@@ -1,6 +1,6 @@
 #include "myschedviewer.h"
 
-mySchedViewer::mySchedViewer(QString name, int staffId, QList<sDate*> *datesList, QWidget *parent) :
+mySchedViewer::mySchedViewer(QString name, int staffId, QList<SDate*> *datesList, QWidget *parent) :
     QDialog(parent)
 {
     setAttribute(Qt::WA_DeleteOnClose);

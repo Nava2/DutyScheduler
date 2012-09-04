@@ -5,14 +5,14 @@
 #include <QList>
 #include <QString>
 
-class sDate : public QObject
+class SDate : public QObject
 {
     Q_OBJECT
 
 public:
-    sDate();
-    sDate(QDate, int, int);
-    ~sDate();
+    SDate();
+    SDate(QDate, int, int);
+    ~SDate();
 
     QDate getDate();//return the date of this sDate
     bool isSpecial(); // is this special duty?

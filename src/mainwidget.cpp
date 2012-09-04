@@ -3,17 +3,17 @@
 
 #include "mainwidget.h"
 
-mainWidget::mainWidget(QWidget *parent)
+MainWidget::MainWidget(QWidget *parent)
     : QWidget(parent)
 {
-    theTeam = new QList<staff*>;
-    theExams = new QList<exam*>;
+    theTeam = new QList<Staff*>;
+    theExams = new QList<Exam*>;
     createStaffElements();
 }
 
-mainWidget::~mainWidget()
+MainWidget::~MainWidget()
 {
-    QList<staff*>::iterator it_s = theTeam->begin();
+    QList<Staff*>::iterator it_s = theTeam->begin();
     for(; it_s != theTeam->end(); )
     {
         delete *it_s;
@@ -21,7 +21,7 @@ mainWidget::~mainWidget()
     }
     delete theTeam;
 
-    QList<exam*>::iterator it_e = theExams->begin();
+    QList<Exam*>::iterator it_e = theExams->begin();
     for(; it_e != theExams->end(); )
     {
         delete *it_e;
@@ -38,7 +38,7 @@ mainWidget::~mainWidget()
 }
 
 //SLOTS
-void mainWidget::updateStaffMember()
+void MainWidget::updateStaffMember()
 {
     if(firstNameEdit->text() == "" || lastNameEdit->text() == "")
         return;
@@ -88,7 +88,7 @@ void mainWidget::updateStaffMember()
     clearSelections();
 }
 
-void mainWidget::addStaffMember()
+void MainWidget::addStaffMember()
 {
     if(firstNameEdit->text() == "" || lastNameEdit->text() == "")
         return;
@@ -118,8 +118,8 @@ void mainWidget::addStaffMember()
     }
 
     // MAKE THE STAFF
-    staff *s;//make a staff member pointer
-    s = new staff(theTeam->size(),firstNameEdit->text().trimmed(),lastNameEdit->text().trimmed(),p,g,n);
+    Staff *s;//make a staff member pointer
+    s = new Staff(theTeam->size(),firstNameEdit->text().trimmed(),lastNameEdit->text().trimmed(),p,g,n);
 
     //AVAILABILITY
     s->setAvailability(availWidget->getAvail());
@@ -149,7 +149,7 @@ void mainWidget::addStaffMember()
     clearSelections();
 }
 
-void mainWidget::removeStaffMember()
+void MainWidget::removeStaffMember()
 {
     QMessageBox msgBox;
     msgBox.setText("Are you sure?");
@@ -166,7 +166,7 @@ void mainWidget::removeStaffMember()
     delete i;
 }
 
-void mainWidget::clearSelections()
+void MainWidget::clearSelections()
 {
     firstNameEdit->setText("");
     lastNameEdit->setText("");
@@ -185,7 +185,7 @@ void mainWidget::clearSelections()
     examNightCheck->setChecked(false);
 }
 
-void mainWidget::updateSelections(QListWidgetItem * item)
+void MainWidget::updateSelections(QListWidgetItem * item)
 {
     clearSelections();
     //get the id of the selected staff member
@@ -253,9 +253,9 @@ void mainWidget::updateSelections(QListWidgetItem * item)
 
 }
 
-void mainWidget::addExam()
+void MainWidget::addExam()
 {
-    exam *e = new exam(theExams->count(),examDateEdit->date().toString("dd/MM/yyyy"),examNightCheck->isChecked());
+    Exam *e = new Exam(theExams->count(),examDateEdit->date().toString("dd/MM/yyyy"),examNightCheck->isChecked());
 
     QListWidgetItem *item = new QListWidgetItem();
 
@@ -271,7 +271,7 @@ void mainWidget::addExam()
 
 }
 
-void mainWidget::removeExam()
+void MainWidget::removeExam()
 {
     QListWidgetItem *i;
     i = examsList->takeItem(examsList->currentRow());
@@ -280,7 +280,7 @@ void mainWidget::removeExam()
 
 
 // GUI STUFF
-void mainWidget::createStaffElements()
+void MainWidget::createStaffElements()
 {
     // call the functions to set up all our widgets
     createPositionGroupBox();
@@ -316,7 +316,7 @@ void mainWidget::createStaffElements()
     setWindowTitle("Duty Schedule Creation Aid");
 }
 
-void mainWidget::createNameGroupBox()
+void MainWidget::createNameGroupBox()
 {
     nameGroupBox = new QGroupBox;
     firstNameLabel = new QLabel("First Name:");
@@ -334,7 +334,7 @@ void mainWidget::createNameGroupBox()
     nameGroupBox->setLayout(layout);
 }
 
-void mainWidget::createPositionGroupBox()
+void MainWidget::createPositionGroupBox()
 {
     positionGroupBox = new QGroupBox(tr("Position"));
     donRadio = new QRadioButton("Don");
@@ -348,7 +348,7 @@ void mainWidget::createPositionGroupBox()
     positionGroupBox->setLayout(positionLayout);
 }
 
-void mainWidget::createGenderGroupBox()
+void MainWidget::createGenderGroupBox()
 {
     genderGroupBox = new QGroupBox(tr("Gender"));
     maleRadio = new QRadioButton(tr("male"));
@@ -362,7 +362,7 @@ void mainWidget::createGenderGroupBox()
     genderGroupBox->setLayout(genderLayout);
 }
 
-void mainWidget::createNightClassGroupBox()
+void MainWidget::createNightClassGroupBox()
 {
 
     nightClassGroupBox = new QGroupBox(tr("Night Class"));
@@ -381,7 +381,7 @@ void mainWidget::createNightClassGroupBox()
 
 
 
-void mainWidget::createExamScheduleGroupBox()
+void MainWidget::createExamScheduleGroupBox()
 {
     examScheduleGroupBox = new QGroupBox(tr("Exams"));
     examsList = new QListWidget;
@@ -408,7 +408,7 @@ void mainWidget::createExamScheduleGroupBox()
     examScheduleGroupBox->setLayout(layout);
 }
 
-void mainWidget::createStaffControls()
+void MainWidget::createStaffControls()
 {
     controlsGroupBox = new QGroupBox();
 
@@ -437,18 +437,18 @@ void mainWidget::createStaffControls()
 
 
 // GETTERS/SETTERS for staff and exams
-void mainWidget::reset()
+void MainWidget::reset()
 {
 
 
-    QList<staff *>::iterator it_s = theTeam->begin();
+    QList<Staff *>::iterator it_s = theTeam->begin();
     for(; it_s != theTeam->end(); )
     {
         delete *it_s;
         it_s = theTeam->erase(it_s);
     }
 
-    QList<exam *>::iterator it_e = theExams->begin();
+    QList<Exam *>::iterator it_e = theExams->begin();
     for(; it_e != theExams->end(); )
     {
         delete *it_e;
@@ -459,8 +459,8 @@ void mainWidget::reset()
     delete theTeam;
     delete theExams;
 
-    theTeam = new QList<staff*>;
-    theExams = new QList<exam*>;
+    theTeam = new QList<Staff*>;
+    theExams = new QList<Exam*>;
 
 
     staffTeamList->clear();
@@ -468,17 +468,17 @@ void mainWidget::reset()
     examsList->clear();
 }
 
-QList<staff*> * mainWidget::getStaff()
+QList<Staff*> * MainWidget::getStaff()
 {
     return theTeam;
 }
 
-QList<exam*> * mainWidget::getExams()
+QList<Exam*> * MainWidget::getExams()
 {
     return theExams;
 }
 
-QList<int> mainWidget::getTeamIDs() {
+QList<int> MainWidget::getTeamIDs() {
     QList<int> out;
 
     for (int i = 0; i < staffTeamList->count(); i++) {
@@ -488,7 +488,7 @@ QList<int> mainWidget::getTeamIDs() {
     return out;
 }
 
-QString mainWidget::getTeam()
+QString MainWidget::getTeam()
 {
     QString teamList = "";
 
@@ -502,7 +502,7 @@ QString mainWidget::getTeam()
     return teamList;
 }
 
-void mainWidget::load(QList<staff*> *staffList, QList<exam*> *examList)
+void MainWidget::load(QList<Staff*> *staffList, QList<Exam*> *examList)
 {
     theTeam = staffList;
     theExams = examList;

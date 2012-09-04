@@ -7,14 +7,14 @@
 
 #include "exam.h"
 
-class staff
+class Staff
 {
 
 public:
-    staff();
-    staff(int, QString, QString, bool, bool, int);
-    staff(const QVariantMap &);
-    ~staff();
+    Staff();
+    Staff(int, QString, QString, bool, bool, int);
+    Staff(const QVariantMap &);
+    ~Staff();
 
     void toJson(QVariantMap &);
 

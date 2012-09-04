@@ -4,13 +4,13 @@
 #include <QString>
 #include <QVariantMap>
 
-class exam
+class Exam
 {
 public:
-    exam();
-    exam(int, QString, bool);
+    Exam();
+    Exam(int, QString, bool);
 
-    exam(const QVariantMap &);
+    Exam(const QVariantMap &);
     void toJson(QVariantMap &);
 
     void setDate(QString);

@@ -11,6 +11,9 @@
 #include "myqlistwidget.h"
 #include "myschedviewer.h"
 
+#include "iohandler.h"
+#include "schedulewizzard.h"
+
 
 QT_BEGIN_NAMESPACE
 class QCalendarWidget;
@@ -32,17 +35,17 @@ class QFile;
 QT_END_NAMESPACE
 
 
-class scheduleWidget : public QWidget
+class ScheduleWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    scheduleWidget(QWidget *parent = 0);
-    scheduleWidget(QString, QString, QWidget *parent = 0);
+    ScheduleWidget(QWidget *parent = 0);
+    ScheduleWidget(QString staffteamfilename, const ScheduleWizzard &swiz, QWidget *parent = NULL);
     void saveMidSchedule(QString);
-    scheduleWidget(QString, QWidget *parent = 0);
+    ScheduleWidget(QString, QWidget *parent = 0);
 
-    ~scheduleWidget();
+    ~ScheduleWidget();
 
 private slots:
     void dateClicked(QDate);
@@ -71,7 +74,7 @@ private:
     void prepInterface();
 
     void updateNeeded();
-    int dateToIndex(QDate);
+    int dateToIndex(const QDate &);
 
     void setAsAM(int);
     void addStaff(int);
@@ -114,21 +117,23 @@ private:
     MyQListWidget *onDeckList;
     MyQListWidget *onDutyList;
 
-    QList<staff*> *theTeam;
-    QList<exam*> *theExams;
+    QList<Staff*> *theTeam;
+    QList<Exam*> *theExams;
 
-    QDate *startDate;
-    QDate *endDate;
+    QDate startDate;
+    QDate endDate;
 
-    int donsNeeded[7];
-    int rasNeeded[7];
+    QList<int > donsNeeded;
+    QList<int > rasNeeded;
+
+    IOHandler *iohandle;
 
     bool examSchedule;
 
     QList<int> * nightClasses[7]; // each list contains the id's of the staff who can't work that night. Mon = 0
     QList<QListWidgetItem*> * onDeckItems; // this contains a CONSTANT source of list widget items, one for each staff.
     QList<QListWidgetItem*> * onDutyItems;
-    QList<sDate*> * datesList;
+    QList<SDate*> * datesList;
 
     QAction *setAsAMAction;
 

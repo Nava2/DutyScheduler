@@ -4,59 +4,50 @@
 #include <QList>
 #include <QString>
 
+
+#include "schedulewizzard.h"
 #include "schedulewidget.h"
 
 
 
-scheduleWidget::scheduleWidget(QWidget *parent)
+ScheduleWidget::ScheduleWidget(QWidget *parent)
     : QWidget(parent)
 {
 
 
 }
 
-scheduleWidget::scheduleWidget(QString input, QString staffteamfilename, QWidget *parent)
+ScheduleWidget::ScheduleWidget(QString staffteamfilename, const ScheduleWizzard &swiz, QWidget *parent)
     : QWidget(parent)
 {
-    QStringList inp = input.split(",",QString::SkipEmptyParts);
-
-    if (inp.at(2) == "Y")
-        examSchedule = true;
-    else
-        examSchedule = false;
-
-    startDate = new QDate();
-    endDate = new QDate();
-
-    *startDate = QDate::fromString(inp.at(0),"dd/MM/yyyy");
-    *endDate = QDate::fromString(inp.at(1),"dd/MM/yyyy");
-
-    for (int x = 0; x<7; x++)
-    {
-        donsNeeded[x] = inp.at(x+3).toInt();
-        rasNeeded[x] = inp.at(x+10).toInt();
-    }
+    // read from the wizzard
+    examSchedule = swiz.isExamSchedule();
+    swiz.getDates(startDate, endDate);
+    swiz.getWeeklyValues(donsNeeded, rasNeeded);
 
     // create list of dates
-    datesList = new QList<sDate*>;
+    datesList = new QList<SDate*>;
+
+    // io handler
+    iohandle = new IOHandler;
 
     QDate dateCounter;
-    sDate *sDateIterator;
-    dateCounter.setDate(startDate->year(),startDate->month(),startDate->day());
-    int length = startDate->daysTo(*endDate) + 1;
+    SDate *sDateIterator;
+    dateCounter.setDate(startDate.year(), startDate.month(), startDate.day());
+
+    int length = startDate.daysTo(endDate) + 1;
 
     for(int z = 0; z<length; z++)
     {
         if(examSchedule)
-            sDateIterator = new sDate(dateCounter,theTeam->count(),theTeam->count());
+            sDateIterator = new SDate(dateCounter,theTeam->count(),theTeam->count());
         else
-            sDateIterator = new sDate(dateCounter,donsNeeded[dateCounter.dayOfWeek()-1],rasNeeded[dateCounter.dayOfWeek()-1]);
+            sDateIterator = new SDate(dateCounter, donsNeeded[dateCounter.dayOfWeek()-1], rasNeeded[dateCounter.dayOfWeek()-1]);
 
 
         datesList->append(sDateIterator);
         dateCounter = dateCounter.addDays(1);
     }
-
 
     //create the night class lists
     for(int q = 0; q<7; q++)
@@ -71,7 +62,7 @@ scheduleWidget::scheduleWidget(QString input, QString staffteamfilename, QWidget
 
 }
 
-scheduleWidget::scheduleWidget(QString fileName, QWidget *parent) // this constructor is used by LoadSchedule
+ScheduleWidget::ScheduleWidget(QString fileName, QWidget *parent) // this constructor is used by LoadSchedule
     : QWidget(parent)
 {
     QFile file(fileName);
@@ -87,14 +78,12 @@ scheduleWidget::scheduleWidget(QString fileName, QWidget *parent) // this constr
 
     QDate date = QDate::fromString(inp.at(1),"dd/MM/yyyy");
 
-    startDate = new QDate();
-    startDate->setDate(date.year(),date.month(),date.day());
+    startDate.setDate(date.year(),date.month(),date.day());
 
     inp = ts.readLine().split(":",QString::SkipEmptyParts);                 //get end date
 
     date = QDate::fromString(inp.at(1),"dd/MM/yyyy");
-    endDate = new QDate();
-    endDate->setDate(date.year(),date.month(),date.day());
+    endDate.setDate(date.year(),date.month(),date.day());
 
     inp = ts.readLine().split(":",QString::SkipEmptyParts);                 //get staff req for each night
     for(int x = 0; x < 7; x++)
@@ -121,14 +110,14 @@ scheduleWidget::scheduleWidget(QString fileName, QWidget *parent) // this constr
     }
 
 
-    theTeam = new QList<staff*>;                                            //get staff
+    theTeam = new QList<Staff*>;                                            //get staff
     inp = ts.readLine().split(":",QString::SkipEmptyParts);
     int count = inp.at(1).toInt();
 
     for(int x = 0; x < count; x++)
     {
         inp = ts.readLine().split(":",QString::SkipEmptyParts);
-        staff *st = new staff();
+        Staff *st = new Staff();
 
         st->setId(inp.at(0).toInt());
         st->setFirstName(inp.at(1));
@@ -142,15 +131,15 @@ scheduleWidget::scheduleWidget(QString fileName, QWidget *parent) // this constr
         theTeam->append(st);
     }
 
-    datesList = new QList<sDate*>;                                          //make the sdate objects
+    datesList = new QList<SDate*>;                                          //make the sdate objects
     QDate dateCounter;
-    sDate *sDateIterator;
-    dateCounter.setDate(startDate->year(),startDate->month(),startDate->day());
-    int length = startDate->daysTo(*endDate) + 1;
+    SDate *sDateIterator;
+    dateCounter.setDate(startDate.year(), startDate.month(), startDate.day());
+    int length = startDate.daysTo(endDate) + 1;
 
     for(int z = 0; z<length; z++)
     {
-        sDateIterator = new sDate(dateCounter,donsNeeded[dateCounter.dayOfWeek()-1],rasNeeded[dateCounter.dayOfWeek()-1]);
+        sDateIterator = new SDate(dateCounter, donsNeeded[dateCounter.dayOfWeek()-1], rasNeeded[dateCounter.dayOfWeek()-1]);
         datesList->append(sDateIterator);
         dateCounter = dateCounter.addDays(1);
     }
@@ -205,6 +194,7 @@ scheduleWidget::scheduleWidget(QString fileName, QWidget *parent) // this constr
         onDeckItems->append(item);
         onDeckList->insertItem(0,item);
 
+
         // make the onduty list
         QListWidgetItem *item2 = new QListWidgetItem();
         item2->setText(theTeam->at(x)->getFirstName() + " " + theTeam->at(x)->getLastName());
@@ -234,12 +224,13 @@ scheduleWidget::scheduleWidget(QString fileName, QWidget *parent) // this constr
             calendar->setDateTextFormat(datesList->at(x)->getDate(),format);
         }
     }
-    dateClicked(*startDate);
+
+    dateClicked(startDate);
     updateStats();
 
 }
 
-scheduleWidget::~scheduleWidget()
+ScheduleWidget::~ScheduleWidget()
 {
 
     QList<QTableWidgetItem*>::iterator it_i = statsTableItems->begin();
@@ -252,7 +243,7 @@ scheduleWidget::~scheduleWidget()
     delete statsTableItems;
 
 
-    QList<staff*>::iterator it_s = theTeam->begin();
+    QList<Staff*>::iterator it_s = theTeam->begin();
     for(; it_s != theTeam->end(); )
     {
         delete *it_s;
@@ -260,16 +251,13 @@ scheduleWidget::~scheduleWidget()
     }
     delete theTeam;
 
-    QList<exam*>::iterator it_e = theExams->begin();
+    QList<Exam*>::iterator it_e = theExams->begin();
     for(; it_e != theExams->end(); )
     {
         delete *it_e;
         it_e = theExams->erase(it_e);
     }
     delete theExams;
-
-    delete startDate;
-    delete endDate;
 
     for(int x = 0; x < 7; x++)
     {
@@ -295,7 +283,7 @@ scheduleWidget::~scheduleWidget()
     delete onDutyItems;
 
 
-    QList<sDate*>::iterator it_d = datesList->begin();
+    QList<SDate*>::iterator it_d = datesList->begin();
     for(; it_d != datesList->end();)
     {
         delete *it_d;
@@ -312,9 +300,8 @@ scheduleWidget::~scheduleWidget()
 
 }
 
-void scheduleWidget::createScheduleGroupBox()
+void ScheduleWidget::createScheduleGroupBox()
 {
-
     createScheduleControls();
     createScheduleStats();
     createCalendar();
@@ -331,7 +318,7 @@ void scheduleWidget::createScheduleGroupBox()
     setWindowTitle("Schedule Tool");
 }
 
-void scheduleWidget::createScheduleControls()
+void ScheduleWidget::createScheduleControls()
 {
     copyList = new QList<int>;
     copyAM = 999;
@@ -342,7 +329,7 @@ void scheduleWidget::createScheduleControls()
     spDutyFlagButton = new QPushButton("Set date as Special Duty");
     copyButton = new QPushButton("Copy On Duty");
     pasteButton = new QPushButton("Paste On Duty");
-    currentDateLabel = new QLabel(QDate::shortDayName(startDate->dayOfWeek()) + " " + QDate::shortMonthName(startDate->month()) + " " + QString::number(startDate->day()));
+    currentDateLabel = new QLabel(QDate::shortDayName(startDate.dayOfWeek()) + " " + QDate::shortMonthName(startDate.month()) + " " + QString::number(startDate.day()));
     currentDateLabelFIXED = new QLabel("Current Date:");
     donsNeededLabelFIXED = new QLabel("Don-ons needed:");
     rasNeededLabelFIXED = new QLabel("RAs needed :");
@@ -380,7 +367,7 @@ void scheduleWidget::createScheduleControls()
     scheduleControls->setLayout(layout);
 }
 
-void scheduleWidget::createScheduleStats()
+void ScheduleWidget::createScheduleStats()
 {
 
     scheduleStatsGroupBox = new QGroupBox("Stats");
@@ -509,11 +496,11 @@ void scheduleWidget::createScheduleStats()
 
 }
 
-void scheduleWidget::createCalendar()
+void ScheduleWidget::createCalendar()
 {
     calendar = new QCalendarWidget;
-    calendar->setMinimumDate(*startDate);
-    calendar->setMaximumDate(*endDate);
+    calendar->setMinimumDate(startDate);
+    calendar->setMaximumDate(endDate);
     calendar->setFirstDayOfWeek(Qt::Monday);
     calendar->setVerticalHeaderFormat(QCalendarWidget::NoVerticalHeader);
     calendar->setGridVisible(true);
@@ -527,7 +514,7 @@ void scheduleWidget::createCalendar()
     connect(calendar,SIGNAL(clicked(QDate)),this,SLOT(dateClicked(QDate)));
 }
 
-void scheduleWidget::createLists()
+void ScheduleWidget::createLists()
 {
 
     OnDeckGroupBox = new QGroupBox("On Deck");
@@ -567,7 +554,7 @@ void scheduleWidget::createLists()
 }
 
 
-void scheduleWidget::loadStaffTeamData(QString filename)
+void ScheduleWidget::loadStaffTeamData(QString filename)
 {
     QFile file(filename);
     if (!file.open(QFile::ReadOnly | QFile::Text))
@@ -576,156 +563,44 @@ void scheduleWidget::loadStaffTeamData(QString filename)
         return;
     }
 
-    theTeam = new QList<staff*>;
-    theExams = new QList<exam*>;
+    theTeam = new QList<Staff*>;
+    theExams = new QList<Exam*>;
 
-    QTextStream ts(&file);
+    bool ok = iohandle->loadStaffTeam(filename, *theTeam, *theExams);
 
-    QString currentLine = "";
-
-    QStringList current_Line;
-
-    //IMPORT STAFF MEMBERS
-    int id = 999;
-    QString first = "";
-    QString last = "";
-    bool pos = false;
-    bool gen = false;
-    int night = 0;
-    QString avail = "";
-    QString exams = "";
-
-    //IMPORT EXAMS
-    QString date = "";
-    bool e_night = false;
-
-
-    bool ExamsFlag = false;//this flag tells us where we are in the text file.
-
-    while(!ts.atEnd())
-    {
-        currentLine = ts.readLine();
-
-        if (ts.atEnd())
-            break;
-
-        if (currentLine == "[STAFF]")
-            continue;
-
-        if (currentLine == "[EXAMS]")
-        {
-            ExamsFlag = true;
-            continue;
-        }
-
-        //split the input line into an array of strings
-        current_Line = currentLine.split(",", QString::SkipEmptyParts);
-
-        staff *s;
-        exam *e;
-
-        if(!ExamsFlag)//looking at staff data
-        {
-            avail = "";
-            exams = "";
-
-            if(current_Line.count() < 6)
-            {
-                QMessageBox::warning(this,"ERROR", "ERROR: BAD INPUT FILE. PLEASE RESTART THE PROGRAM.");
-                return;
-            }
-
-            id = current_Line.at(0).toInt();
-            first = current_Line.at(1);
-            last = current_Line.at(2);
-
-            if (current_Line.at(3) == "D")
-                pos = true;
-            else
-                pos = false;
-
-            if (current_Line.at(4) == "M")
-                gen = true;
-            else
-                gen = false;
-
-            night = current_Line.at(5).toInt();
-
-            int y = 6;
-            bool flag = true;
-
-            while(flag)
-            {
-
-                if (y >= current_Line.size())
-                {
-                    flag = false;
-                }
-                else if(current_Line.at(y).startsWith("("))
-                {
-                    exams += current_Line.at(y) + ",";
-                }
-                else
-                {
-                    avail += current_Line.at(y) + ",";
-                }
-
-                y++;
-            }
-
-            s = new staff(id,first,last,pos,gen,night);
-            s->setAvailability(avail);
-            s->setExams(exams);
-
-            theTeam->append(s);
-        }
-        else if(examSchedule) // we are now looking at exam data
-        {
-            if(current_Line.count() != 3)
-            {
-                QMessageBox::warning(this,"ERROR", "ERROR: BAD INPUT FILE. PLEASE RESTART THE PROGRAM.");
-                return;
-            }
-
-            id = current_Line.at(0).toInt();
-            date = current_Line.at(1);
-
-            if (current_Line.at(2) == "1")
-                e_night = true;
-            else
-                e_night = false;
-
-            e = new exam(id,date,e_night);
-
-            theExams->append(e);
-        }
+    if (!ok) {
+        QString title, msg;
+        iohandle->getErrorInfo(title, msg);
+        QMessageBox::warning(this, title, msg);
+        return;
     }
 }
 
-void scheduleWidget::prepInterface()
+void ScheduleWidget::prepInterface()
 {
 
     onDeckItems = new QList<QListWidgetItem*>;
     onDutyItems = new QList<QListWidgetItem*>;
 
-    for(int x = 0; x < theTeam->count(); x++)
-    {
+    foreach(Staff *pStaff, *theTeam) {
         // make the ondeck list
         QListWidgetItem *item = new QListWidgetItem();
-        item->setText(theTeam->at(x)->getFirstName() + " " + theTeam->at(x)->getLastName());
-        item->setData(Qt::UserRole,theTeam->at(x)->getId());
+        item->setText(pStaff->getFirstName() + " " + pStaff->getLastName());
+        qDebug() << pStaff->getId() << ") " << item->text();
+        item->setData(Qt::UserRole, pStaff->getId());
         onDeckItems->append(item);
+        item->setHidden(false);
         onDeckList->insertItem(0,item);
 
         // make the onduty list
         QListWidgetItem *item2 = new QListWidgetItem();
-        item2->setText(theTeam->at(x)->getFirstName() + " " + theTeam->at(x)->getLastName());
-        item2->setData(Qt::UserRole,theTeam->at(x)->getId());
+        item2->setText(pStaff->getFirstName() + " " + pStaff->getLastName());
+        item2->setData(Qt::UserRole, pStaff->getId());
         onDutyItems->append(item2);
         onDutyList->insertItem(0,item2);
         item2->setHidden(true);
 
-        if(theTeam->at(x)->getPosition())
+        if(pStaff->getPosition())
         {
             item->setBackgroundColor(QColor(255,0,0,127));
             item2->setBackgroundColor(QColor(255,0,0,127));
@@ -735,34 +610,34 @@ void scheduleWidget::prepInterface()
         // get the staff's night class availability
         if(!examSchedule)
         {
-            int nights = theTeam->at(x)->getNightClass();
+            int nights = pStaff->getNightClass();
             int mask = 0x01;
             for (int y = 0; y<7; y++)
             {
                 if(nights & mask)
                 {   // add this staff member to the list of who's
                     // unavailable on this night
-                    nightClasses[y]->append(theTeam->at(x)->getId());
+                    nightClasses[y]->append(pStaff->getId());
                 }
                 mask <<= 1;
             }
         }
 
         // get the staff's dates of availabillity
-        QList<QDate > availList = theTeam->at(x)->getAvailability();
+        QList<QDate > availList = pStaff->getAvailability();
         foreach (QDate date, availList)
         {
-            if(date.daysTo(*startDate) > 0 || date.daysTo(*endDate) < 0)
+            if(date.daysTo(startDate) > 0 || date.daysTo(endDate) < 0)
                 continue;
 
             int index = dateToIndex(date);
 
-            datesList->at(index)->addCantWork(theTeam->at(x)->getId());
+            datesList->at(index)->addCantWork(pStaff->getId());
         }
 
         if(examSchedule)
         {
-            QStringList list = theTeam->at(x)->getExams().split(",",QString::SkipEmptyParts);
+            QStringList list = pStaff->getExams().split(",",QString::SkipEmptyParts);
 
             for(int p = 0; p < list.count(); p++)
             {
@@ -775,29 +650,29 @@ void scheduleWidget::prepInterface()
                 QDate date;
                 date = QDate::fromString(theExams->at(id)->getDate(),"dd/MM/yyyy");
 
-                if(date.daysTo(*startDate) > 0 || date.daysTo(*endDate) < 0)
+                if(date.daysTo(startDate) > 0 || date.daysTo(endDate) < 0)
                     continue;
 
                 int dateIndex = dateToIndex(date);
 
                 if(theExams->at(id)->getNight())
-                    datesList->at(dateIndex)->addCantWork(theTeam->at(x)->getId());
+                    datesList->at(dateIndex)->addCantWork(pStaff->getId());
 
                 if(dateIndex != 0)
-                    datesList->at(dateIndex-1)->addCantWork(theTeam->at(x)->getId());
+                    datesList->at(dateIndex-1)->addCantWork(pStaff->getId());
 
             }
         }
     }
 }
 
-int scheduleWidget::dateToIndex(QDate date)
+int ScheduleWidget::dateToIndex(const QDate &date)
 {
-    int index = startDate->daysTo(date);
+    int index = startDate.daysTo(date);
     return index;
 }
 
-void scheduleWidget::dateClicked(QDate dateSelected)
+void ScheduleWidget::dateClicked(QDate dateSelected)
 {
     currentDateLabel->setText(QDate::shortDayName(dateSelected.dayOfWeek()) + " " + QDate::shortMonthName(dateSelected.month()) + " " + QString::number(dateSelected.day()));
 
@@ -848,7 +723,7 @@ void scheduleWidget::dateClicked(QDate dateSelected)
     updateNeeded();
 }
 
-void scheduleWidget::addStaff(QListWidgetItem *item)
+void ScheduleWidget::addStaff(QListWidgetItem *item)
 {
 
     int staffId = onDeckList->currentItem()->data(Qt::UserRole).toInt();
@@ -894,7 +769,7 @@ void scheduleWidget::addStaff(QListWidgetItem *item)
     updateStats();
 }
 
-void scheduleWidget::removeStaff(QListWidgetItem *item)
+void ScheduleWidget::removeStaff(QListWidgetItem *item)
 {
 
     int staffId = onDutyList->currentItem()->data(Qt::UserRole).toInt();
@@ -929,7 +804,7 @@ void scheduleWidget::removeStaff(QListWidgetItem *item)
     updateStats();
 }
 
-void scheduleWidget::setAsAM()
+void ScheduleWidget::setAsAM()
 {
     int staffId = onDeckList->currentItem()->data(Qt::UserRole).toInt();
     int dateIndex = dateToIndex(calendar->selectedDate());
@@ -975,7 +850,7 @@ void scheduleWidget::setAsAM()
     updateStats();
 }
 
-void scheduleWidget::showMenu(QPoint p)
+void ScheduleWidget::showMenu(QPoint p)
 {
     QListWidget *list = (QListWidget*)QObject::sender();
 
@@ -999,7 +874,7 @@ void scheduleWidget::showMenu(QPoint p)
 
 }
 
-void scheduleWidget::setSpecialDuty()
+void ScheduleWidget::setSpecialDuty()
 {
     int index = dateToIndex(calendar->selectedDate());
     if(datesList->at(index)->isSpecial())
@@ -1020,13 +895,13 @@ void scheduleWidget::setSpecialDuty()
 
 }
 
-void scheduleWidget::updateNeeded()
+void ScheduleWidget::updateNeeded()
 {
     donsNeededLabel->setText(QString::number(datesList->at(dateToIndex(calendar->selectedDate()))->getDonsNeeded()));
     rasNeededLabel->setText(QString::number(datesList->at(dateToIndex(calendar->selectedDate()))->getRasNeeded()));
 }
 
-void scheduleWidget::showStaffSchedule(QTableWidgetItem *item)
+void ScheduleWidget::showStaffSchedule(QTableWidgetItem *item)
 {
     if(item->column() != 0)
         return;
@@ -1038,7 +913,7 @@ void scheduleWidget::showStaffSchedule(QTableWidgetItem *item)
     sv->show();
 }
 
-void scheduleWidget::copySlot()
+void ScheduleWidget::copySlot()
 {
     copyAM = datesList->at(dateToIndex(calendar->selectedDate()))->getAM();
 
@@ -1050,7 +925,7 @@ void scheduleWidget::copySlot()
 
 }
 
-void scheduleWidget::pasteSlot()
+void ScheduleWidget::pasteSlot()
 {
     setAsAM(copyAM);
     for(int x = 0; x < copyList->count(); x++)
@@ -1063,7 +938,7 @@ void scheduleWidget::pasteSlot()
 }
 
 
-void scheduleWidget::setAsAM(int staffId)
+void ScheduleWidget::setAsAM(int staffId)
 {
     int dateIndex = dateToIndex(calendar->selectedDate());
 
@@ -1118,7 +993,7 @@ void scheduleWidget::setAsAM(int staffId)
 }
 
 
-void scheduleWidget::addStaff(int staffId)
+void ScheduleWidget::addStaff(int staffId)
 {
 
     int dateIndex = dateToIndex(calendar->selectedDate());
@@ -1169,7 +1044,7 @@ void scheduleWidget::addStaff(int staffId)
     updateStats();
 }
 
-void scheduleWidget::exportSchedule()
+void ScheduleWidget::exportSchedule()
 {
     for(int checkFull = 0; checkFull < datesList->count(); checkFull++)             // IF there are some dates that aren't full issue a warning.
     {
@@ -1226,7 +1101,7 @@ void scheduleWidget::exportSchedule()
     //for(int y = 0; y < datesList->at(0)->getDate().dayOfWeek() - 1; y++)        // if the first day is in the middle of the week we need pre-padding
     //    lists.at(y)->append("\"\",");
 
-    int numWeeks = endDate->weekNumber() - startDate->weekNumber() + 1;         // the number of weeks spanned by our schedule
+    int numWeeks = endDate.weekNumber() - startDate.weekNumber() + 1;         // the number of weeks spanned by our schedule
     for(int weekCounter = 0; weekCounter < numWeeks; weekCounter++)
     {
         for(int dayOfWeekCounter = datesList->at(dateCounter)->getWeekday()-1; dayOfWeekCounter < 7; dayOfWeekCounter++)
@@ -1311,7 +1186,7 @@ void scheduleWidget::exportSchedule()
 
 }
 
-void scheduleWidget::updateStats()
+void ScheduleWidget::updateStats()
 {
     double dAverage = 0;
     double rAverage = 0;
@@ -1323,46 +1198,46 @@ void scheduleWidget::updateStats()
     int dCount = 0;
 
 
-        for(int x = 0; x < statsTableItems->count(); x++)
+    for(int x = 0; x < statsTableItems->count(); x++)
+    {
+        int staffId = statsTableItems->at(x)->data(Qt::UserRole).toInt();
+        int row = statsTableItems->at(x)->row();
+
+        statsTable->item(row,2)->setText(QString::number(theTeam->at(staffId)->getShifts()));
+        statsTable->item(row,3)->setText(QString::number(theTeam->at(staffId)->getWeekendShifts()));
+        statsTable->item(row,4)->setText(QString::number(theTeam->at(staffId)->getAMShifts()));
+
+        if(theTeam->at(staffId)->getPosition())
         {
-            int staffId = statsTableItems->at(x)->data(Qt::UserRole).toInt();
-            int row = statsTableItems->at(x)->row();
-
-            statsTable->item(row,2)->setText(QString::number(theTeam->at(staffId)->getShifts()));
-            statsTable->item(row,3)->setText(QString::number(theTeam->at(staffId)->getWeekendShifts()));
-            statsTable->item(row,4)->setText(QString::number(theTeam->at(staffId)->getAMShifts()));
-
-            if(theTeam->at(staffId)->getPosition())
-            {
-                dAverage += theTeam->at(staffId)->getShifts();
-                dWAverage += theTeam->at(staffId)->getWeekendShifts();
-                amAverage += theTeam->at(staffId)->getAMShifts();
-                dCount++;
-            }
-            else
-            {
-                rAverage += theTeam->at(staffId)->getShifts();
-                rWAverage += theTeam->at(staffId)->getWeekendShifts();
-                rCount++;
-            }
-
+            dAverage += theTeam->at(staffId)->getShifts();
+            dWAverage += theTeam->at(staffId)->getWeekendShifts();
+            amAverage += theTeam->at(staffId)->getAMShifts();
+            dCount++;
+        }
+        else
+        {
+            rAverage += theTeam->at(staffId)->getShifts();
+            rWAverage += theTeam->at(staffId)->getWeekendShifts();
+            rCount++;
         }
 
-        rAverage = rAverage / rCount;
-        dAverage = dAverage / dCount;
-        rWAverage = rWAverage / rCount;
-        dWAverage = dWAverage / dCount;
-        amAverage = amAverage / dCount;
+    }
 
-        donAverageItem->setText(QString::number(dAverage));
-        donAverageWeekendItem->setText(QString::number(dWAverage));
-        amAverageItem->setText(QString::number(amAverage));
-        raAverageItem->setText(QString::number(rAverage));
-        raAverageWeekendItem->setText(QString::number(rWAverage));
+    rAverage = rAverage / rCount;
+    dAverage = dAverage / dCount;
+    rWAverage = rWAverage / rCount;
+    dWAverage = dWAverage / dCount;
+    amAverage = amAverage / dCount;
+
+    donAverageItem->setText(QString::number(dAverage));
+    donAverageWeekendItem->setText(QString::number(dWAverage));
+    amAverageItem->setText(QString::number(amAverage));
+    raAverageItem->setText(QString::number(rAverage));
+    raAverageWeekendItem->setText(QString::number(rWAverage));
 
 }
 
-void scheduleWidget::saveMidSchedule(QString fileName)
+void ScheduleWidget::saveMidSchedule(QString fileName)
 {
     QFile file(fileName);
     if (!file.open(QFile::WriteOnly | QFile::Text))
@@ -1373,8 +1248,8 @@ void scheduleWidget::saveMidSchedule(QString fileName)
 
     QTextStream ts(&file);
 
-    ts << "start:" << startDate->toString("dd/MM/yyyy") << endl;
-    ts << "end:" << endDate->toString("dd/MM/yyyy") << endl;
+    ts << "start:" << startDate.toString("dd/MM/yyyy") << endl;
+    ts << "end:" << endDate.toString("dd/MM/yyyy") << endl;
 
     //x:y:z:a:b:c:d:1:2:3:4:5:6:7
     for(int d = 0; d < 7; d++)

@@ -18,7 +18,7 @@ MainWindow::MainWindow(QWidget *parent)
     currentStaffTeamFile = "";
     usingStaffTeamFile = "";
 
-    m = new mainWidget();
+    m = new MainWidget();
 
     setCentralWidget(m);
 }
@@ -95,8 +95,8 @@ void MainWindow::newStaffTeam()
 void MainWindow::openStaffTeam() {
 
     // lists for loading
-    QList<staff *> *staffList = new QList<staff *>;
-    QList<exam *> *examList = new QList<exam *>;
+    QList<Staff *> *staffList = new QList<Staff *>;
+    QList<Exam *> *examList = new QList<Exam *>;
 
     // get the file name, use currentStaffTeamFile if possible
     QString fileName("");
@@ -148,8 +148,8 @@ void MainWindow::saveAsStaffTeam() {
 
 void MainWindow::saveStaffTeamName(const QString &fileName)
 {
-    QList<staff *> *_sList = m->getStaff();
-    QList<exam *> *_eList = m->getExams();
+    QList<Staff *> *_sList = m->getStaff();
+    QList<Exam *> *_eList = m->getExams();
 //    QList<int> ids = m->getTeamIDs();
 
 //    // sort the _sList to store them in order of ID
@@ -226,7 +226,7 @@ void MainWindow::loadSchedule()
     if (centralWidget() == s)
         delete s;
 
-    s = new scheduleWidget(fileName);
+    s = new ScheduleWidget(fileName);
 
     setCentralWidget(s);
 
@@ -247,7 +247,7 @@ void MainWindow::newSchedule()
     if (msgbox_ret == 0x10000)
         return;
 
-    scheduleWizzard sw;
+    ScheduleWizzard sw;
     int ret = sw.exec();
 
     if (ret == 0)
@@ -261,25 +261,25 @@ void MainWindow::newSchedule()
         return;
     }
 
-    QMessageBox msgBox2;
-    msgBox2.setWindowTitle("Duty Schedule Tool");
-    msgBox2.setText("Select the staff team to use for your new schedule.");
-    msgBox2.setStandardButtons(QMessageBox::Ok);
-    msgBox2.setDefaultButton(QMessageBox::Ok);
-//    int msgbox_ret2 =
-    msgBox2.exec();
+    QString StaffTeamFilename = iohandle.getCurrentStaffFile();
 
-    QString StaffTeamFilename = QFileDialog::getOpenFileName(this);
+    if (StaffTeamFilename.isEmpty()) {
+        QMessageBox msgBox2;
+        msgBox2.setWindowTitle("Duty Schedule Tool");
+        msgBox2.setText("Select the staff team to use for your new schedule.");
+        msgBox2.setStandardButtons(QMessageBox::Ok);
+        msgBox2.setDefaultButton(QMessageBox::Ok);
+        msgBox2.exec();
 
+        iohandle.clearErrorInfo();
+        do {
+            StaffTeamFilename = QFileDialog::getOpenFileName(this, "Open Staff Team..", QDir::home().path());
 
-
-    if (StaffTeamFilename.isEmpty())
-        return;
-
-    if(StaffTeamFilename.right(4) != ".txt")
-    {
-        QMessageBox::warning(this, "Load Staff Team","Incorrect File, must have extention '.txt'.");
-        return;
+            QString title(""), msg("");
+            iohandle.getErrorInfo(msg, title);
+            if (!msg.isEmpty() && !title.isEmpty())
+                QMessageBox::warning(this, title, msg);
+        } while (!iohandle.checkFileName(StaffTeamFilename));
     }
 
     QFile StaffTeamFile(StaffTeamFilename);
@@ -293,8 +293,10 @@ void MainWindow::newSchedule()
 
     m->reset();
 
-    s = new scheduleWidget(wizzard, StaffTeamFilename);
-     setCentralWidget(s);
+    s = new ScheduleWidget(StaffTeamFilename, sw);
+
+// new QScheduleApplet
+    setCentralWidget(s);
 
 
     newScheduleAct->setDisabled(true);

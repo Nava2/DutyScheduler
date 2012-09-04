@@ -12,12 +12,18 @@
 class IOHandler
 {
 public:
+    enum _FileExtension { CSV, JSON, BAD };
+    typedef enum _FileExtension FileExtension;
+
     IOHandler();
-    bool loadStaffTeam(const QString &fileName, QList<staff*> &staffList, QList<exam*> &examList);
-    bool saveStaffTeam(const QString &fileName, const QList<staff *> &staffList, const QList<exam *> &examList);
+    bool loadStaffTeam(const QString &fileName, QList<Staff*> &staffList, QList<Exam*> &examList);
+    bool saveStaffTeam(const QString &fileName, const QList<Staff *> &staffList, const QList<Exam *> &examList);
 
 
-    void getErrorInfo(QString &msg, QString &title);
+    void getErrorInfo(QString &title, QString &msg);
+    void clearErrorInfo();
+    QString getCurrentStaffFile() const { return currentStaffFile; }
+    bool checkFileName(const QString &fileName, FileExtension *ext = NULL);
 
 private:
     QString errorMsg, errorTitle;
@@ -27,12 +33,12 @@ private:
     void setErrorInfo(const QString &msg, const QString &title);
 
     // json
-    bool loadStaffTeamJson(QFile &file, QList<staff*> &staffList, QList<exam*> &examList);
-    bool saveStaffTeamJson(QFile &file, const QList<staff *> &sList, const QList<exam *> &eList);
+    bool loadStaffTeamJson(QFile &file, QList<Staff*> &staffList, QList<Exam*> &examList);
+    bool saveStaffTeamJson(QFile &file, const QList<Staff *> &sList, const QList<Exam *> &eList);
 
     // csv
-    bool loadStaffTeamFile(QFile &file, QList<staff *> &staffList, QList<exam *> &examList);
-    bool saveStaffTeamFile(QFile &file, const QList<staff *> &staffList, const QList<exam *> &examList);
+    bool loadStaffTeamFile(QFile &file, QList<Staff *> &staffList, QList<Exam *> &examList);
+    bool saveStaffTeamFile(QFile &file, const QList<Staff *> &staffList, const QList<Exam *> &examList);
 
 
 };

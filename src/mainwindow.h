@@ -54,15 +54,15 @@ private:
     // file management
     IOHandler iohandle;
 
-    QList<staff*> * sList;
-    QList<exam*> * eList;
+    QList<Staff*> * sList;
+    QList<Exam*> * eList;
     QString currentStaffTeamFile;
     QString usingStaffTeamFile;
 
     // widgets
-    mainWidget *m;
-    scheduleWidget *s;
-    scheduleWizzard *w;
+    MainWidget *m;
+    ScheduleWidget *s;
+    ScheduleWizzard *w;
 
     //menus and actions
     void createActions();

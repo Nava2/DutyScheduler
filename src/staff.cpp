@@ -7,7 +7,7 @@
 #include <QList>
 #include <QDateTime>
 
-staff::staff()
+Staff::Staff()
 {
     id = 127;
     firstName = "Art";
@@ -21,7 +21,7 @@ staff::staff()
     numAMShifts = 0;
 }
 
-staff::staff(int i, QString first, QString last, bool pos, bool gen, int night)
+Staff::Staff(int i, QString first, QString last, bool pos, bool gen, int night)
 {
     id = i;
     firstName = first;
@@ -35,7 +35,9 @@ staff::staff(int i, QString first, QString last, bool pos, bool gen, int night)
     numAMShifts = 0;
 }
 
-staff::staff(const QVariantMap &json) {
+Staff::Staff(const QVariantMap &json) :
+    numShifts(0), numWeekendShifts(0), numAMShifts(0)
+{
 
     id = json["id"].toInt();
 
@@ -53,12 +55,12 @@ staff::staff(const QVariantMap &json) {
     }
 }
 
-staff::~staff()
+Staff::~Staff()
 {
 
 }
 
-void staff::toJson(QVariantMap &json) {
+void Staff::toJson(QVariantMap &json) {
     json["id"] = id;
 
     QVariantMap name;
@@ -79,7 +81,7 @@ void staff::toJson(QVariantMap &json) {
     json["avail"] = list;
 }
 
-void staff::update(QString first, QString last, bool pos, bool gen, int night)
+void Staff::update(QString first, QString last, bool pos, bool gen, int night)
 {
     firstName = first;
     lastName = last;
@@ -91,54 +93,54 @@ void staff::update(QString first, QString last, bool pos, bool gen, int night)
 }
 
 
-int staff::getId()
+int Staff::getId()
 {   return id;  }
 
-QString staff::getFirstName()
+QString Staff::getFirstName()
 {   return firstName;   }
 
-QString staff::getLastName()
+QString Staff::getLastName()
 {    return lastName;   }
 
-bool staff::getPosition()
+bool Staff::getPosition()
 {    return position;   }
 
-bool staff::getGender()
+bool Staff::getGender()
 {    return gender;     }
 
-int staff::getNightClass()
+int Staff::getNightClass()
 {   return nightClass;  }
 
-void staff::setId(int i)
+void Staff::setId(int i)
 {   id = i;             }
 
-void staff::setFirstName(QString name)
+void Staff::setFirstName(QString name)
 {   firstName = name;   }
 
-void staff::setLastName(QString name)
+void Staff::setLastName(QString name)
 {   lastName = name;    }
 
-void staff::setPosition(bool pos)
+void Staff::setPosition(bool pos)
 {   position = pos;     }
 
-void staff::setGender(bool gen)
+void Staff::setGender(bool gen)
 {   gender = gen;       }
 
-void staff::setNightClass(int night)
+void Staff::setNightClass(int night)
 {   nightClass = night; }
 
 
-void staff::setExams(QString ex)
+void Staff::setExams(QString ex)
 {
     exams = ex;
 }
 
-QString staff::getExams()
+QString Staff::getExams()
 {
     return exams;
 }
 
-void staff::setAvailability(const QList<QDate> &dtList)
+void Staff::setAvailability(const QList<QDate> &dtList)
 {
     availList.clear();
 
@@ -147,7 +149,7 @@ void staff::setAvailability(const QList<QDate> &dtList)
     }
 }
 
-void staff::setAvailability(const QString &str) {
+void Staff::setAvailability(const QString &str) {
     availList.clear();
 
     QStringList dates = str.split(",", QString::SkipEmptyParts);
@@ -156,20 +158,20 @@ void staff::setAvailability(const QString &str) {
     }
 }
 
-void staff::appendAvail(const QDate &dt) {
+void Staff::appendAvail(const QDate &dt) {
     availList.append(dt);
 }
 
-void staff::removeAvail(const QDate &dt) {
+void Staff::removeAvail(const QDate &dt) {
     availList.removeAll(dt);
 }
 
-QList<QDate> staff::getAvailability()
+QList<QDate> Staff::getAvailability()
 {
     return availList;
 }
 
-QString staff::getAvailabilityStr() {
+QString Staff::getAvailabilityStr() {
     QString out("");
     foreach (QDate dt, availList) {
         out += dt.toString("dd/MM/yyyy") + ",";
@@ -178,7 +180,7 @@ QString staff::getAvailabilityStr() {
     return out;
 }
 
-void staff::addShift(bool weekend, bool isAM)
+void Staff::addShift(bool weekend, bool isAM)
 {
     if (isAM)
         numAMShifts++;
@@ -189,7 +191,7 @@ void staff::addShift(bool weekend, bool isAM)
     numShifts++;
 }
 
-void staff::removeShift(bool weekend, bool isAM)
+void Staff::removeShift(bool weekend, bool isAM)
 {
     if (isAM)
         numAMShifts--;
@@ -200,17 +202,17 @@ void staff::removeShift(bool weekend, bool isAM)
     numShifts--;
 }
 
-int staff::getShifts()
+int Staff::getShifts()
 {
     return numShifts;
 }
 
-int staff::getWeekendShifts()
+int Staff::getWeekendShifts()
 {
     return numWeekendShifts;
 }
 
-int staff::getAMShifts()
+int Staff::getAMShifts()
 {
     return numAMShifts;
 }

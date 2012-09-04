@@ -1,7 +1,7 @@
 #include "sdate.h"
 
 
-sDate::sDate()
+SDate::SDate()
 {
     rasNeeded = 0;
     donsNeeded = 0;
@@ -9,7 +9,7 @@ sDate::sDate()
     AM = 999;
 }
 
-sDate::sDate(QDate d, int donsN, int rasN)
+SDate::SDate(QDate d, int donsN, int rasN)
 {
     theDate = d;
     spDuty = false;
@@ -23,20 +23,20 @@ sDate::sDate(QDate d, int donsN, int rasN)
     weekday = theDate.dayOfWeek();
 }
 
-sDate::~sDate()
+SDate::~SDate()
 {
     delete donsOn;
     delete rasOn;
     delete cantWork;
 }
 
-QDate sDate::getDate()
+QDate SDate::getDate()
 {   return theDate; }
 
-bool sDate::isSpecial()
+bool SDate::isSpecial()
 {   return spDuty;  }
 
-void sDate::setSpecial(bool s)
+void SDate::setSpecial(bool s)
 {
     spDuty = s;
     donsOn->clear();
@@ -44,16 +44,16 @@ void sDate::setSpecial(bool s)
     AM = 999;
 }
 
-void sDate::setAM(int ami) // set the AM
+void SDate::setAM(int ami) // set the AM
 {   AM = ami;       }
 
-int sDate::getAM() // return the AM id
+int SDate::getAM() // return the AM id
 {    return AM;     }
 
-int sDate::getWeekday()
+int SDate::getWeekday()
 {   return weekday; }
 
-void sDate::addStaff(int s, bool pos)
+void SDate::addStaff(int s, bool pos)
 {
     if (cantWork->contains(s))
         return;
@@ -64,7 +64,7 @@ void sDate::addStaff(int s, bool pos)
         rasOn->append(s);
 }
 
-void sDate::removeStaff(int s, bool pos)
+void SDate::removeStaff(int s, bool pos)
 {
     if (pos)
     {
@@ -83,7 +83,7 @@ void sDate::removeStaff(int s, bool pos)
     }
 }
 
-bool sDate::rasFull()
+bool SDate::rasFull()
 {
     if (rasOn->size() == rasNeeded)
         return true;
@@ -91,7 +91,7 @@ bool sDate::rasFull()
     return false;
 }
 
-bool sDate::donsFull()
+bool SDate::donsFull()
 {
     if (donsOn->size() == donsNeeded)
         return true;
@@ -99,7 +99,7 @@ bool sDate::donsFull()
     return false;
 }
 
-bool sDate::isFull()
+bool SDate::isFull()
 {
     if(AM == 999)
         return false;
@@ -107,12 +107,12 @@ bool sDate::isFull()
     return (rasFull() && donsFull());
 }
 
-void sDate::addCantWork(int input)
+void SDate::addCantWork(int input)
 {
     cantWork->append(input);
 }
 
-bool sDate::staffCantWork(int input)
+bool SDate::staffCantWork(int input)
 {
     if(cantWork->contains(input))
         return true;
@@ -120,7 +120,7 @@ bool sDate::staffCantWork(int input)
     return false;
 }
 
-bool sDate::isOn(int id)
+bool SDate::isOn(int id)
 {
     if(AM == id || donsOn->contains(id) || rasOn->contains(id))
         return true;
@@ -129,17 +129,17 @@ bool sDate::isOn(int id)
 
 }
 
-int sDate::getDonsNeeded()
+int SDate::getDonsNeeded()
 {
     return donsNeeded - donsOn->count();
 }
 
-int sDate::getRasNeeded()
+int SDate::getRasNeeded()
 {
     return rasNeeded - rasOn->count();
 }
 
-bool sDate::canWork(int id)
+bool SDate::canWork(int id)
 {
     if (cantWork->contains(id))
         return false;
@@ -147,7 +147,7 @@ bool sDate::canWork(int id)
     return true;
 }
 
-QString sDate::exportOn()
+QString SDate::exportOn()
 {
     //returns the list of staff with AM first, then dons, then ras.
    if(spDuty)
@@ -170,7 +170,7 @@ QString sDate::exportOn()
 
 }
 
-QString sDate::getCantWork()
+QString SDate::getCantWork()
 {
     QString ret = "";
 
@@ -185,7 +185,7 @@ QString sDate::getCantWork()
     return ret;
 }
 
-QString sDate::getDons()
+QString SDate::getDons()
 {
     QString ret = "";
 
@@ -200,7 +200,7 @@ QString sDate::getDons()
     return ret;
 }
 
-QString sDate::getRas()
+QString SDate::getRas()
 {
     QString ret = "";
 

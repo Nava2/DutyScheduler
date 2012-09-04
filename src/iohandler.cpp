@@ -16,9 +16,14 @@ IOHandler::IOHandler() :
 {
 }
 
-void IOHandler::getErrorInfo(QString &msg, QString &title) {
+void IOHandler::getErrorInfo(QString &title, QString &msg) {
    msg = errorMsg;
    title = errorTitle;
+}
+
+void IOHandler::clearErrorInfo() {
+   errorMsg = "";
+   errorTitle = "";
 }
 
 void IOHandler::setErrorInfo(const QString &msg, const QString &title) {
@@ -26,42 +31,76 @@ void IOHandler::setErrorInfo(const QString &msg, const QString &title) {
     errorTitle = title;
 }
 
-bool IOHandler::loadStaffTeam(const QString &fileName, QList<staff*> &staffList, QList<exam*> &examList)
-{
+bool IOHandler::checkFileName(const QString &fileName, FileExtension *ext) {
+    bool result = false;
+
+    if (ext) {
+        *ext = BAD;
+    }
+
     // initial check
     if (fileName.isEmpty()) {
-        setErrorInfo("Open Staff Team", "Incorrect File must be valid file.");
+        setErrorInfo("Check File Name", "Incorrect File must be valid file.");
         return false;
     }
 
-
-    QFile file(fileName);
-    if (!file.open(QFile::ReadOnly | QFile::Text))
-    {
-        setErrorInfo("Duty Scheduler", "Cannot read file.");
-        return false;
-    }
-
-    bool result = false;
     if(fileName.right(4) == ".txt")
     {
-        result = loadStaffTeamFile(file, staffList, examList);
+        result = true;
+        if (ext) {
+            *ext = CSV;
+        }
     } else if (fileName.right(5) == ".json") {
-        result = loadStaffTeamJson(file, staffList, examList);
+        result = true;
+
+        if (ext) {
+            *ext = JSON;
+        }
     } else {
-        setErrorInfo("Open Staff Team","Incorrect File invalid extension.");
-        result = false;
+        setErrorInfo("Check File Name", "Incorrect File - invalid extension.");
+
     }
 
+    return result;
+}
+
+bool IOHandler::loadStaffTeam(const QString &fileName, QList<Staff*> &staffList, QList<Exam*> &examList)
+{
+    FileExtension ext;
+    bool result = IOHandler::checkFileName(fileName, &ext);
+
     if (result) {
+        QFile file(fileName);
+        if (!file.open(QFile::ReadOnly | QFile::Text))
+        {
+            setErrorInfo("Duty Scheduler", "Cannot read file.");
+            return false;
+        }
+
+        // act based on extension
+        switch (ext) {
+        case JSON: {
+            result = loadStaffTeamJson(file, staffList, examList);
+        } break;
+        case CSV: {
+            result = loadStaffTeamFile(file, staffList, examList);
+        } break;
+        case BAD:
+        default: {
+            return false;
+        } break;
+        }
+
         currentStaffFile = fileName;
+    } else {
+        currentStaffFile = "";
     }
 
     return result;
 }
 
 
-bool IOHandler::loadStaffTeamJson(QFile &file, QList<staff*> &staffList, QList<exam*> &examList) {
+bool IOHandler::loadStaffTeamJson(QFile &file, QList<Staff*> &staffList, QList<Exam*> &examList) {
 
     // read the whole file into the QByteArray then put it into a string for
     // parsing
@@ -84,7 +123,7 @@ bool IOHandler::loadStaffTeamJson(QFile &file, QList<staff*> &staffList, QList<e
     // for each member, create a new object initialized to the values in the
     // maps' storage
     foreach( QVariant val, team ) {
-        staff *pStaff = new staff(val.toMap());
+        Staff *pStaff = new Staff(val.toMap());
         staffList.append(pStaff);
     }
 
@@ -93,7 +132,7 @@ bool IOHandler::loadStaffTeamJson(QFile &file, QList<staff*> &staffList, QList<e
 
     // repeat the same steps as the staff members
     foreach ( QVariant val, exams ) {
-        exam *pExam = new exam(val.toMap());
+        Exam *pExam = new Exam(val.toMap());
         examList.append(pExam);
     }
 
@@ -101,7 +140,7 @@ bool IOHandler::loadStaffTeamJson(QFile &file, QList<staff*> &staffList, QList<e
 }
 
 //FILE HANDLERS
-bool IOHandler::loadStaffTeamFile(QFile &file, QList<staff *> &staffList, QList<exam *> &examList)
+bool IOHandler::loadStaffTeamFile(QFile &file, QList<Staff *> &staffList, QList<Exam *> &examList)
 {
     QTextStream ts(&file);
 
@@ -145,8 +184,8 @@ bool IOHandler::loadStaffTeamFile(QFile &file, QList<staff *> &staffList, QList<
         //split the input line into an array of strings
         current_Line = currentLine.split(",", QString::SkipEmptyParts);
 
-        staff *s;
-        exam *e;
+        Staff *s;
+        Exam *e;
 
         if(!ExamsFlag)//looking at staff data
         {
@@ -196,7 +235,7 @@ bool IOHandler::loadStaffTeamFile(QFile &file, QList<staff *> &staffList, QList<
                 y++;
             }
 
-            s = new staff(id,first,last,pos,gen,night);
+            s = new Staff(id,first,last,pos,gen,night);
             s->setAvailability(avail);
             s->setExams(exams);
 
@@ -217,7 +256,7 @@ bool IOHandler::loadStaffTeamFile(QFile &file, QList<staff *> &staffList, QList<
             else
                 e_night = false;
 
-            e = new exam(id,date,e_night);
+            e = new Exam(id,date,e_night);
 
             examList.append(e);
         }
@@ -228,40 +267,49 @@ bool IOHandler::loadStaffTeamFile(QFile &file, QList<staff *> &staffList, QList<
     return true;
 }
 
-bool IOHandler::saveStaffTeam(const QString &fileName, const QList<staff *> &staffList, const QList<exam *> &examList) {
-    if (fileName.isEmpty()) {
-        setErrorInfo("Save Staff Team", "File name empty.");
-        return false;
-    }
+bool IOHandler::saveStaffTeam(const QString &fileName, const QList<Staff *> &staffList, const QList<Exam *> &examList) {
 
-    QFile file(fileName);
-    if (!file.open(QFile::WriteOnly | QFile::Text))
-    {
-        setErrorInfo("Save Staff Team File","Cannot write file.");
-        return false;
-    }
+    FileExtension ext;
+    bool result = IOHandler::checkFileName(fileName, &ext);
 
-    bool result = false;
-    if(fileName.right(4) == ".txt" )
-    {
-        result = saveStaffTeamFile(file, staffList, examList);
-    } else if ( fileName.right(5) == ".json") {
-        result = saveStaffTeamJson(file, staffList, examList);
+    if (result) {
+        QFile file(fileName);
+        if (!file.open(QFile::ReadOnly | QFile::Text))
+        {
+            setErrorInfo("Duty Scheduler", "Cannot read file.");
+            return false;
+        }
+
+        // act based on extension
+        switch (ext) {
+        case JSON: {
+            result = saveStaffTeamJson(file, staffList, examList);
+        } break;
+        case CSV: {
+            result = saveStaffTeamFile(file, staffList, examList);
+        } break;
+        case BAD:
+        default: {
+            return false;
+        } break;
+        }
+
+        currentStaffFile = fileName;
     } else {
-        setErrorInfo("Save Staff Team", "Incorrect File, must have extention '.txt'.");
+        currentStaffFile = "";
     }
 
     return result;
 }
 
-bool IOHandler::saveStaffTeamFile(QFile &file, const QList<staff *> &staffList, const QList<exam *> &examList)
+bool IOHandler::saveStaffTeamFile(QFile &file, const QList<Staff *> &staffList, const QList<Exam *> &examList)
 {
     QTextStream ts(&file);
 
     ts << "[STAFF]" << endl;
     for (int x = 0; x < staffList.size(); x++)
     {
-        staff *t_staff = staffList.at(x);
+        Staff *t_staff = staffList.at(x);
 
         ts << QString::number(x) << ","
            << t_staff->getFirstName() << ","
@@ -275,7 +323,7 @@ bool IOHandler::saveStaffTeamFile(QFile &file, const QList<staff *> &staffList, 
 
     ts << "[EXAMS]" << endl;
 
-    foreach (exam *ex, examList)
+    foreach (Exam *ex, examList)
     {
         ts << QString::number(ex->getId()) << ","
            << ex->getDate() << ","
@@ -285,13 +333,13 @@ bool IOHandler::saveStaffTeamFile(QFile &file, const QList<staff *> &staffList, 
     return true;
 }
 
-bool IOHandler::saveStaffTeamJson(QFile &file, const QList<staff *> &sList, const QList<exam *> &eList) {
+bool IOHandler::saveStaffTeamJson(QFile &file, const QList<Staff *> &sList, const QList<Exam *> &eList) {
 
     QVariantMap out;
 
     QVariantList o_sList;
 
-    foreach (staff *pStaff, sList) {
+    foreach (Staff *pStaff, sList) {
         QVariantMap sMap;
         pStaff->toJson(sMap);
 
@@ -302,7 +350,7 @@ bool IOHandler::saveStaffTeamJson(QFile &file, const QList<staff *> &sList, cons
 
     QVariantList o_sExams;
 
-    foreach (exam *pExam, eList) {
+    foreach (Exam *pExam, eList) {
         QVariantMap eMap;
         pExam->toJson(eMap);
 
