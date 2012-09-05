@@ -88,8 +88,8 @@ ScheduleWidget::ScheduleWidget(QString fileName, QWidget *parent) // this constr
     inp = ts.readLine().split(":",QString::SkipEmptyParts);                 //get staff req for each night
     for(int x = 0; x < 7; x++)
     {
-        donsNeeded[x] = inp.at(x).toInt();
-        rasNeeded[x] = inp.at(x+7).toInt();
+        donsNeeded.append(inp.at(x).toInt());
+        rasNeeded.append(inp.at(x+7).toInt());
     }
 
 
@@ -243,25 +243,28 @@ ScheduleWidget::~ScheduleWidget()
     delete statsTableItems;
 
 
-    QList<Staff*>::iterator it_s = theTeam->begin();
-    for(; it_s != theTeam->end(); )
-    {
-        delete *it_s;
-        it_s = theTeam->erase(it_s);
+    if (theTeam) {
+        QList<Staff*>::iterator it_s = theTeam->begin();
+        for(; it_s != theTeam->end(); )
+        {
+            delete *it_s;
+            it_s = theTeam->erase(it_s);
+        }
+        delete theTeam;
     }
-    delete theTeam;
 
-    QList<Exam*>::iterator it_e = theExams->begin();
-    for(; it_e != theExams->end(); )
-    {
-        delete *it_e;
-        it_e = theExams->erase(it_e);
+    if (theExams) {
+        QList<Exam*>::iterator it_e = theExams->begin();
+        for(; it_e != theExams->end(); )
+        {
+            delete *it_e;
+            it_e = theExams->erase(it_e);
+        }
+        delete theExams;
     }
-    delete theExams;
 
     for(int x = 0; x < 7; x++)
     {
-        nightClasses[x]->clear();
         delete nightClasses[x];
     }
 
@@ -293,7 +296,6 @@ ScheduleWidget::~ScheduleWidget()
 
     delete setAsAMAction;
 
-    copyList->clear();
     delete copyList;
 
 
