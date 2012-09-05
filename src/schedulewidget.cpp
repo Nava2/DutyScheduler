@@ -763,8 +763,6 @@ void ScheduleWidget::showMenu(QPoint p)
 
     //QPoint point = p + list->pos();
     rightClickMenu->exec(mapToGlobal(p + list->parentWidget()->pos() + list->pos()));
-
-
 }
 
 void ScheduleWidget::setSpecialDuty()
@@ -784,8 +782,6 @@ void ScheduleWidget::setSpecialDuty()
         format.setBackground(Qt::darkGray);
         calendar->setDateTextFormat(calendar->selectedDate(),format);
     }
-
-
 }
 
 void ScheduleWidget::updateNeeded()

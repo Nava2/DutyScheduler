@@ -11,11 +11,11 @@
 #include <QDate>
 #include "sdate.h"
 
-class mySchedViewer : public QDialog
+class mySchedViewer : public QWidget
 {
     Q_OBJECT
 public:
-    explicit mySchedViewer(QString name, int staffID, QList<SDate> *datesList, QWidget *parent = 0);
+    explicit mySchedViewer(QString name, int staffID, QList<SDate> *datesList, QWidget *parent = NULL);
     ~mySchedViewer();
 
 private:
