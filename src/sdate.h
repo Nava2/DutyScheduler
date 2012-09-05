@@ -6,17 +6,15 @@
 #include <QString>
 #include <QVariantMap>
 
-class SDate : public QObject
+class SDate : public QDate
 {
-    Q_OBJECT
 
 public:
     SDate();
-    SDate(QDate, int, int);
+    SDate(const QDate &, int, int);
     SDate(const QVariantMap &map);
     ~SDate();
 
-    QDate getDate();//return the date of this sDate
     bool isSpecial(); // is this special duty?
     bool isOn(int) const;// is this staff on duty already?
     bool isFull() const;
@@ -27,8 +25,8 @@ public:
     void setSpecial(bool);//set the special duty flag
 
 
-    int getAM();//return the AM's ID
-    int getWeekday();
+    int getAM() const;//return the AM's ID
+    int getWeekday() const;
     int getRasNeeded() const;
     void setRasNeeded(const int);
 
@@ -41,17 +39,17 @@ public:
 
     QString getCantWorkStr();
     QList<int > getCantWork() {
-        return *cantWork;
+        return cantWork;
     }
 
     QString getDonsStr();
     QList<int > getDons() {
-        return *donsOn;
+        return donsOn;
     }
 
     QString getRasStr();
     QList<int > getRas() {
-        return *rasOn;
+        return rasOn;
     }
 
     QString exportOn();
@@ -71,9 +69,9 @@ private:
     QDate theDate;
     bool spDuty;
     int AM;
-    QList<int> *donsOn;
-    QList<int> *rasOn;
-    QList<int> *cantWork;
+    QList<int> donsOn;
+    QList<int> rasOn;
+    QList<int> cantWork;
     bool defaultNeededD, defaultNeededR;
     int rasNeeded;
     int donsNeeded;

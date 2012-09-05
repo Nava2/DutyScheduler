@@ -133,7 +133,7 @@ private:
     QList<QList<int> *> nightClasses; // each list contains the id's of the staff who can't work that night. Mon = 0
     QList<QListWidgetItem*> * onDeckItems; // this contains a CONSTANT source of list widget items, one for each staff.
     QList<QListWidgetItem*> * onDutyItems;
-    QList<SDate*> datesList;
+    QList<SDate> datesList;
 
     QAction *setAsAMAction;
 

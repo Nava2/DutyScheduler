@@ -1,6 +1,6 @@
 #include "myschedviewer.h"
 
-mySchedViewer::mySchedViewer(QString name, int staffId, QList<SDate*> *datesList, QWidget *parent) :
+mySchedViewer::mySchedViewer(QString name, int staffId, QList<SDate> *datesList, QWidget *parent) :
     QDialog(parent)
 {
     setAttribute(Qt::WA_DeleteOnClose);
@@ -10,9 +10,9 @@ mySchedViewer::mySchedViewer(QString name, int staffId, QList<SDate*> *datesList
 
     calendarStaff = new QCalendarWidget;
     calendarStaff->setSelectionMode(QCalendarWidget::NoSelection);
-    calendarStaff->setMinimumDate(datesList->first()->getDate().addDays(-1));
-    calendarStaff->setSelectedDate(datesList->first()->getDate().addDays(-1));
-    calendarStaff->setMaximumDate(datesList->last()->getDate());
+    calendarStaff->setMinimumDate(datesList->first().addDays(-1));
+    calendarStaff->setSelectedDate(datesList->first().addDays(-1));
+    calendarStaff->setMaximumDate(datesList->last());
     calendarStaff->setFirstDayOfWeek(Qt::Monday);
     calendarStaff->setVerticalHeaderFormat(QCalendarWidget::NoVerticalHeader);
 
@@ -23,13 +23,13 @@ mySchedViewer::mySchedViewer(QString name, int staffId, QList<SDate*> *datesList
     format = calendarStaff->weekdayTextFormat(Qt::Monday);
 
 
-    QDate dateCounter = datesList->first()->getDate();
+    QDate dateCounter = datesList->first();
     for (int x = 0; x < datesList->count(); x++)
     {
-        if(datesList->at(x)->isOn(staffId))
+        if(datesList->at(x).isOn(staffId))
         {
             format.setBackground(Qt::magenta);
-            if(datesList->at(x)->getAM() == staffId)
+            if(datesList->at(x).getAM() == staffId)
                 format.setBackground(Qt::green);
         }
         else

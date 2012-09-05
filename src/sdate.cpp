@@ -6,6 +6,7 @@
 
 
 SDate::SDate()
+    : QDate()
 {
     rasNeeded = 0;
     donsNeeded = 0;
@@ -13,35 +14,26 @@ SDate::SDate()
     AM = 999;
 }
 
-SDate::SDate(QDate d, int donsN, int rasN)
+SDate::SDate(const QDate &d, int donsN, int rasN)
+    : QDate(d.year(), d.month(), d.day())
 {
-    theDate = d;
     spDuty = false;
     rasNeeded = rasN;
     donsNeeded = donsN;
     AM = 999;
-    donsOn = new QList<int>;
-    rasOn = new QList<int>;
-    cantWork = new QList<int>;
 
     weekday = theDate.dayOfWeek();
 }
 
 SDate::SDate(const QVariantMap &map) :
-    AM(0)
+    QDate(), AM(0)
 {
     *this << map;
 }
 
 SDate::~SDate()
 {
-    delete donsOn;
-    delete rasOn;
-    delete cantWork;
 }
-
-QDate SDate::getDate()
-{   return theDate; }
 
 bool SDate::isSpecial()
 {   return spDuty;  }
@@ -49,29 +41,29 @@ bool SDate::isSpecial()
 void SDate::setSpecial(bool s)
 {
     spDuty = s;
-    donsOn->clear();
-    rasOn->clear();
+    donsOn.clear();
+    rasOn.clear();
     AM = 999;
 }
 
 void SDate::setAM(int ami) // set the AM
 {   AM = ami;       }
 
-int SDate::getAM() // return the AM id
+int SDate::getAM() const // return the AM id
 {    return AM;     }
 
-int SDate::getWeekday()
+int SDate::getWeekday() const
 {   return weekday; }
 
 void SDate::addStaff(int s, bool pos)
 {
-    if (cantWork->contains(s))
+    if (cantWork.contains(s))
         return;
 
     if (pos)        // staff has position of DON
-        donsOn->append(s);
+        donsOn.append(s);
     else            // staff is an RA
-        rasOn->append(s);
+        rasOn.append(s);
 }
 
 void SDate::removeStaff(int s, bool pos)
@@ -84,18 +76,18 @@ void SDate::removeStaff(int s, bool pos)
         }
         else
         {
-            donsOn->removeAt(donsOn->indexOf(s));
+            donsOn.removeAt(donsOn.indexOf(s));
         }
     }
     else
     {
-        rasOn->removeAt(rasOn->indexOf(s));
+        rasOn.removeAt(rasOn.indexOf(s));
     }
 }
 
 bool SDate::rasFull() const
 {
-    if (rasOn->size() == rasNeeded)
+    if (rasOn.size() == rasNeeded)
         return true;
 
     return false;
@@ -103,7 +95,7 @@ bool SDate::rasFull() const
 
 bool SDate::donsFull() const
 {
-    if (donsOn->size() == donsNeeded)
+    if (donsOn.size() == donsNeeded)
         return true;
 
     return false;
@@ -119,12 +111,12 @@ bool SDate::isFull() const
 
 void SDate::addCantWork(int input)
 {
-    cantWork->append(input);
+    cantWork.append(input);
 }
 
 bool SDate::staffCantWork(int input)
 {
-    if(cantWork->contains(input))
+    if(cantWork.contains(input))
         return true;
 
     return false;
@@ -132,7 +124,7 @@ bool SDate::staffCantWork(int input)
 
 bool SDate::isOn(int id) const
 {
-    if(AM == id || donsOn->contains(id) || rasOn->contains(id))
+    if(AM == id || donsOn.contains(id) || rasOn.contains(id))
         return true;
     else
         return false;
@@ -141,12 +133,12 @@ bool SDate::isOn(int id) const
 
 int SDate::getDonsNeeded() const
 {
-    return donsNeeded - donsOn->count();
+    return donsNeeded - donsOn.count();
 }
 
 int SDate::getRasNeeded() const
 {
-    return rasNeeded - rasOn->count();
+    return rasNeeded - rasOn.count();
 }
 
 void SDate::setRasNeeded(const int ras) {
@@ -164,12 +156,12 @@ bool SDate::isDefaultNeeded() const {
 }
 
 bool SDate::isWeekend() const {
-    return theDate.dayOfWeek() == 5 || theDate.dayOfWeek() == 6;
+    return dayOfWeek() == 5 || dayOfWeek() == 6;
 }
 
 bool SDate::canWork(int id) const
 {
-    if (cantWork->contains(id))
+    if (cantWork.contains(id))
         return false;
 
     return true;
@@ -185,11 +177,11 @@ QString SDate::exportOn()
 
    ret += QString::number(AM) + ",";
 
-   for(int x = 0; x < donsOn->count(); x++)
-       ret += QString::number(donsOn->at(x)) + ",";
+   foreach (int x, donsOn)
+       ret += QString::number(x) + ",";
 
-   for(int z = 0; z < rasOn->count(); z++)
-       ret += QString::number(rasOn->at(z)) + ",";
+   foreach (int x, rasOn)
+       ret += QString::number(x) + ",";
 
    if (ret.left(3) == "999")
        ret = "";
@@ -202,11 +194,11 @@ QString SDate::getCantWorkStr()
 {
     QString ret = "";
 
-    if (cantWork->isEmpty())
+    if (cantWork.isEmpty())
         return ret;
 
-    for (int x = 0; x < cantWork->count(); x++)
-        ret += QString::number(cantWork->at(x)) + ",";
+    foreach(int id, cantWork)
+        ret += QString::number(id) + ",";
 
     ret.chop(1);
 
@@ -217,11 +209,11 @@ QString SDate::getDonsStr()
 {
     QString ret = "";
 
-    if (donsOn->isEmpty())
+    if (donsOn.isEmpty())
         return ret;
 
-    for (int x = 0; x < donsOn->count(); x++)
-        ret += QString::number(donsOn->at(x)) + ",";
+    foreach(int id, donsOn)
+        ret += QString::number(id) + ",";
 
     ret.chop(1);
 
@@ -232,11 +224,11 @@ QString SDate::getRasStr()
 {
     QString ret = "";
 
-    if (rasOn->isEmpty())
+    if (rasOn.isEmpty())
         return ret;
 
-    for (int x = 0; x < rasOn->count(); x++)
-        ret += QString::number(rasOn->at(x)) + ",";
+    foreach (int id, rasOn)
+        ret += QString::number(id) + ",";
 
     ret.chop(1);
 
@@ -246,7 +238,7 @@ QString SDate::getRasStr()
 // JSON
 // out
 void SDate::operator >>(QVariantMap &map) {
-    map["date"] = theDate;
+    map["date"] = *dynamic_cast<QDate *>(this);
 
     map["special"] = spDuty;
 
@@ -256,7 +248,7 @@ void SDate::operator >>(QVariantMap &map) {
     map["need"] = needed;
 
     QVariantList cantWorkVar;
-    foreach (int id, *cantWork) {
+    foreach (int id, cantWork) {
         cantWorkVar.append(id);
     }
     map["cantwork"] = cantWorkVar;
@@ -267,13 +259,13 @@ void SDate::operator >>(QVariantMap &map) {
     map["am"] = AM;
 
     QVariantList donsVar;
-    foreach (int id, *donsOn) {
+    foreach (int id, donsOn) {
         donsVar.append(id);
     }
     map["dons"] = donsVar;
 
     QVariantList rasVar;
-    foreach (int id, *rasOn) {
+    foreach (int id, rasOn) {
         rasVar.append(id);
     }
     map["ras"] = rasVar;
@@ -284,32 +276,19 @@ void SDate::operator >>(QVariantMap &map) {
 // in
 void SDate::operator <<(const QVariantMap &map) {
     // clear all lists:
-    if (donsOn) {
-        donsOn->clear();
-    } else {
-        donsOn = new QList<int >;
-    }
+    donsOn.clear();
+    rasOn.clear();
+    cantWork.clear();
 
-    if (rasOn) {
-        rasOn->clear();
-    } else {
-        rasOn = new QList<int >;
-    }
-
-    if (cantWork) {
-        cantWork->clear();
-    } else {
-        cantWork = new QList<int >;
-    }
-
-    theDate = map["date"].toDate();
+    QDate d = map["date"].toDate();
+    setYMD(d.year(), d.month(), d.day());
 
     // load the object
     spDuty = map["special"].toBool();
 
     QVariantList cantWorkVar = map["cantwork"].toList();
     foreach (QVariant id, cantWorkVar) {
-        cantWork->append(id.toInt());
+        cantWork.append(id.toInt());
     }
 
     QVariantMap needed = map["need"].toMap();
@@ -323,11 +302,11 @@ void SDate::operator <<(const QVariantMap &map) {
 
     QVariantList donsVar = map["dons"].toList();
     foreach (QVariant id, donsVar) {
-        donsOn->append(id.toInt());
+        donsOn.append(id.toInt());
     }
 
     QVariantList rasVar = map["ras"].toList();
     foreach (QVariant id, rasVar) {
-        rasOn->append(id.toInt());
+        rasOn.append(id.toInt());
     }
 }
