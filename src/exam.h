@@ -11,7 +11,8 @@ public:
     Exam(int, QString, bool);
 
     Exam(const QVariantMap &);
-    void toJson(QVariantMap &);
+    void operator <<(const QVariantMap &);
+    void operator >>(QVariantMap &);
 
     void setDate(QString);
     void setNight(bool);

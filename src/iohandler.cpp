@@ -341,7 +341,7 @@ bool IOHandler::saveStaffTeamJson(QFile &file, const QList<Staff *> &sList, cons
 
     foreach (Staff *pStaff, sList) {
         QVariantMap sMap;
-        pStaff->toJson(sMap);
+        *pStaff >> sMap;
 
         o_sList.append(sMap);
     }
@@ -352,7 +352,7 @@ bool IOHandler::saveStaffTeamJson(QFile &file, const QList<Staff *> &sList, cons
 
     foreach (Exam *pExam, eList) {
         QVariantMap eMap;
-        pExam->toJson(eMap);
+        *pExam >> eMap;
 
         o_sExams.append(eMap);
     }

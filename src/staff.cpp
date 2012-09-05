@@ -38,7 +38,16 @@ Staff::Staff(int i, QString first, QString last, bool pos, bool gen, int night)
 Staff::Staff(const QVariantMap &json) :
     numShifts(0), numWeekendShifts(0), numAMShifts(0)
 {
+    *this << json;
+}
 
+Staff::~Staff()
+{
+
+}
+
+// JSON mapping:
+void Staff::operator << (const QVariantMap &json) {
     id = json["id"].toInt();
 
     QVariantMap name = json["name"].toMap();
@@ -53,14 +62,16 @@ Staff::Staff(const QVariantMap &json) :
     foreach (QVariant qv, json["avail"].toList()) {
         availList.append(qv.toDate());
     }
+
+
+    QVariantMap shiftMap = json["shifts"].toMap();
+    numWeekendShifts = shiftMap["wkend"].toInt();
+    if (position)
+       numAMShifts = shiftMap["am"].toInt();
+    numShifts = shiftMap["ttl"].toInt();
 }
 
-Staff::~Staff()
-{
-
-}
-
-void Staff::toJson(QVariantMap &json) {
+void Staff::operator >>(QVariantMap &json) {
     json["id"] = id;
 
     QVariantMap name;
@@ -79,6 +90,14 @@ void Staff::toJson(QVariantMap &json) {
     }
 
     json["avail"] = list;
+
+    QVariantMap shiftMap;
+    shiftMap["wkend"] = numWeekendShifts;
+    if (position)
+        shiftMap["am"] = numAMShifts;
+    shiftMap["ttl"] = numShifts;
+
+    json["shifts"] = shiftMap;
 }
 
 void Staff::update(QString first, QString last, bool pos, bool gen, int night)

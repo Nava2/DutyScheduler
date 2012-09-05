@@ -14,16 +14,9 @@ Exam::Exam(int i, QString d, bool n)
     night = n;
 }
 
-Exam::Exam(const QVariantMap &json) {
-    id = json["id"].toInt();
-    date = json["date"].toString();
-    night = json["night"].toBool();
-}
-
-void Exam::toJson(QVariantMap &json) {
-    json["id"] = id;
-    json["date"] = date;
-    json["night"] = night;
+Exam::Exam(const QVariantMap &json) :
+    id(0), date(""), night(0) {
+    *this << json;
 }
 
 void Exam::setDate(QString d)
@@ -49,4 +42,19 @@ bool Exam::getNight()
 int Exam::getId()
 {
     return id;
+}
+
+// JSON IO
+// in
+void Exam::operator <<(const QVariantMap &json) {
+    id = json["id"].toInt();
+    date = json["date"].toString();
+    night = json["night"].toBool();
+}
+
+// out
+void Exam::operator >>(QVariantMap &json) {
+    json["id"] = id;
+    json["date"] = date;
+    json["night"] = night;
 }

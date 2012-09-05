@@ -4,6 +4,7 @@
 #include <QDate>
 #include <QList>
 #include <QString>
+#include <QVariantMap>
 
 class SDate : public QObject
 {
@@ -12,6 +13,7 @@ class SDate : public QObject
 public:
     SDate();
     SDate(QDate, int, int);
+    SDate(const QVariantMap &map);
     ~SDate();
 
     QDate getDate();//return the date of this sDate
@@ -42,6 +44,8 @@ public:
     void addCantWork(int);
     bool staffCantWork(int);
 
+    void operator >>(QVariantMap &);
+    void operator <<(const QVariantMap &);
 
 
 private:

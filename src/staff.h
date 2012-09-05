@@ -16,7 +16,8 @@ public:
     Staff(const QVariantMap &);
     ~Staff();
 
-    void toJson(QVariantMap &);
+    void operator >>(QVariantMap &);
+    void operator <<(const QVariantMap &);
 
     //getters
     int getId();

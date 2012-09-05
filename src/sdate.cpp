@@ -1,5 +1,9 @@
 #include "sdate.h"
 
+#include <QVariant>
+#include <QVariantMap>
+#include <QVariantList>
+
 
 SDate::SDate()
 {
@@ -21,6 +25,10 @@ SDate::SDate(QDate d, int donsN, int rasN)
     cantWork = new QList<int>;
 
     weekday = theDate.dayOfWeek();
+}
+
+SDate::SDate(const QVariantMap &map) {
+    *this << map;
 }
 
 SDate::~SDate()
@@ -213,4 +221,73 @@ QString SDate::getRas()
     ret.chop(1);
 
     return ret;
+}
+
+// JSON
+// out
+void SDate::operator >>(QVariantMap &map) {
+    map["special"] = spDuty;
+
+    QVariantList cantWorkVar;
+    foreach (int id, *cantWork) {
+        cantWorkVar.append(id);
+    }
+    map["cantwork"] = cantWorkVar;
+
+    map["am"] = AM;
+
+    QVariantList donsVar;
+    foreach (int id, *donsOn) {
+        donsVar.append(id);
+    }
+    map["dons"] = donsVar;
+
+    QVariantList rasVar;
+    foreach (int id, *rasOn) {
+        rasVar.append(id);
+    }
+    map["ras"] = rasVar;
+}
+
+// in
+void SDate::operator <<(const QVariantMap &map) {
+    // clear all lists:
+    if (donsOn) {
+        donsOn->clear();
+    } else {
+        donsOn = new QList<int >;
+    }
+
+    if (rasOn) {
+        rasOn->clear();
+    } else {
+        rasOn = new QList<int >;
+    }
+
+    if (cantWork) {
+        cantWork->clear();
+    } else {
+        cantWork = new QList<int >;
+    }
+
+
+    // load the object
+    spDuty = map["special"].toBool();
+
+    QVariantList cantWorkVar = map["cantwork"].toList();
+    foreach (QVariant id, cantWorkVar) {
+        cantWork->append(id.toInt());
+    }
+
+    AM = map["am"].toInt();
+
+    QVariantList donsVar = map["dons"].toList();
+    foreach (QVariant id, donsVar) {
+        donsOn->append(id.toInt());
+    }
+
+    QVariantList rasVar = map["ras"].toList();
+    foreach (QVariant id, rasVar) {
+        rasOn->append(id.toInt());
+    }
 }
