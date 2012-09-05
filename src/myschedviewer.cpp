@@ -1,6 +1,10 @@
 #include "myschedviewer.h"
 
+<<<<<<< HEAD
 mySchedViewer::mySchedViewer(QString name, int staffId, QList<sDate*> *datesList, QWidget *parent) :
+=======
+SchedViewer::SchedViewer(QString name, int staffId, QList<SDate> *datesList, QWidget *parent) :
+>>>>>>> 4b4c73a... Spelling. :P
     QDialog(parent)
 {
     setAttribute(Qt::WA_DeleteOnClose);
@@ -52,7 +56,7 @@ mySchedViewer::mySchedViewer(QString name, int staffId, QList<sDate*> *datesList
     setWindowTitle("Schedule for " + name);
 }
 
-mySchedViewer::~mySchedViewer()
+SchedViewer::~SchedViewer()
 {
     delete buttonBox;
     delete calendarStaff;
