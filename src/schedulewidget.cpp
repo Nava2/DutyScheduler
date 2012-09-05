@@ -17,16 +17,13 @@ ScheduleWidget::ScheduleWidget(QWidget *parent)
 
 }
 
-ScheduleWidget::ScheduleWidget(QString staffteamfilename, const ScheduleWizzard &swiz, QWidget *parent)
+ScheduleWidget::ScheduleWidget(const QString &staffteamfilename, const ScheduleWizzard &swiz, QWidget *parent)
     : QWidget(parent)
 {
     // read from the wizzard
     examSchedule = swiz.isExamSchedule();
     swiz.getDates(startDate, endDate);
     swiz.getWeeklyValues(donsNeeded, rasNeeded);
-
-    // create list of dates
-    datesList = new QList<SDate*>;
 
     // io handler
     iohandle = new IOHandler;
@@ -45,7 +42,7 @@ ScheduleWidget::ScheduleWidget(QString staffteamfilename, const ScheduleWizzard 
             sDateIterator = new SDate(dateCounter, donsNeeded[dateCounter.dayOfWeek()-1], rasNeeded[dateCounter.dayOfWeek()-1]);
 
 
-        datesList->append(sDateIterator);
+        datesList.append(sDateIterator);
         dateCounter = dateCounter.addDays(1);
     }
 
@@ -62,120 +59,30 @@ ScheduleWidget::ScheduleWidget(QString staffteamfilename, const ScheduleWizzard 
 
 }
 
-ScheduleWidget::ScheduleWidget(QString fileName, QWidget *parent) // this constructor is used by LoadSchedule
+ScheduleWidget::ScheduleWidget(const QString &fileNameSchedule, QList<Staff *> *team, QList<Exam *> *exams, QWidget *parent) // this constructor is used by LoadSchedule
     : QWidget(parent)
 {
-    QFile file(fileName);
-    if (!file.open(QFile::ReadOnly | QFile::Text))
-    {
-        QMessageBox::warning(this, "Open Schedule","Cannot open file.");
-        return;
-    }
+    iohandle = new IOHandler;
 
-    QTextStream ts(&file);
+    iohandle->loadSchedule(fileNameSchedule, datesList, nightClasses, donsNeeded, rasNeeded);
 
-    QStringList inp = ts.readLine().split(":",QString::SkipEmptyParts);     //get start date
+    theTeam = team;
+    theExams = exams;
 
-    QDate date = QDate::fromString(inp.at(1),"dd/MM/yyyy");
+    foreach (SDate *_sdate, datesList) {
+        bool weekend = (_sdate->getDate().dayOfWeek() == 5 || _sdate->getDate().dayOfWeek() == 6);
 
-    startDate.setDate(date.year(),date.month(),date.day());
+        if (_sdate->getAM() < theTeam->count())
+            theTeam->at(_sdate->getAM())->addShift(weekend, true);    //add the shift count to the staff object
 
-    inp = ts.readLine().split(":",QString::SkipEmptyParts);                 //get end date
-
-    date = QDate::fromString(inp.at(1),"dd/MM/yyyy");
-    endDate.setDate(date.year(),date.month(),date.day());
-
-    inp = ts.readLine().split(":",QString::SkipEmptyParts);                 //get staff req for each night
-    for(int x = 0; x < 7; x++)
-    {
-        donsNeeded.append(inp.at(x).toInt());
-        rasNeeded.append(inp.at(x+7).toInt());
-    }
-
-
-    for(int q = 0; q<7; q++)                                                //get night classes
-        nightClasses[q] = new QList<int>;
-
-    for(int x = 0; x<7; x++)
-    {
-        inp = ts.readLine().split("-",QString::KeepEmptyParts);
-        if (inp.at(1).isEmpty())
-            continue;
-
-        inp = inp.at(1).split(":", QString::SkipEmptyParts);
-
-        for (int y = 0; y < inp.count(); y++)
-            nightClasses[x]->append(inp.at(y).toInt());
-
-    }
-
-
-    theTeam = new QList<Staff*>;                                            //get staff
-    inp = ts.readLine().split(":",QString::SkipEmptyParts);
-    int count = inp.at(1).toInt();
-
-    for(int x = 0; x < count; x++)
-    {
-        inp = ts.readLine().split(":",QString::SkipEmptyParts);
-        Staff *st = new Staff();
-
-        st->setId(inp.at(0).toInt());
-        st->setFirstName(inp.at(1));
-        st->setLastName(inp.at(2));
-
-        if(inp.at(3) == "D")
-            st->setPosition(true);
-        else
-            st->setPosition(false);
-
-        theTeam->append(st);
-    }
-
-    datesList = new QList<SDate*>;                                          //make the sdate objects
-    QDate dateCounter;
-    SDate *sDateIterator;
-    dateCounter.setDate(startDate.year(), startDate.month(), startDate.day());
-    int length = startDate.daysTo(endDate) + 1;
-
-    for(int z = 0; z<length; z++)
-    {
-        sDateIterator = new SDate(dateCounter, donsNeeded[dateCounter.dayOfWeek()-1], rasNeeded[dateCounter.dayOfWeek()-1]);
-        datesList->append(sDateIterator);
-        dateCounter = dateCounter.addDays(1);
-    }
-
-    for(int x = 0; x < datesList->count(); x++)                           //fill the dates
-    {
-        inp = ts.readLine().split(":",QString::KeepEmptyParts);
-
-        if (inp.at(1) == "Y")
-        {
-            datesList->at(x)->setSpecial(true);
-            continue;
+        foreach (int id, _sdate->getDons()) {
+            if (id < theTeam->count())
+                theTeam->at(id)->addShift(weekend);
         }
 
-        bool weekend = (datesList->at(x)->getDate().dayOfWeek() == 5 || datesList->at(x)->getDate().dayOfWeek() == 6);
-
-        QStringList unavail = inp.at(2).split(",", QString::SkipEmptyParts);
-        for(int z = 0; z < unavail.count(); z++)
-            datesList->at(x)->addCantWork(unavail.at(z).toInt());
-
-        datesList->at(x)->setAM(inp.at(3).toInt());             //add the staff to the date object
-        if (inp.at(3).toInt() < theTeam->count())
-            theTeam->at(inp.at(3).toInt())->addShift(weekend, true);    //add the shift count to the staff object
-
-        QStringList dons_list = inp.at(4).split(",", QString::SkipEmptyParts);
-        for(int d = 0; d < dons_list.count(); d++)
-        {
-            datesList->at(x)->addStaff(dons_list.at(d).toInt(), true);      //add staff id to date obj
-            theTeam->at(dons_list.at(d).toInt())->addShift(weekend,false);  //add date to staff obj
-        }
-
-        QStringList ras_list = inp.at(5).split(",", QString::SkipEmptyParts);
-        for(int r = 0; r < ras_list.count(); r++)
-        {
-            datesList->at(x)->addStaff(ras_list.at(r).toInt(), false);      //add staff id to date obj
-            theTeam->at(ras_list.at(r).toInt())->addShift(weekend,false);   // add date to staff obj
+        foreach (int id, _sdate->getRas()) {
+            if (id < theTeam->count())
+                theTeam->at(id)->addShift(weekend);
         }
 
     }
@@ -209,19 +116,20 @@ ScheduleWidget::ScheduleWidget(QString fileName, QWidget *parent) // this constr
             item2->setBackgroundColor(QColor(255,0,0,127));
         }
     }
-    for(int x = 0; x < datesList->count(); x++)
+
+    foreach(SDate *sdate, datesList)
     {
-        if (datesList->at(x)->isFull())
+        if (sdate->isFull())
         {
-            QTextCharFormat format = calendar->dateTextFormat(datesList->at(x)->getDate());
+            QTextCharFormat format = calendar->dateTextFormat(sdate->getDate());
             format.setBackground(Qt::green);
-            calendar->setDateTextFormat(datesList->at(x)->getDate(),format);
+            calendar->setDateTextFormat(sdate->getDate(),format);
         }
-        if (datesList->at(x)->isSpecial())
+        if (sdate->isSpecial())
         {
-            QTextCharFormat format = calendar->dateTextFormat(datesList->at(x)->getDate());
+            QTextCharFormat format = calendar->dateTextFormat(sdate->getDate());
             format.setBackground(Qt::darkGray);
-            calendar->setDateTextFormat(datesList->at(x)->getDate(),format);
+            calendar->setDateTextFormat(sdate->getDate(),format);
         }
     }
 
@@ -286,13 +194,12 @@ ScheduleWidget::~ScheduleWidget()
     delete onDutyItems;
 
 
-    QList<SDate*>::iterator it_d = datesList->begin();
-    for(; it_d != datesList->end();)
+    QList<SDate*>::iterator it_d = datesList.begin();
+    for(; it_d != datesList.end();)
     {
         delete *it_d;
-        it_d = datesList->erase(it_d);
+        it_d = datesList.erase(it_d);
     }
-    delete datesList;
 
     delete setAsAMAction;
 
@@ -558,13 +465,6 @@ void ScheduleWidget::createLists()
 
 void ScheduleWidget::loadStaffTeamData(QString filename)
 {
-    QFile file(filename);
-    if (!file.open(QFile::ReadOnly | QFile::Text))
-    {
-        QMessageBox::warning(this, "Duty Schedule Tool","Cannot read staff team file.");
-        return;
-    }
-
     theTeam = new QList<Staff*>;
     theExams = new QList<Exam*>;
 
@@ -635,7 +535,7 @@ void ScheduleWidget::prepInterface()
 
             int index = dateToIndex(date);
 
-            datesList->at(index)->addCantWork(pStaff->getId());
+            datesList[index]->addCantWork(pStaff->getId());
         }
 
         if(examSchedule)
@@ -659,10 +559,10 @@ void ScheduleWidget::prepInterface()
                 int dateIndex = dateToIndex(date);
 
                 if(theExams->at(id)->getNight())
-                    datesList->at(dateIndex)->addCantWork(pStaff->getId());
+                    datesList[dateIndex]->addCantWork(pStaff->getId());
 
                 if(dateIndex != 0)
-                    datesList->at(dateIndex-1)->addCantWork(pStaff->getId());
+                    datesList[dateIndex-1]->addCantWork(pStaff->getId());
 
             }
         }
@@ -689,9 +589,9 @@ void ScheduleWidget::dateClicked(QDate dateSelected)
         int id = deckItem->data(Qt::UserRole).toInt();
         QFont font = dutyItem->font();
         //check who's on duty already
-        if (datesList->at(dateIndex)->isOn(id))
+        if (datesList[dateIndex]->isOn(id))
         {
-            if (datesList->at(dateIndex)->getAM() == id)
+            if (datesList[dateIndex]->getAM() == id)
                 font.setBold(true);
             else
                 font.setBold(false);
@@ -706,7 +606,7 @@ void ScheduleWidget::dateClicked(QDate dateSelected)
             dutyItem->setHidden(true); //so this person is not onduty.
 
             // check availabilities
-            if (nightClasses[dateSelected.dayOfWeek()-1]->contains(id) || datesList->at(dateIndex)->staffCantWork(id))
+            if (nightClasses[dateSelected.dayOfWeek()-1]->contains(id) || datesList[dateIndex]->staffCantWork(id))
             {
                 deckItem->setHidden(true);
             }
@@ -727,23 +627,23 @@ void ScheduleWidget::addStaff(QListWidgetItem *item)
     int dateIndex = dateToIndex(calendar->selectedDate());
     bool pos = theTeam->at(staffId)->getPosition();
 
-    if (datesList->at(dateIndex)->isOn(staffId))
+    if (datesList[dateIndex]->isOn(staffId))
         return;
 
-    if (datesList->at(dateIndex)->isSpecial())
+    if (datesList[dateIndex]->isSpecial())
         return;
 
     if(pos)// adding a don on
     {
-        if (datesList->at(dateIndex)->donsFull())
+        if (datesList[dateIndex]->donsFull())
             return;
     }
     else
     {
-        if (datesList->at(dateIndex)->rasFull())
+        if (datesList[dateIndex]->rasFull())
             return;
     }
-    datesList->at(dateIndex)->addStaff(staffId, pos);
+    datesList[dateIndex]->addStaff(staffId, pos);
 
     int itemIndex = onDeckItems->indexOf(item);
     item->setHidden(true);
@@ -751,7 +651,7 @@ void ScheduleWidget::addStaff(QListWidgetItem *item)
     updateNeeded();
 
     //color the calendar if the date is full
-    if(datesList->at(dateIndex)->isFull())
+    if(datesList[dateIndex]->isFull())
     {
         QTextCharFormat format = calendar->dateTextFormat(calendar->selectedDate());
         format.setBackground(Qt::green);
@@ -759,7 +659,7 @@ void ScheduleWidget::addStaff(QListWidgetItem *item)
     }
 
 
-    bool isWeekend = (datesList->at(dateIndex)->getDate().dayOfWeek() == 5 || datesList->at(dateIndex)->getDate().dayOfWeek() == 6);
+    bool isWeekend = datesList[dateIndex]->isWeekend();
 
     theTeam->at(staffId)->addShift(isWeekend, false);
 
@@ -772,9 +672,9 @@ void ScheduleWidget::removeStaff(QListWidgetItem *item)
     int staffId = onDutyList->currentItem()->data(Qt::UserRole).toInt();
     int dateIndex = dateToIndex(calendar->selectedDate());
 
-    bool isAM = (staffId == datesList->at(dateIndex)->getAM());
+    bool isAM = (staffId == datesList[dateIndex]->getAM());
     // remove the staff from the sDate object for the selected day.
-    datesList->at(dateIndex)->removeStaff(staffId, theTeam->at(staffId)->getPosition());
+    datesList[dateIndex]->removeStaff(staffId, theTeam->at(staffId)->getPosition());
 
     //make the item invisible in the on duty list.
     item->setHidden(true);
@@ -794,7 +694,7 @@ void ScheduleWidget::removeStaff(QListWidgetItem *item)
 
     //update the stats counters
 
-    bool isWeekend = (datesList->at(dateIndex)->getDate().dayOfWeek() == 5 || datesList->at(dateIndex)->getDate().dayOfWeek() == 6);
+    bool isWeekend = datesList[dateIndex]->isWeekend();
 
     theTeam->at(staffId)->removeShift(isWeekend, isAM);
 
@@ -809,16 +709,16 @@ void ScheduleWidget::setAsAM()
     if (!theTeam->at(staffId)->getPosition())
         return;
 
-    if (datesList->at(dateIndex)->isOn(staffId))
+    if (datesList[dateIndex]->isOn(staffId))
         return;
 
-    if (datesList->at(dateIndex)->getAM() != 999)
+    if (datesList[dateIndex]->getAM() != 999)
         return;
 
-    if (datesList->at(dateIndex)->isSpecial())
+    if (datesList[dateIndex]->isSpecial())
         return;
 
-    datesList->at(dateIndex)->setAM(staffId);
+    datesList[dateIndex]->setAM(staffId);
 
 
     onDeckList->currentItem()->setHidden(true);
@@ -831,7 +731,7 @@ void ScheduleWidget::setAsAM()
 
 
     //color the date on the calendar if it's full.
-    if(datesList->at(dateIndex)->isFull())
+    if(datesList[dateIndex]->isFull())
     {
         QTextCharFormat format = calendar->dateTextFormat(calendar->selectedDate());
         format.setBackground(Qt::green);
@@ -840,7 +740,7 @@ void ScheduleWidget::setAsAM()
 
     //update the stats counters
 
-    bool isWeekend = (datesList->at(dateIndex)->getDate().dayOfWeek() == 5 || datesList->at(dateIndex)->getDate().dayOfWeek() == 6);
+    bool isWeekend = datesList[dateIndex]->isWeekend();
 
     theTeam->at(staffId)->addShift(isWeekend, true);
 
@@ -874,16 +774,16 @@ void ScheduleWidget::showMenu(QPoint p)
 void ScheduleWidget::setSpecialDuty()
 {
     int index = dateToIndex(calendar->selectedDate());
-    if(datesList->at(index)->isSpecial())
+    if(datesList[index]->isSpecial())
     {
-        datesList->at(index)->setSpecial(false);
+        datesList[index]->setSpecial(false);
         QTextCharFormat format = calendar->dateTextFormat(calendar->selectedDate());
         format.setBackground(Qt::white);
         calendar->setDateTextFormat(calendar->selectedDate(),format);
     }
     else
     {
-        datesList->at(index)->setSpecial(true);
+        datesList[index]->setSpecial(true);
         QTextCharFormat format = calendar->dateTextFormat(calendar->selectedDate());
         format.setBackground(Qt::darkGray);
         calendar->setDateTextFormat(calendar->selectedDate(),format);
@@ -894,8 +794,8 @@ void ScheduleWidget::setSpecialDuty()
 
 void ScheduleWidget::updateNeeded()
 {
-    donsNeededLabel->setText(QString::number(datesList->at(dateToIndex(calendar->selectedDate()))->getDonsNeeded()));
-    rasNeededLabel->setText(QString::number(datesList->at(dateToIndex(calendar->selectedDate()))->getRasNeeded()));
+    donsNeededLabel->setText(QString::number(datesList[dateToIndex(calendar->selectedDate())]->getDonsNeeded()));
+    rasNeededLabel->setText(QString::number(datesList[dateToIndex(calendar->selectedDate())]->getRasNeeded()));
 }
 
 void ScheduleWidget::showStaffSchedule(QTableWidgetItem *item)
@@ -905,14 +805,14 @@ void ScheduleWidget::showStaffSchedule(QTableWidgetItem *item)
 
     int staffId = item->data(Qt::UserRole).toInt();
     mySchedViewer *sv;
-    sv = new mySchedViewer(theTeam->at(staffId)->getFirstName(),staffId,datesList);
+    sv = new mySchedViewer(theTeam->at(staffId)->getFirstName(),staffId,&datesList);
     sv->setModal(false);
     sv->show();
 }
 
 void ScheduleWidget::copySlot()
 {
-    copyAM = datesList->at(dateToIndex(calendar->selectedDate()))->getAM();
+    copyAM = datesList[dateToIndex(calendar->selectedDate())]->getAM();
 
     for(int x = 0; x < onDutyItems->count(); x++)
     {
@@ -942,7 +842,7 @@ void ScheduleWidget::setAsAM(int staffId)
     if (staffId == 999)
         return;
 
-    if (!datesList->at(dateIndex)->canWork(staffId))
+    if (!datesList[dateIndex]->canWork(staffId))
         return;
 
     if (nightClasses[calendar->selectedDate().dayOfWeek()-1]->contains(staffId))
@@ -951,16 +851,16 @@ void ScheduleWidget::setAsAM(int staffId)
     if (!theTeam->at(staffId)->getPosition())
         return;
 
-    if (datesList->at(dateIndex)->isOn(staffId))
+    if (datesList[dateIndex]->isOn(staffId))
         return;
 
-    if (datesList->at(dateIndex)->getAM() != 999)
+    if (datesList[dateIndex]->getAM() != 999)
         return;
 
-    if (datesList->at(dateIndex)->isSpecial())
+    if (datesList[dateIndex]->isSpecial())
         return;
 
-    datesList->at(dateIndex)->setAM(staffId);
+    datesList[dateIndex]->setAM(staffId);
 
 
     onDeckItems->at(staffId)->setHidden(true);
@@ -973,7 +873,7 @@ void ScheduleWidget::setAsAM(int staffId)
 
 
     //color the date on the calendar if it's full.
-    if(datesList->at(dateIndex)->isFull())
+    if(datesList[dateIndex]->isFull())
     {
         QTextCharFormat format = calendar->dateTextFormat(calendar->selectedDate());
         format.setBackground(Qt::green);
@@ -982,7 +882,7 @@ void ScheduleWidget::setAsAM(int staffId)
 
     //update the stats counters
 
-    bool isWeekend = (datesList->at(dateIndex)->getDate().dayOfWeek() == 5 || datesList->at(dateIndex)->getDate().dayOfWeek() == 6);
+    bool isWeekend = datesList[dateIndex]->isWeekend();
 
     theTeam->at(staffId)->addShift(isWeekend, true);
 
@@ -996,36 +896,36 @@ void ScheduleWidget::addStaff(int staffId)
     int dateIndex = dateToIndex(calendar->selectedDate());
     bool pos = theTeam->at(staffId)->getPosition();
 
-    if (!datesList->at(dateIndex)->canWork(staffId))
+    if (!datesList[dateIndex]->canWork(staffId))
         return;
 
     if (nightClasses[calendar->selectedDate().dayOfWeek()-1]->contains(staffId))
         return;
 
-    if (datesList->at(dateIndex)->isOn(staffId))
+    if (datesList[dateIndex]->isOn(staffId))
         return;
 
-    if (datesList->at(dateIndex)->isSpecial())
+    if (datesList[dateIndex]->isSpecial())
         return;
 
     if(pos)// adding a don on
     {
-        if (datesList->at(dateIndex)->donsFull())
+        if (datesList[dateIndex]->donsFull())
             return;
     }
     else
     {
-        if (datesList->at(dateIndex)->rasFull())
+        if (datesList[dateIndex]->rasFull())
             return;
     }
-    datesList->at(dateIndex)->addStaff(staffId, pos);
+    datesList[dateIndex]->addStaff(staffId, pos);
 
     onDeckItems->at(staffId)->setHidden(true);
     onDutyItems->at(staffId)->setHidden(false);
     updateNeeded();
 
     //color the calendar if the date is full
-    if(datesList->at(dateIndex)->isFull())
+    if(datesList[dateIndex]->isFull())
     {
         QTextCharFormat format = calendar->dateTextFormat(calendar->selectedDate());
         format.setBackground(Qt::green);
@@ -1034,7 +934,7 @@ void ScheduleWidget::addStaff(int staffId)
 
     //update the stats counters
 
-    bool isWeekend = (datesList->at(dateIndex)->getDate().dayOfWeek() == 5 || datesList->at(dateIndex)->getDate().dayOfWeek() == 6);
+    bool isWeekend = datesList[dateIndex]->isWeekend();
 
     theTeam->at(staffId)->addShift(isWeekend, false);
 
@@ -1043,9 +943,9 @@ void ScheduleWidget::addStaff(int staffId)
 
 void ScheduleWidget::exportSchedule()
 {
-    for(int checkFull = 0; checkFull < datesList->count(); checkFull++)             // IF there are some dates that aren't full issue a warning.
+    foreach(SDate *sdate, datesList)             // IF there are some dates that aren't full issue a warning.
     {
-        if(!datesList->at(checkFull)->isFull() && !datesList->at(checkFull)->isSpecial())
+        if(!sdate->isFull() && !sdate->isSpecial())
         {
             QMessageBox msgBox;
             msgBox.setWindowTitle("Duty Schedule Tool");
@@ -1101,12 +1001,12 @@ void ScheduleWidget::exportSchedule()
     int numWeeks = endDate.weekNumber() - startDate.weekNumber() + 1;         // the number of weeks spanned by our schedule
     for(int weekCounter = 0; weekCounter < numWeeks; weekCounter++)
     {
-        for(int dayOfWeekCounter = datesList->at(dateCounter)->getWeekday()-1; dayOfWeekCounter < 7; dayOfWeekCounter++)
+        for(int dayOfWeekCounter = datesList[dateCounter]->getWeekday()-1; dayOfWeekCounter < 7; dayOfWeekCounter++)
         {
-            QDate date = datesList->at(dateCounter)->getDate();
+            QDate date = datesList[dateCounter]->getDate();
             writtenDates.replace(dayOfWeekCounter,"\"" + QDate::shortDayName(date.dayOfWeek()) + " " + QDate::shortMonthName(date.month()) + " " + QString::number(date.day()) + "\"");
 
-            QString on = datesList->at(dateCounter)->exportOn();
+            QString on = datesList[dateCounter]->exportOn();
             if(on == "special")
             {
                 lists.at(dayOfWeekCounter)->append("Special Duty");
@@ -1127,7 +1027,7 @@ void ScheduleWidget::exportSchedule()
                 maxNeededForWeek = lists.at(dayOfWeekCounter)->count();
 
             dateCounter++;
-            if (dateCounter >= datesList->count())                                  // check this for accuracy
+            if (dateCounter >= datesList.count())                                  // check this for accuracy
                 break;
         }
 
@@ -1236,74 +1136,14 @@ void ScheduleWidget::updateStats()
 
 void ScheduleWidget::saveMidSchedule(QString fileName)
 {
-    QFile file(fileName);
-    if (!file.open(QFile::WriteOnly | QFile::Text))
-    {
-        QMessageBox::warning(this, "Save Schedule","Cannot write file.");
-        return;
+    bool ok = iohandle->saveSchedule(fileName, datesList, nightClasses, donsNeeded, rasNeeded);
+
+    if (!ok) {
+        QString title, msg;
+        iohandle->getErrorInfo(title, msg);
+        QMessageBox::warning(this, title, msg);
+        iohandle->clearErrorInfo();
     }
-
-    QTextStream ts(&file);
-
-    ts << "start:" << startDate.toString("dd/MM/yyyy") << endl;
-    ts << "end:" << endDate.toString("dd/MM/yyyy") << endl;
-
-    //x:y:z:a:b:c:d:1:2:3:4:5:6:7
-    for(int d = 0; d < 7; d++)
-        ts << QString::number(donsNeeded[d]) << ":";
-    for(int r = 0; r < 7; r++)
-        ts << QString::number(rasNeeded[r]) << ":";
-    ts << endl;
-
-
-    //a line for each day of the week with the staff who can't work ids. Monday first.
-    //1-id:id:id:
-    //2-id:id:
-    // etc
-    for(int n = 0; n<7; n++)
-    {
-        ts << QString::number(n) << "-";
-        for(int i = 0; i < nightClasses[n]->count(); i++)
-        {
-            ts << QString::number(nightClasses[n]->at(i)) << ":";
-        }
-        ts << endl;
-    }
-
-    ts << "#staff:" << QString::number(theTeam->count()) << endl;
-    // ID:firstname:lastname:position
-    for(int x = 0; x < theTeam->count(); x++)
-    {
-        ts << QString::number(theTeam->at(x)->getId()) + ":"
-              + theTeam->at(x)->getFirstName() + ":"
-              + theTeam->at(x)->getLastName() + ":";
-
-        if(theTeam->at(x)->getPosition())
-            ts << "D" << endl;
-        else
-            ts << "R" << endl;
-    }
-
-
-    // dd/MM/yyyy:isSpecial:cantwork,cantwork,cantwork:AM:don,don,don,don:ra,ra,ra,ra,ra
-    for(int x = 0; x < datesList->count(); x++)
-    {
-        ts << datesList->at(x)->getDate().toString("dd/MM/yyyy") << ":";
-
-        if(datesList->at(x)->isSpecial())
-            ts << "Y:";
-        else
-            ts << "N:";
-
-        ts << datesList->at(x)->getCantWork() << ":";
-        ts << QString::number(datesList->at(x)->getAM()) << ":";
-        ts << datesList->at(x)->getDons() << ":";
-        ts << datesList->at(x)->getRas() << endl;
-
-    }
-
-    file.close();
-
 }
 
 

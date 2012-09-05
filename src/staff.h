@@ -50,7 +50,7 @@ public:
     void appendAvail(const QDate &dt);
     void removeAvail(const QDate &dt);
 
-    void addShift(bool, bool);
+    void addShift(bool, bool = false);
     void removeShift(bool, bool);
 
 

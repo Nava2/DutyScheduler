@@ -18,22 +18,41 @@ public:
 
     QDate getDate();//return the date of this sDate
     bool isSpecial(); // is this special duty?
-    bool isOn(int);// is this staff on duty already?
-    bool isFull();
-    bool rasFull(); // do we have enough ras?
-    bool donsFull();// do we have enough dons? including RA.
-    bool canWork(int);//can someone work?
+    bool isOn(int) const;// is this staff on duty already?
+    bool isFull() const;
+    bool rasFull() const; // do we have enough ras?
+    bool donsFull() const;// do we have enough dons? including RA.
+    bool canWork(int) const;//can someone work?
 
     void setSpecial(bool);//set the special duty flag
 
 
     int getAM();//return the AM's ID
     int getWeekday();
-    int getRasNeeded();
-    int getDonsNeeded();
-    QString getCantWork();
-    QString getDons();
-    QString getRas();
+    int getRasNeeded() const;
+    void setRasNeeded(const int);
+
+    int getDonsNeeded() const;
+    void setDonsNeeded(const int);
+
+    bool isDefaultNeeded() const;
+
+    bool isWeekend() const;
+
+    QString getCantWorkStr();
+    QList<int > getCantWork() {
+        return *cantWork;
+    }
+
+    QString getDonsStr();
+    QList<int > getDons() {
+        return *donsOn;
+    }
+
+    QString getRasStr();
+    QList<int > getRas() {
+        return *rasOn;
+    }
 
     QString exportOn();
 
@@ -55,6 +74,7 @@ private:
     QList<int> *donsOn;
     QList<int> *rasOn;
     QList<int> *cantWork;
+    bool defaultNeededD, defaultNeededR;
     int rasNeeded;
     int donsNeeded;
     int weekday;

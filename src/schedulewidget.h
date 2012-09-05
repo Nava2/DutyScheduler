@@ -41,9 +41,9 @@ class ScheduleWidget : public QWidget
 
 public:
     ScheduleWidget(QWidget *parent = 0);
-    ScheduleWidget(QString staffteamfilename, const ScheduleWizzard &swiz, QWidget *parent = NULL);
+    ScheduleWidget(const QString &fileNameStaff, const ScheduleWizzard &swiz, QWidget *parent = NULL);
     void saveMidSchedule(QString);
-    ScheduleWidget(QString, QWidget *parent = 0);
+    ScheduleWidget(const QString &fileNameSchedule, QList<Staff *> *team, QList<Exam *> *exams, QWidget *parent = NULL);
 
     ~ScheduleWidget();
 
@@ -130,10 +130,10 @@ private:
 
     bool examSchedule;
 
-    QList<int> * nightClasses[7]; // each list contains the id's of the staff who can't work that night. Mon = 0
+    QList<QList<int> *> nightClasses; // each list contains the id's of the staff who can't work that night. Mon = 0
     QList<QListWidgetItem*> * onDeckItems; // this contains a CONSTANT source of list widget items, one for each staff.
     QList<QListWidgetItem*> * onDutyItems;
-    QList<SDate*> * datesList;
+    QList<SDate*> datesList;
 
     QAction *setAsAMAction;
 

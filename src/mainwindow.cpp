@@ -205,28 +205,14 @@ void MainWindow::saveSchedule()
 
 void MainWindow::loadSchedule()
 {
-    QString fileName = QFileDialog::getOpenFileName(this);
+    QString fileName = QFileDialog::getOpenFileName(this, "Open Schedule File..", QDir::home().path());
     if (fileName.isEmpty())
         return;
-
-    if(fileName.right(4) != ".txt")
-    {
-        QMessageBox::warning(this, "Open Schedule","File must have extention '.txt'.");
-        return;
-    }
-
-    QFile file(fileName);
-    if (!file.open(QFile::ReadOnly | QFile::Text))
-    {
-        QMessageBox::warning(this, "Open Schedule","Cannot write file.");
-        return;
-    }
-    file.close();
 
     if (centralWidget() == s)
         delete s;
 
-    s = new ScheduleWidget(fileName);
+    s = new ScheduleWidget(fileName, m->getStaff(), m->getExams() );
 
     setCentralWidget(s);
 
