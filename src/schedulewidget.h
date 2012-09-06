@@ -9,7 +9,7 @@
 #include "exam.h"
 #include "sdate.h"
 #include "myqlistwidget.h"
-#include "myschedviewer.h"
+#include "schedviewer.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -56,6 +56,7 @@ private slots:
     void copySlot();
     void pasteSlot();
     void exportSchedule();
+
 
 private:
 
@@ -113,6 +114,8 @@ private:
     QGroupBox *OnDeckGroupBox;
     MyQListWidget *onDeckList;
     MyQListWidget *onDutyList;
+
+    SchedViewer *schedViewWidget;
 
     QList<staff*> *theTeam;
     QList<exam*> *theExams;

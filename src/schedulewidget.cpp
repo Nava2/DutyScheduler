@@ -62,7 +62,6 @@ scheduleWidget::scheduleWidget(QString input, QString staffteamfilename, QWidget
     for(int q = 0; q<7; q++)
         nightClasses[q] = new QList<int>;
 
-
     //call some other functions
     loadStaffTeamData(staffteamfilename);
     createScheduleGroupBox();
@@ -497,13 +496,18 @@ void scheduleWidget::createScheduleStats()
         statsTable->setItem(x,4,amItem);
 
     }
-        statsTable->setSortingEnabled(true);
+
+    statsTable->setSortingEnabled(true);
+
+    schedViewWidget = new SchedViewer(*startDate, *endDate);
 
     QGridLayout *layout = new QGridLayout;
 
-    layout->addWidget(averagesTable,0,0,1,5);
+    layout->addWidget(averagesTable, 0, 0, 1, 5);
 
-    layout->addWidget(statsTable,1,0,1,5);
+    layout->addWidget(statsTable, 1, 0, 1, 5);
+
+    layout->addWidget(schedViewWidget, 2, 0, 1, 1);
 
     scheduleStatsGroupBox->setLayout(layout);
 
@@ -1028,10 +1032,7 @@ void scheduleWidget::showStaffSchedule(QTableWidgetItem *item)
         return;
 
     int staffId = item->data(Qt::UserRole).toInt();
-    mySchedViewer *sv;
-    sv = new mySchedViewer(theTeam->at(staffId)->getFirstName(),staffId,datesList);
-    sv->setModal(false);
-    sv->show();
+    schedViewWidget->setToStaff(theTeam->at(staffId), *datesList);
 }
 
 void scheduleWidget::copySlot()

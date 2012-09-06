@@ -19,9 +19,9 @@ SOURCES += main.cpp \
     mainwidget.cpp \
     exam.cpp \
     myqlistwidget.cpp \
-    myschedviewer.cpp \
     myqlabel.cpp \
-    availabilitywidget.cpp
+    availabilitywidget.cpp \
+    schedviewer.cpp
 
 HEADERS  += \
     staff.h \
@@ -32,6 +32,6 @@ HEADERS  += \
     mainwidget.h \
     exam.h \
     myqlistwidget.h \
-    myschedviewer.h \
     myqlabel.h \
-    availabilitywidget.h
+    availabilitywidget.h \
+    schedviewer.h
