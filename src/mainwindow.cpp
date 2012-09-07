@@ -212,7 +212,35 @@ void MainWindow::loadSchedule()
     if (centralWidget() == s)
         delete s;
 
-    s = new ScheduleWidget(fileName, m->getStaff(), m->getExams() );
+    QList<Staff *> *team = m->getStaff();
+    QList<Exam *> *exams = m->getExams();
+
+    if ((!team || team->count() == 0) || (!exams || exams->count() == 0)) {
+        QString StaffTeamFilename = iohandle.getCurrentStaffFile();
+
+        if (StaffTeamFilename.isEmpty()) {
+            QMessageBox msgBox2;
+            msgBox2.setWindowTitle("Duty Schedule Tool");
+            msgBox2.setText("Select the staff team to use for your new schedule.");
+            msgBox2.setStandardButtons(QMessageBox::Ok);
+            msgBox2.setDefaultButton(QMessageBox::Ok);
+            msgBox2.exec();
+
+            iohandle.clearErrorInfo();
+            do {
+                StaffTeamFilename = QFileDialog::getOpenFileName(this, "Open Staff Team..", QDir::home().path());
+
+                QString title(""), msg("");
+                iohandle.getErrorInfo(msg, title);
+                if (!msg.isEmpty() && !title.isEmpty())
+                    QMessageBox::warning(this, title, msg);
+            } while (!iohandle.checkFileName(StaffTeamFilename));
+        }
+
+        iohandle.loadStaffTeam(StaffTeamFilename, *team, *exams);
+    }
+
+    s = new ScheduleWidget(fileName, team, exams );
 
     setCentralWidget(s);
 

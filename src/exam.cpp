@@ -1,37 +1,36 @@
 #include "exam.h"
 
+#include <QDate>
+
 Exam::Exam()
+    : QDate()
 {
     id = 99999;
-    date = "";
     night = false;
 }
 
 Exam::Exam(int i, QString d, bool n)
 {
-    id = i;
-    date = d;
+    this->id = i;
+    QDate date = fromString(d, "dd/MM/yyyy");
+    setYMD(date.year(), date.month(), date.day());
     night = n;
 }
 
-Exam::Exam(const QVariantMap &json) :
-    id(0), date(""), night(0) {
+Exam::Exam(const QVariantMap &json)
+    : id(0), night(0) {
     *this << json;
 }
 
-void Exam::setDate(QString d)
-{
-    date = d;
+Exam::Exam(const Exam &old) {
+    this->id = old.id;
+    setYMD(old.year(), old.month(), old.day());
+    night = old.night;
 }
 
 void Exam::setNight(bool n)
 {
     night = n;
-}
-
-QString Exam::getDate()
-{
-    return date;
 }
 
 bool Exam::getNight()
@@ -48,13 +47,14 @@ int Exam::getId()
 // in
 void Exam::operator <<(const QVariantMap &json) {
     id = json["id"].toInt();
-    date = json["date"].toString();
+    QDate date = json["date"].toDate();
+    setYMD(date.year(), date.month(), date.day());
     night = json["night"].toBool();
 }
 
 // out
 void Exam::operator >>(QVariantMap &json) {
     json["id"] = id;
-    json["date"] = date;
+    json["date"] = (QDate)(*this);
     json["night"] = night;
 }

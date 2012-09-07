@@ -1,6 +1,7 @@
 #include "myqlistwidget.h"
 #include <QMouseEvent>
 #include <QDebug>
+
 MyQListWidget::MyQListWidget(QWidget *parent) : QListWidget(parent)
 {
     this->viewport()->installEventFilter(this);

@@ -50,13 +50,13 @@ ScheduleWidget::ScheduleWidget(const QString &staffteamfilename, const ScheduleW
 
     //create the night class lists
     for(int q = 0; q<7; q++)
-        nightClasses[q] = new QList<int>;
-
+        nightClasses.append(new QList<int>);
 
     //call some other functions
     loadStaffTeamData(staffteamfilename);
     createScheduleGroupBox();
     prepInterface();
+
     updateNeeded();
 
 }
@@ -68,8 +68,15 @@ ScheduleWidget::ScheduleWidget(const QString &fileNameSchedule, QList<Staff *> *
 
     iohandle->loadSchedule(fileNameSchedule, datesList, nightClasses, donsNeeded, rasNeeded);
 
-    theTeam = team;
-    theExams = exams;
+    theTeam = new QList<Staff*>;
+    theExams = new QList<Exam*>;
+    foreach (Staff *pStaff, *team) {
+        theTeam->append(new Staff(*pStaff));
+    }
+
+    foreach (Exam *pExam, *exams) {
+        theExams->append(new Exam(*pExam));
+    }
 
     startDate = datesList.first();
     endDate = datesList.last();
@@ -139,8 +146,15 @@ ScheduleWidget::ScheduleWidget(const QString &fileNameSchedule, QList<Staff *> *
     }
 
     dateClicked(startDate);
-    updateStats();
 
+    QTableWidgetItem *row = averagesTable->item(0, 0);
+    int id = row->data(Qt::UserRole).toInt();
+
+    schedViewWidget->setToStaff((*theTeam)[id], datesList);
+
+    updateNeeded();
+
+    updateStats();
 }
 
 ScheduleWidget::~ScheduleWidget()
@@ -200,9 +214,6 @@ ScheduleWidget::~ScheduleWidget()
     delete setAsAMAction;
 
     delete copyList;
-
-
-
 }
 
 void ScheduleWidget::createScheduleGroupBox()
@@ -274,7 +285,6 @@ void ScheduleWidget::createScheduleControls()
 
 void ScheduleWidget::createScheduleStats()
 {
-
     scheduleStatsGroupBox = new QGroupBox("Stats");
     scheduleStatsGroupBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
@@ -323,8 +333,6 @@ void ScheduleWidget::createScheduleStats()
     averagesTable->setItem(0,4,amAverageItem);
     averagesTable->setItem(1,2,raAverageItem);
     averagesTable->setItem(1,3,raAverageWeekendItem);
-
-
 
     statsTable = new QTableWidget(theTeam->count(),5);
     statsTable->setStatusTip("This table shows the number of shifts assigned to each staff member. Click a staff member's name to show their individual schedule.");
@@ -389,13 +397,18 @@ void ScheduleWidget::createScheduleStats()
         statsTable->setItem(x,4,amItem);
 
     }
-        statsTable->setSortingEnabled(true);
+
+    statsTable->setSortingEnabled(true);
+
+    schedViewWidget = new SchedViewer(startDate, endDate);
 
     QGridLayout *layout = new QGridLayout;
 
-    layout->addWidget(averagesTable,0,0,1,5);
+    layout->addWidget(averagesTable, 0, 0, 1, 5);
 
-    layout->addWidget(statsTable,1,0,1,5);
+    layout->addWidget(statsTable, 1, 0, 1, 5);
+
+    layout->addWidget(schedViewWidget, 2, 0, 1, 1);
 
     scheduleStatsGroupBox->setLayout(layout);
 
@@ -456,6 +469,8 @@ void ScheduleWidget::createLists()
     layout = new QGridLayout;
     layout->addWidget(onDeckList,0,0);
     OnDeckGroupBox->setLayout(layout);
+
+    OnDutyGroupBox->setFixedSize(OnDeckGroupBox->width(), OnDeckGroupBox->height());
 }
 
 
@@ -546,23 +561,27 @@ void ScheduleWidget::prepInterface()
                 inp.remove(")",Qt::CaseInsensitive);
                 int id = inp.toInt();
 
-                QDate date;
-                date = QDate::fromString(theExams->at(id)->getDate(),"dd/MM/yyyy");
+                Exam exam = *(theExams->at(id));
 
-                if(date.daysTo(startDate) > 0 || date.daysTo(endDate) < 0)
+                if(exam.daysTo(startDate) > 0 || exam.daysTo(endDate) < 0)
                     continue;
 
-                int dateIndex = dateToIndex(date);
+                int dateIndex = dateToIndex(exam);
 
-                if(theExams->at(id)->getNight())
+                if(exam.getNight())
                     datesList[dateIndex].addCantWork(pStaff->getId());
 
                 if(dateIndex != 0)
                     datesList[dateIndex-1].addCantWork(pStaff->getId());
-
             }
         }
     }
+
+    QTableWidgetItem *row = averagesTable->item(0, 0);
+    int id = row->data(Qt::UserRole).toInt();
+
+    schedViewWidget->setToStaff((*theTeam)[id], datesList);
+
 }
 
 int ScheduleWidget::dateToIndex(const QDate &date)
@@ -798,10 +817,10 @@ void ScheduleWidget::showStaffSchedule(QTableWidgetItem *item)
         return;
 
     int staffId = item->data(Qt::UserRole).toInt();
-    mySchedViewer *sv;
-    sv = new mySchedViewer(theTeam->at(staffId)->getFirstName(),staffId,&datesList);
-    sv->setModal(false);
-    sv->show();
+    if (staffId < theTeam->count())
+        schedViewWidget->setToStaff(theTeam->at(staffId), datesList);
+    else
+        qDebug() << "Trying to set bad index" << staffId;
 }
 
 void ScheduleWidget::copySlot()
@@ -1126,6 +1145,7 @@ void ScheduleWidget::updateStats()
     raAverageItem->setText(QString::number(rAverage));
     raAverageWeekendItem->setText(QString::number(rWAverage));
 
+    schedViewWidget->setToStaff(NULL, datesList);
 }
 
 void ScheduleWidget::saveMidSchedule(QString fileName)

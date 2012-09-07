@@ -328,8 +328,8 @@ bool IOHandler::saveStaffTeamFile(QFile &file, const QList<Staff *> &staffList, 
     foreach (Exam *ex, examList)
     {
         ts << QString::number(ex->getId()) << ","
-           << ex->getDate() << ","
-           << QString(ex->getNight()?"1":"0") << endl;
+           << ex->toString("dd/MM/yyyy") << ","
+           << (ex->getNight() ? "1" : "0") << endl;
     }
 
     return true;

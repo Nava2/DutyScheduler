@@ -3,27 +3,26 @@
 
 #include <QString>
 #include <QVariantMap>
+#include <QDate>
 
-class Exam
+class Exam : public QDate
 {
 public:
     Exam();
     Exam(int, QString, bool);
+    Exam(const Exam &);
 
     Exam(const QVariantMap &);
     void operator <<(const QVariantMap &);
     void operator >>(QVariantMap &);
 
-    void setDate(QString);
     void setNight(bool);
 
-    QString getDate();
     bool getNight();
     int getId();
 
 private:
     int id;
-    QString date;
     bool night;
 };
 

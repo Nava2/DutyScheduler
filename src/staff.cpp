@@ -41,6 +41,19 @@ Staff::Staff(const QVariantMap &json) :
     *this << json;
 }
 
+Staff::Staff(const Staff &old) {
+    this->id = old.id;
+    firstName = old.firstName;
+    lastName = old.lastName;
+    position = old.position;
+    gender = old.gender;
+
+    exams = old.exams;
+    numShifts = old.numShifts;
+    numWeekendShifts = old.numWeekendShifts;
+    numAMShifts = old.numAMShifts;
+}
+
 Staff::~Staff()
 {
 

@@ -240,11 +240,11 @@ void MainWidget::updateSelections(QListWidgetItem * item)
         QString text = "";
         if(theExams->at(exams_int[a])->getNight())
         {
-            text = theExams->at(exams_int[a])->getDate() + " (night)";
+            text = theExams->at(exams_int[a])->toString("dd/MM/yyyy") + " (night)";
         }
         else
         {
-            text = theExams->at(exams_int[a])->getDate();
+            text = theExams->at(exams_int[a])->toString("dd/MM/yyyy");
         }
         i = new QListWidgetItem(text);
         i->setData(Qt::UserRole,exams_int[a]);
@@ -260,9 +260,9 @@ void MainWidget::addExam()
     QListWidgetItem *item = new QListWidgetItem();
 
     if (examNightCheck->isChecked())
-        item->setText(e->getDate() + " (night)");
+        item->setText(e->toString("dd/MM/yyyy") + " (night)");
     else
-        item->setText(e->getDate());
+        item->setText(e->toString("dd/MM/yyyy"));
 
     item->setData(Qt::UserRole,e->getId());
 
@@ -440,19 +440,24 @@ void MainWidget::createStaffControls()
 void MainWidget::reset()
 {
 
-
-    QList<Staff *>::iterator it_s = theTeam->begin();
-    for(; it_s != theTeam->end(); )
-    {
-        delete *it_s;
-        it_s = theTeam->erase(it_s);
+    if (theTeam) {
+        QList<Staff *>::iterator it_s = theTeam->begin();
+        for(; it_s != theTeam->end(); )
+        {
+            if (*it_s)
+                delete *it_s;
+            it_s = theTeam->erase(it_s);
+        }
     }
 
-    QList<Exam *>::iterator it_e = theExams->begin();
-    for(; it_e != theExams->end(); )
-    {
-        delete *it_e;
-        it_e = theExams->erase(it_e);
+    if (theExams) {
+        QList<Exam *>::iterator it_e = theExams->begin();
+        for(; it_e != theExams->end(); )
+        {
+            if (*it_e)
+                delete *it_e;
+            it_e = theExams->erase(it_e);
+        }
     }
 
 

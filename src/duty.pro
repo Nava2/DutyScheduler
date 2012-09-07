@@ -19,12 +19,12 @@ SOURCES += main.cpp \
     mainwidget.cpp \
     exam.cpp \
     myqlistwidget.cpp \
-    myschedviewer.cpp \
     myqlabel.cpp \
     json.cpp \
     iohandler.cpp \
     availabilitywidget.cpp \
-    availabledate.cpp
+    availabledate.cpp \
+    schedviewer.cpp
 
 HEADERS  += \
     staff.h \
@@ -35,9 +35,9 @@ HEADERS  += \
     mainwidget.h \
     exam.h \
     myqlistwidget.h \
-    myschedviewer.h \
     myqlabel.h \
     json.h \
     iohandler.h \
     availabilitywidget.h \
-    availabledate.h
+    availabledate.h \
+    schedviewer.h

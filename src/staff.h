@@ -14,6 +14,7 @@ public:
     Staff();
     Staff(int, QString, QString, bool, bool, int);
     Staff(const QVariantMap &);
+    Staff(const Staff &);
     ~Staff();
 
     void operator >>(QVariantMap &);

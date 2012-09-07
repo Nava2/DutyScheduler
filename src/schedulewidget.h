@@ -9,7 +9,7 @@
 #include "exam.h"
 #include "sdate.h"
 #include "myqlistwidget.h"
-#include "myschedviewer.h"
+#include "schedviewer.h"
 
 #include "iohandler.h"
 #include "schedulewizzard.h"
@@ -59,6 +59,7 @@ private slots:
     void copySlot();
     void pasteSlot();
     void exportSchedule();
+
 
 private:
 
@@ -122,6 +123,7 @@ private:
 
     QDate startDate;
     QDate endDate;
+    SchedViewer *schedViewWidget;
 
     QList<int > donsNeeded;
     QList<int > rasNeeded;
@@ -137,7 +139,7 @@ private:
 
     QAction *setAsAMAction;
 
-    QList<int> * copyList;
+    QList<int> *copyList;
     int copyAM;
 
 };
