@@ -1,7 +1,8 @@
 #include "schedviewer.h"
 
 SchedViewer::SchedViewer(const QDate &startDate, const QDate &lastDate, QWidget *parent) :
-    QWidget(parent), staffMember(NULL)
+    QWidget(parent),  calendarStaff(NULL), box(NULL), labelBox(NULL), nameLabel(NULL),
+    externLayout(NULL), internLayout(NULL), labelLayout(NULL)
 {
     box = new QGroupBox("Schedule:");
 
@@ -82,17 +83,21 @@ SchedViewer::SchedViewer(const QDate &startDate, const QDate &lastDate, QWidget 
 
 SchedViewer::~SchedViewer()
 {
+    // delete in order of internal component out
     DELETE_IF(calendarStaff);
     DELETE_IF(amLabel);
     DELETE_IF(onLabel);
     DELETE_IF(nameLabel);
     DELETE_IF(noWorkLabel);
-    DELETE_IF(internLayout);
-    DELETE_IF(externLayout);
 
-    DELETE_IF(box);
     DELETE_IF(labelLayout);
     DELETE_IF(labelBox);
+
+    DELETE_IF(internLayout);
+
+    DELETE_IF(box);
+
+    DELETE_IF(externLayout);
 }
 
 #undef DELETE_IF
