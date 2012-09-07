@@ -30,6 +30,7 @@ public:
     bool getPosition();
     bool getGender();
     int getNightClass();
+    bool isNightClass(const QDate &date);
     QString getExams();
 
     int getShifts();

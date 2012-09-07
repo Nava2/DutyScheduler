@@ -80,7 +80,7 @@ void SchedViewer::setToStaff(Staff::Ptr pStaff, QList<SDate> &datesList) {
             format.setBackground(Qt::magenta);
             if (sdate.getAM() == pStaff->getId())
                 format.setBackground(Qt::green);
-        } else if (!sdate.canWork(pStaff->getId())) {
+        } else if (!sdate.canWork(pStaff->getId()) || pStaff->isNightClass(sdate)) {
             format.setBackground(Qt::cyan);
         } else {
             format.setBackground(Qt::white);
