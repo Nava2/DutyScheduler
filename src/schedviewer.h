@@ -30,6 +30,7 @@ private:
     QLabel *onLabel;
     QLabel *amLabel;
     QLabel *noWorkLabel;
+    QLabel *nightClassLabel;
     QLabel *nameLabel;
     QVBoxLayout *externLayout;
     QGridLayout *internLayout, *labelLayout;

@@ -12,6 +12,7 @@ SchedViewer::SchedViewer(const QDate &startDate, const QDate &lastDate, QWidget 
     calendarStaff->setMaximumDate(lastDate);
     calendarStaff->setFirstDayOfWeek(Qt::Monday);
     calendarStaff->setVerticalHeaderFormat(QCalendarWidget::NoVerticalHeader);
+    calendarStaff->setGridVisible(true);
 
     QTextCharFormat format = calendarStaff->weekdayTextFormat(Qt::Sunday);
     calendarStaff->setWeekdayTextFormat(Qt::Friday, format);
@@ -22,14 +23,46 @@ SchedViewer::SchedViewer(const QDate &startDate, const QDate &lastDate, QWidget 
     labelLayout = new QGridLayout;
     nameLabel = new QLabel("<b>Name:</b> ");
 
-    amLabel = new QLabel("AM = Green");
-    onLabel = new QLabel("On Duty = Purple");
-    noWorkLabel = new QLabel("Can't work = Cyan");
+    QList<QLabel *> labelList;
+    QList<QColor> colorList;
+
+#define LABEL_CREATE(var, text, color) \
+    var = new QLabel(text); \
+    labelList.append(var); \
+    colorList.append(color);
+
+    LABEL_CREATE(amLabel, "AM", Qt::green);
+    LABEL_CREATE(onLabel, "On Duty", Qt::magenta);
+    LABEL_CREATE(noWorkLabel, "Requested Off", Qt::cyan);
+    LABEL_CREATE(nightClassLabel, "Night Class", Qt::blue);
+
+#undef LABEL_CREATE
+
+    QFont font = amLabel->font();
+    font.setPixelSize(10);
+
+    for (int x = 0; x < labelList.size(); x++) {
+        QLabel *label = labelList[x];
+
+        label->setFont(font);
+
+        QPalette palette(label->palette());
+
+        //white text
+        QBrush brush(colorList[x]);
+        brush.setStyle(Qt::SolidPattern);
+
+        //set white text
+        palette.setBrush(QPalette::Active, QPalette::WindowText, brush);
+        palette.setBrush(QPalette::Inactive, QPalette::WindowText, brush);
+
+        //set palette
+        label->setPalette(palette);
+
+        labelLayout->addWidget(label, x, 1, 1, 1);
+    }
 
     labelLayout->addWidget(nameLabel, 0, 0, -1, 1);
-    labelLayout->addWidget(amLabel, 0, 1, 1, 1);
-    labelLayout->addWidget(onLabel, 1, 1, 1, 1);
-    labelLayout->addWidget(noWorkLabel, 2, 1, 1, -1);
 
     labelBox = new QGroupBox;
     labelBox->setLayout(labelLayout);
@@ -80,8 +113,10 @@ void SchedViewer::setToStaff(Staff::Ptr pStaff, QList<SDate> &datesList) {
             format.setBackground(Qt::magenta);
             if (sdate.getAM() == pStaff->getId())
                 format.setBackground(Qt::green);
-        } else if (!sdate.canWork(pStaff->getId()) || pStaff->isNightClass(sdate)) {
+        } else if (!sdate.canWork(pStaff->getId())) {
             format.setBackground(Qt::cyan);
+        } else if (pStaff->isNightClass(sdate)) {
+            format.setBackground(Qt::blue);
         } else {
             format.setBackground(Qt::white);
         }
