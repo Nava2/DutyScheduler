@@ -37,11 +37,11 @@ public:
     MainWidget(QWidget *parent = 0);
     ~MainWidget();
     void reset();
-    QList<Staff*> * getStaff();
-    QList<Exam*> * getExams();
+    QList<Staff::Ptr> * getStaff();
+    QList<Exam::Ptr> * getExams();
     QList<int> getTeamIDs();
     QString getTeam();
-    void load(QList<Staff*> * staffList, QList<Exam*> * examList);
+    void load(QList<Staff::Ptr> *staffList, QList<Exam::Ptr> *examList);
 
 
 private slots:
@@ -58,8 +58,8 @@ private slots:
 
 private:
     //DATA
-    QList<Exam*> *theExams;
-    QList<Staff*> *theTeam;
+    QList<Exam::Ptr> *theExams;
+    QList<Staff::Ptr> *theTeam;
 
     //GUI
     void createStaffElements();

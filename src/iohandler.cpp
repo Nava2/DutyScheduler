@@ -66,7 +66,7 @@ bool IOHandler::checkFileName(const QString &fileName, FileExtension *ext) {
     return result;
 }
 
-bool IOHandler::loadStaffTeam(const QString &fileName, QList<Staff*> &staffList, QList<Exam*> &examList)
+bool IOHandler::loadStaffTeam(const QString &fileName, QList<Staff::Ptr> &staffList, QList<Exam::Ptr> &examList)
 {
     FileExtension ext;
     bool result = IOHandler::checkFileName(fileName, &ext);
@@ -102,7 +102,7 @@ bool IOHandler::loadStaffTeam(const QString &fileName, QList<Staff*> &staffList,
 }
 
 
-bool IOHandler::loadStaffTeamJson(QFile &file, QList<Staff*> &staffList, QList<Exam*> &examList) {
+bool IOHandler::loadStaffTeamJson(QFile &file, QList<Staff::Ptr> &staffList, QList<Exam::Ptr> &examList) {
 
     // read the whole file into the QByteArray then put it into a string for
     // parsing
@@ -125,7 +125,7 @@ bool IOHandler::loadStaffTeamJson(QFile &file, QList<Staff*> &staffList, QList<E
     // for each member, create a new object initialized to the values in the
     // maps' storage
     foreach( QVariant val, team ) {
-        Staff *pStaff = new Staff(val.toMap());
+        Staff::Ptr pStaff(new Staff(val.toMap()));
         staffList.append(pStaff);
     }
 
@@ -134,7 +134,7 @@ bool IOHandler::loadStaffTeamJson(QFile &file, QList<Staff*> &staffList, QList<E
 
     // repeat the same steps as the staff members
     foreach ( QVariant val, exams ) {
-        Exam *pExam = new Exam(val.toMap());
+        Exam::Ptr pExam(new Exam(val.toMap()));
         examList.append(pExam);
     }
 
@@ -142,7 +142,7 @@ bool IOHandler::loadStaffTeamJson(QFile &file, QList<Staff*> &staffList, QList<E
 }
 
 //FILE HANDLERS
-bool IOHandler::loadStaffTeamFile(QFile &file, QList<Staff *> &staffList, QList<Exam *> &examList)
+bool IOHandler::loadStaffTeamFile(QFile &file, QList<Staff::Ptr> &staffList, QList<Exam::Ptr> &examList)
 {
     QTextStream ts(&file);
 
@@ -161,7 +161,6 @@ bool IOHandler::loadStaffTeamFile(QFile &file, QList<Staff *> &staffList, QList<
     QString exams = "";
 
     //IMPORT EXAMS
-    QString date = "";
     bool e_night = false;
 
 
@@ -186,8 +185,8 @@ bool IOHandler::loadStaffTeamFile(QFile &file, QList<Staff *> &staffList, QList<
         //split the input line into an array of strings
         current_Line = currentLine.split(",", QString::SkipEmptyParts);
 
-        Staff *s;
-        Exam *e;
+        Staff::Ptr s;
+        Exam::Ptr e;
 
         if(!ExamsFlag)//looking at staff data
         {
@@ -237,7 +236,8 @@ bool IOHandler::loadStaffTeamFile(QFile &file, QList<Staff *> &staffList, QList<
                 y++;
             }
 
-            s = new Staff(id,first,last,pos,gen,night);
+            s = Staff::Ptr(new Staff(id, first, last,
+                                     pos, gen, night));
             s->setAvailability(avail);
             s->setExams(exams);
 
@@ -251,14 +251,14 @@ bool IOHandler::loadStaffTeamFile(QFile &file, QList<Staff *> &staffList, QList<
                 return false;
             }
             id = current_Line.at(0).toInt();
-            date = current_Line.at(1);
+            QDate date = QDate::fromString(current_Line.at(1), "dd/MM/yyyy");
 
             if (current_Line.at(2) == "1")
                 e_night = true;
             else
                 e_night = false;
 
-            e = new Exam(id,date,e_night);
+            e = Exam::Ptr(new Exam(id, date, e_night));
 
             examList.append(e);
         }
@@ -269,7 +269,9 @@ bool IOHandler::loadStaffTeamFile(QFile &file, QList<Staff *> &staffList, QList<
     return true;
 }
 
-bool IOHandler::saveStaffTeam(const QString &fileName, const QList<Staff *> &staffList, const QList<Exam *> &examList) {
+bool IOHandler::saveStaffTeam(const QString &fileName,
+                              const QList<Staff::Ptr> &staffList,
+                              const QList<Exam::Ptr> &examList) {
 
     FileExtension ext;
     bool result = IOHandler::checkFileName(fileName, &ext);
@@ -304,14 +306,16 @@ bool IOHandler::saveStaffTeam(const QString &fileName, const QList<Staff *> &sta
     return result;
 }
 
-bool IOHandler::saveStaffTeamFile(QFile &file, const QList<Staff *> &staffList, const QList<Exam *> &examList)
+bool IOHandler::saveStaffTeamFile(QFile &file,
+                                  const QList<Staff::Ptr> &staffList,
+                                  const QList<Exam::Ptr> &examList)
 {
     QTextStream ts(&file);
 
     ts << "[STAFF]" << endl;
     for (int x = 0; x < staffList.size(); x++)
     {
-        Staff *t_staff = staffList.at(x);
+        Staff::Ptr t_staff = staffList[x];
 
         ts << QString::number(x) << ","
            << t_staff->getFirstName() << ","
@@ -325,7 +329,7 @@ bool IOHandler::saveStaffTeamFile(QFile &file, const QList<Staff *> &staffList, 
 
     ts << "[EXAMS]" << endl;
 
-    foreach (Exam *ex, examList)
+    foreach (Exam::Ptr ex, examList)
     {
         ts << QString::number(ex->getId()) << ","
            << ex->toString("dd/MM/yyyy") << ","
@@ -335,13 +339,15 @@ bool IOHandler::saveStaffTeamFile(QFile &file, const QList<Staff *> &staffList, 
     return true;
 }
 
-bool IOHandler::saveStaffTeamJson(QFile &file, const QList<Staff *> &sList, const QList<Exam *> &eList) {
+bool IOHandler::saveStaffTeamJson(QFile &file,
+                                  const QList<Staff::Ptr> &sList,
+                                  const QList<Exam::Ptr> &eList) {
 
     QVariantMap out;
 
     QVariantList o_sList;
 
-    foreach (Staff *pStaff, sList) {
+    foreach (Staff::Ptr pStaff, sList) {
         QVariantMap sMap;
         *pStaff >> sMap;
 
@@ -352,7 +358,7 @@ bool IOHandler::saveStaffTeamJson(QFile &file, const QList<Staff *> &sList, cons
 
     QVariantList o_sExams;
 
-    foreach (Exam *pExam, eList) {
+    foreach (Exam::Ptr pExam, eList) {
         QVariantMap eMap;
         *pExam >> eMap;
 

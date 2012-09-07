@@ -64,7 +64,7 @@ SchedViewer::~SchedViewer()
 
 #undef DELETE_IF
 
-void SchedViewer::setToStaff(Staff *pStaff, QList<SDate> &datesList) {
+void SchedViewer::setToStaff(Staff::Ptr pStaff, QList<SDate> &datesList) {
 
     if (!pStaff) {
         pStaff = staffMember;
@@ -92,6 +92,6 @@ void SchedViewer::setToStaff(Staff *pStaff, QList<SDate> &datesList) {
     staffMember = pStaff;
 }
 
-Staff *SchedViewer::getStaff() {
+Staff::Ptr SchedViewer::getStaff() {
     return staffMember;
 }

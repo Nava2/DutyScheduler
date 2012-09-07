@@ -6,27 +6,15 @@
 MainWidget::MainWidget(QWidget *parent)
     : QWidget(parent)
 {
-    theTeam = new QList<Staff*>;
-    theExams = new QList<Exam*>;
+    theTeam = new QList<Staff::Ptr>;
+    theExams = new QList<Exam::Ptr>;
     createStaffElements();
 }
 
 MainWidget::~MainWidget()
 {
-    QList<Staff*>::iterator it_s = theTeam->begin();
-    for(; it_s != theTeam->end(); )
-    {
-        delete *it_s;
-        it_s = theTeam->erase(it_s);
-    }
     delete theTeam;
 
-    QList<Exam*>::iterator it_e = theExams->begin();
-    for(; it_e != theExams->end(); )
-    {
-        delete *it_e;
-        it_e = theExams->erase(it_e);
-    }
     delete theExams;
 
     staffTeamList->clear();
@@ -118,9 +106,9 @@ void MainWidget::addStaffMember()
     }
 
     // MAKE THE STAFF
-    Staff *s;//make a staff member pointer
-    s = new Staff(theTeam->size(),firstNameEdit->text().trimmed(),lastNameEdit->text().trimmed(),p,g,n);
-
+    Staff::Ptr s(new Staff(theTeam->size(), //make a staff member pointer
+                            firstNameEdit->text().trimmed(),
+                            lastNameEdit->text().trimmed(), p, g, n));
     //AVAILABILITY
     s->setAvailability(availWidget->getAvail());
 
@@ -255,7 +243,9 @@ void MainWidget::updateSelections(QListWidgetItem * item)
 
 void MainWidget::addExam()
 {
-    Exam *e = new Exam(theExams->count(),examDateEdit->date().toString("dd/MM/yyyy"),examNightCheck->isChecked());
+    Exam::Ptr e(new Exam(theExams->count(),
+                         examDateEdit->date(),
+                         examNightCheck->isChecked()));
 
     QListWidgetItem *item = new QListWidgetItem();
 
@@ -441,44 +431,29 @@ void MainWidget::reset()
 {
 
     if (theTeam) {
-        QList<Staff *>::iterator it_s = theTeam->begin();
-        for(; it_s != theTeam->end(); )
-        {
-            if (*it_s)
-                delete *it_s;
-            it_s = theTeam->erase(it_s);
-        }
+        theTeam->clear();
+        delete theTeam;
     }
 
     if (theExams) {
-        QList<Exam *>::iterator it_e = theExams->begin();
-        for(; it_e != theExams->end(); )
-        {
-            if (*it_e)
-                delete *it_e;
-            it_e = theExams->erase(it_e);
-        }
+        theExams->clear();
+        delete theExams;
     }
 
-
-    delete theTeam;
-    delete theExams;
-
-    theTeam = new QList<Staff*>;
-    theExams = new QList<Exam*>;
-
+    theTeam = new QList<Staff::Ptr>;
+    theExams = new QList<Exam::Ptr>;
 
     staffTeamList->clear();
 
     examsList->clear();
 }
 
-QList<Staff*> * MainWidget::getStaff()
+QList<Staff::Ptr> * MainWidget::getStaff()
 {
     return theTeam;
 }
 
-QList<Exam*> * MainWidget::getExams()
+QList<Exam::Ptr> *MainWidget::getExams()
 {
     return theExams;
 }
@@ -507,7 +482,7 @@ QString MainWidget::getTeam()
     return teamList;
 }
 
-void MainWidget::load(QList<Staff*> *staffList, QList<Exam*> *examList)
+void MainWidget::load(QList<Staff::Ptr> *staffList, QList<Exam::Ptr> *examList)
 {
     theTeam = staffList;
     theExams = examList;

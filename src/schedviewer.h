@@ -21,8 +21,8 @@ public:
     explicit SchedViewer(const QDate &startDate, const QDate &lastDate, QWidget *parent = NULL);
     ~SchedViewer();
 
-    void setToStaff(Staff *pStaff, QList<SDate> &datesList);
-    Staff *getStaff();
+    void setToStaff(Staff::Ptr pStaff, QList<SDate> &datesList);
+    Staff::Ptr getStaff();
 
 private:
     QCalendarWidget *calendarStaff;
@@ -34,7 +34,7 @@ private:
     QVBoxLayout *externLayout;
     QGridLayout *internLayout, *labelLayout;
 
-    Staff *staffMember;
+    Staff::Ptr staffMember;
 };
 
 #endif // SCHEDVIEWER_H

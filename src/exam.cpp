@@ -9,16 +9,15 @@ Exam::Exam()
     night = false;
 }
 
-Exam::Exam(int i, QString d, bool n)
+Exam::Exam(const int i, const QDate &date, const bool n)
+    : QDate(date)
 {
     this->id = i;
-    QDate date = fromString(d, "dd/MM/yyyy");
-    setYMD(date.year(), date.month(), date.day());
     night = n;
 }
 
 Exam::Exam(const QVariantMap &json)
-    : id(0), night(0) {
+    : QDate(), id(0), night(0) {
     *this << json;
 }
 

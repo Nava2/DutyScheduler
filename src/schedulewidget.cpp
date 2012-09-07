@@ -61,22 +61,15 @@ ScheduleWidget::ScheduleWidget(const QString &staffteamfilename, const ScheduleW
 
 }
 
-ScheduleWidget::ScheduleWidget(const QString &fileNameSchedule, QList<Staff *> *team, QList<Exam *> *exams, QWidget *parent) // this constructor is used by LoadSchedule
+ScheduleWidget::ScheduleWidget(const QString &fileNameSchedule, QList<Staff::Ptr> *team, QList<Exam::Ptr> *exams, QWidget *parent) // this constructor is used by LoadSchedule
     : QWidget(parent)
 {
     iohandle = new IOHandler;
 
     iohandle->loadSchedule(fileNameSchedule, datesList, nightClasses, donsNeeded, rasNeeded);
 
-    theTeam = new QList<Staff*>;
-    theExams = new QList<Exam*>;
-    foreach (Staff *pStaff, *team) {
-        theTeam->append(new Staff(*pStaff));
-    }
-
-    foreach (Exam *pExam, *exams) {
-        theExams->append(new Exam(*pExam));
-    }
+    theTeam = new QList<Staff::Ptr>(*team);
+    theExams = new QList<Exam::Ptr>(*exams);
 
     startDate = datesList.first();
     endDate = datesList.last();
@@ -171,22 +164,10 @@ ScheduleWidget::~ScheduleWidget()
 
 
     if (theTeam) {
-        QList<Staff*>::iterator it_s = theTeam->begin();
-        for(; it_s != theTeam->end(); )
-        {
-            delete *it_s;
-            it_s = theTeam->erase(it_s);
-        }
         delete theTeam;
     }
 
     if (theExams) {
-        QList<Exam*>::iterator it_e = theExams->begin();
-        for(; it_e != theExams->end(); )
-        {
-            delete *it_e;
-            it_e = theExams->erase(it_e);
-        }
         delete theExams;
     }
 
@@ -469,15 +450,13 @@ void ScheduleWidget::createLists()
     layout = new QGridLayout;
     layout->addWidget(onDeckList,0,0);
     OnDeckGroupBox->setLayout(layout);
-
-    OnDutyGroupBox->setFixedSize(OnDeckGroupBox->width(), OnDeckGroupBox->height());
 }
 
 
 void ScheduleWidget::loadStaffTeamData(QString filename)
 {
-    theTeam = new QList<Staff*>;
-    theExams = new QList<Exam*>;
+    theTeam = new QList<Staff::Ptr>;
+    theExams = new QList<Exam::Ptr>;
 
     bool ok = iohandle->loadStaffTeam(filename, *theTeam, *theExams);
 
@@ -495,7 +474,7 @@ void ScheduleWidget::prepInterface()
     onDeckItems = new QList<QListWidgetItem*>;
     onDutyItems = new QList<QListWidgetItem*>;
 
-    foreach (Staff *pStaff, *theTeam) {
+    foreach (Staff::Ptr pStaff, *theTeam) {
         // make the ondeck list
         QListWidgetItem *item = new QListWidgetItem();
         item->setText(pStaff->getFirstName() + " " + pStaff->getLastName());
@@ -1145,7 +1124,7 @@ void ScheduleWidget::updateStats()
     raAverageItem->setText(QString::number(rAverage));
     raAverageWeekendItem->setText(QString::number(rWAverage));
 
-    schedViewWidget->setToStaff(NULL, datesList);
+    schedViewWidget->setToStaff(Staff::Ptr(), datesList);
 }
 
 void ScheduleWidget::saveMidSchedule(QString fileName)

@@ -4,12 +4,15 @@
 #include <QString>
 #include <QVariantMap>
 #include <QDate>
+#include <QSharedPointer>
 
 class Exam : public QDate
 {
 public:
+    typedef QSharedPointer<Exam> Ptr;
+
     Exam();
-    Exam(int, QString, bool);
+    Exam(const int, const QDate &, const bool);
     Exam(const Exam &);
 
     Exam(const QVariantMap &);

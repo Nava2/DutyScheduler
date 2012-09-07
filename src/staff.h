@@ -4,6 +4,7 @@
 #include <QString>
 #include <QVariant>
 #include <QDate>
+#include <QSharedPointer>
 
 #include "exam.h"
 
@@ -11,6 +12,8 @@ class Staff
 {
 
 public:
+    typedef QSharedPointer<Staff> Ptr;
+
     Staff();
     Staff(int, QString, QString, bool, bool, int);
     Staff(const QVariantMap &);
