@@ -8,7 +8,7 @@ SchedViewer::SchedViewer(const QDate &startDate, const QDate &lastDate, QWidget 
 
     calendarStaff = new QCalendarWidget;
     calendarStaff->setSelectionMode(QCalendarWidget::NoSelection);
-    calendarStaff->setMinimumDate(startDate);
+    calendarStaff->setMinimumDate(startDate.addDays(-1));
     calendarStaff->setSelectedDate(startDate.addDays(-1));
     calendarStaff->setMaximumDate(lastDate);
     calendarStaff->setFirstDayOfWeek(Qt::Monday);
