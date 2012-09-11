@@ -24,7 +24,8 @@ SOURCES += main.cpp \
     iohandler.cpp \
     availabilitywidget.cpp \
     availabledate.cpp \
-    schedviewer.cpp
+    schedviewer.cpp \
+    availrangewidget.cpp
 
 HEADERS  += \
     staff.h \
@@ -40,4 +41,5 @@ HEADERS  += \
     iohandler.h \
     availabilitywidget.h \
     availabledate.h \
-    schedviewer.h
+    schedviewer.h \
+    availrangewidget.h
