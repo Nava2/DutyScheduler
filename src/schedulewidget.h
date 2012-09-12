@@ -43,7 +43,7 @@ public:
     ScheduleWidget(QWidget *parent = 0);
     ScheduleWidget(const QString &fileNameStaff, const ScheduleWizzard &swiz, QWidget *parent = NULL);
     void saveMidSchedule(QString);
-    ScheduleWidget(const QString &fileNameSchedule, QList<Staff::Ptr> *team, QList<Exam::Ptr> *exams, QWidget *parent = NULL);
+    ScheduleWidget(const QString &fileNameSchedule, StaffList::Ptr team, QList<Exam::Ptr> *exams, QWidget *parent = NULL);
 
     ~ScheduleWidget();
 
@@ -118,7 +118,7 @@ private:
     MyQListWidget *onDeckList;
     MyQListWidget *onDutyList;
 
-    QList<Staff::Ptr> *theTeam;
+    StaffList::Ptr theTeam;
     QList<Exam::Ptr> *theExams;
 
     QDate startDate;

@@ -2,18 +2,19 @@
 #include <QtGlobal>
 
 #include "mainwidget.h"
+#include "stafflist.h"
 
 MainWidget::MainWidget(QWidget *parent)
     : QWidget(parent)
 {
-    theTeam = new QList<Staff::Ptr>;
+    theTeam = StaffList::Ptr(new StaffList);
     theExams = new QList<Exam::Ptr>;
     createStaffElements();
 }
 
 MainWidget::~MainWidget()
 {
-    delete theTeam;
+    theTeam.clear();
 
     delete theExams;
 
@@ -106,7 +107,7 @@ void MainWidget::addStaffMember()
     }
 
     // MAKE THE STAFF
-    Staff::Ptr s(new Staff(theTeam->size(), //make a staff member pointer
+    Staff::Ptr s(new Staff(theTeam->count(), //make a staff member pointer
                             firstNameEdit->text().trimmed(),
                             lastNameEdit->text().trimmed(), p, g, n));
     //AVAILABILITY
@@ -429,18 +430,14 @@ void MainWidget::createStaffControls()
 // GETTERS/SETTERS for staff and exams
 void MainWidget::reset()
 {
-
-    if (theTeam) {
-        theTeam->clear();
-        delete theTeam;
-    }
+    theTeam->clear();
 
     if (theExams) {
         theExams->clear();
         delete theExams;
     }
 
-    theTeam = new QList<Staff::Ptr>;
+    theTeam = StaffList::Ptr(new StaffList);
     theExams = new QList<Exam::Ptr>;
 
     staffTeamList->clear();
@@ -448,7 +445,7 @@ void MainWidget::reset()
     examsList->clear();
 }
 
-QList<Staff::Ptr> * MainWidget::getStaff()
+StaffList::Ptr MainWidget::getStaff()
 {
     return theTeam;
 }
@@ -482,12 +479,12 @@ QString MainWidget::getTeam()
     return teamList;
 }
 
-void MainWidget::load(QList<Staff::Ptr> *staffList, QList<Exam::Ptr> *examList)
+void MainWidget::load(StaffList::Ptr staffList, QList<Exam::Ptr> *examList)
 {
     theTeam = staffList;
     theExams = examList;
 
-    for(int x=0; x<theTeam->size(); x++)
+    for(int x=0; x<theTeam->count(); x++)
     {
         QListWidgetItem *item = new QListWidgetItem;
         item->setText(theTeam->at(x)->getFirstName() + " " + theTeam->at(x)->getLastName());

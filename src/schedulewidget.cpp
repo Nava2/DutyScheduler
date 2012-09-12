@@ -61,14 +61,14 @@ ScheduleWidget::ScheduleWidget(const QString &staffteamfilename, const ScheduleW
 
 }
 
-ScheduleWidget::ScheduleWidget(const QString &fileNameSchedule, QList<Staff::Ptr> *team, QList<Exam::Ptr> *exams, QWidget *parent) // this constructor is used by LoadSchedule
+ScheduleWidget::ScheduleWidget(const QString &fileNameSchedule, StaffList::Ptr team, QList<Exam::Ptr> *exams, QWidget *parent) // this constructor is used by LoadSchedule
     : QWidget(parent)
 {
     iohandle = new IOHandler;
 
     iohandle->loadSchedule(fileNameSchedule, datesList, nightClasses, donsNeeded, rasNeeded);
 
-    theTeam = new QList<Staff::Ptr>(*team);
+    theTeam = team;
     theExams = new QList<Exam::Ptr>(*exams);
 
     startDate = datesList.first();
@@ -161,11 +161,6 @@ ScheduleWidget::~ScheduleWidget()
         it_i = statsTableItems->erase(it_i);
     }
     delete statsTableItems;
-
-
-    if (theTeam) {
-        delete theTeam;
-    }
 
     if (theExams) {
         delete theExams;
@@ -455,7 +450,7 @@ void ScheduleWidget::createLists()
 
 void ScheduleWidget::loadStaffTeamData(QString filename)
 {
-    theTeam = new QList<Staff::Ptr>;
+    theTeam = StaffList::Ptr(new StaffList);
     theExams = new QList<Exam::Ptr>;
 
     bool ok = iohandle->loadStaffTeam(filename, *theTeam, *theExams);
@@ -470,7 +465,6 @@ void ScheduleWidget::loadStaffTeamData(QString filename)
 
 void ScheduleWidget::prepInterface()
 {
-
     onDeckItems = new QList<QListWidgetItem*>;
     onDutyItems = new QList<QListWidgetItem*>;
 

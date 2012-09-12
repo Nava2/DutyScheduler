@@ -54,7 +54,7 @@ private:
     // file management
     IOHandler iohandle;
 
-    QList<Staff::Ptr> * sList;
+    StaffList::Ptr sList;
     QList<Exam::Ptr> * eList;
     QString currentStaffTeamFile;
     QString usingStaffTeamFile;

@@ -6,6 +6,7 @@
 #include <QStringList>
 #include <QList>
 #include <QDateTime>
+#include <QCryptographicHash>
 
 Staff::Staff()
 {
@@ -19,6 +20,9 @@ Staff::Staff()
     numShifts = 0;
     numWeekendShifts = 0;
     numAMShifts = 0;
+
+    _uid = -1;
+    UIDSet = false;
 }
 
 Staff::Staff(int i, QString first, QString last, bool pos, bool gen, int night)
@@ -33,6 +37,8 @@ Staff::Staff(int i, QString first, QString last, bool pos, bool gen, int night)
     numShifts = 0;
     numWeekendShifts = 0;
     numAMShifts = 0;
+
+    genUID();
 }
 
 Staff::Staff(const QVariantMap &json) :
@@ -52,6 +58,17 @@ Staff::Staff(const Staff &old) {
     numShifts = old.numShifts;
     numWeekendShifts = old.numWeekendShifts;
     numAMShifts = old.numAMShifts;
+
+    genUID();
+}
+
+void Staff::genUID() {
+    QString id = firstName + lastName + QString::number((int)(rand() * 1000));
+    QByteArray tuid = QCryptographicHash::hash(id.toAscii(), QCryptographicHash::Sha1);
+    tuid = tuid.toHex();
+    _uid = QString(tuid.left(3) + tuid.right(3));
+
+    UIDSet = true;
 }
 
 Staff::~Staff()
@@ -61,7 +78,8 @@ Staff::~Staff()
 
 // JSON mapping:
 void Staff::operator << (const QVariantMap &json) {
-    id = json["id"].toInt();
+    this->id = json["id"].toInt();
+    _uid = json["uid"].toString();
 
     QVariantMap name = json["name"].toMap();
     firstName = name["f"].toString();
@@ -73,7 +91,9 @@ void Staff::operator << (const QVariantMap &json) {
     exams = json["exams"].toString();
 
     foreach (QVariant qv, json["avail"].toList()) {
-        availList.append(qv.toDate());
+        AvailableDate d;
+        d << qv.toMap();
+        availList.append(d);
     }
 
 
@@ -82,10 +102,14 @@ void Staff::operator << (const QVariantMap &json) {
     if (position)
        numAMShifts = shiftMap["am"].toInt();
     numShifts = shiftMap["ttl"].toInt();
+
+    if (_uid.isEmpty())
+        genUID();
 }
 
 void Staff::operator >>(QVariantMap &json) {
     json["id"] = id;
+    json["uid"] = uid();
 
     QVariantMap name;
     name["f"] = firstName;
@@ -98,8 +122,10 @@ void Staff::operator >>(QVariantMap &json) {
     json["exams"] = exams;
 
     QVariantList list;
-    foreach (QDate d, availList) {
-        list.append(QVariant(d));
+    foreach (AvailableDate d, availList) {
+        QVariantMap v;
+        d >> v;
+        list.append(QVariant(v));
     }
 
     json["avail"] = list;
@@ -152,11 +178,10 @@ bool Staff::isNightClass(const QDate &date) {
 void Staff::setId(int i)
 {   id = i;             }
 
-void Staff::setFirstName(QString name)
-{   firstName = name;   }
-
-void Staff::setLastName(QString name)
-{   lastName = name;    }
+void Staff::setName(const QString &first, const QString &last) {
+    firstName = first;
+    lastName = last;
+}
 
 void Staff::setPosition(bool pos)
 {   position = pos;     }
@@ -238,6 +263,13 @@ void Staff::removeShift(bool weekend, bool isAM)
         numWeekendShifts--;
 
     numShifts--;
+}
+
+bool Staff::isUIDSet() const {
+    return UIDSet;
+}
+QString Staff::uid() const {
+    return _uid;
 }
 
 int Staff::getShifts()

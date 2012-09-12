@@ -6,6 +6,7 @@
 
 #include "staff.h"
 #include "availabilitywidget.h"
+#include "stafflist.h"
 
 QT_BEGIN_NAMESPACE
 class QCalendarWidget;
@@ -37,11 +38,11 @@ public:
     MainWidget(QWidget *parent = 0);
     ~MainWidget();
     void reset();
-    QList<Staff::Ptr> * getStaff();
+    StaffList::Ptr getStaff();
     QList<Exam::Ptr> * getExams();
     QList<int> getTeamIDs();
     QString getTeam();
-    void load(QList<Staff::Ptr> *staffList, QList<Exam::Ptr> *examList);
+    void load(StaffList::Ptr staffList, QList<Exam::Ptr> *examList);
 
 
 private slots:
@@ -59,7 +60,7 @@ private slots:
 private:
     //DATA
     QList<Exam::Ptr> *theExams;
-    QList<Staff::Ptr> *theTeam;
+    StaffList::Ptr theTeam;
 
     //GUI
     void createStaffElements();

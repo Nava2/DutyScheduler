@@ -7,6 +7,7 @@
 #include <QSharedPointer>
 
 #include "exam.h"
+#include "availabledate.h"
 
 class Staff
 {
@@ -41,8 +42,7 @@ public:
     //setters
     void update(QString, QString, bool, bool, int);
     void setId(int);
-    void setFirstName(QString);
-    void setLastName(QString);
+    void setName(const QString &first, const QString &last);
     void setPosition(bool);
     void setGender(bool);
     void setNightClass(int);
@@ -58,10 +58,13 @@ public:
     void addShift(bool, bool = false);
     void removeShift(bool, bool);
 
-
+    bool isUIDSet() const;
+    QString uid() const;
 
 private:
     int id;
+    bool UIDSet;
+    QString _uid;
     QString firstName;
     QString lastName;
     bool position;
@@ -69,10 +72,12 @@ private:
     int nightClass;
     QString exams; // "(id),(id2),(id5),"
 //     QString availability;// "dd/MM/yyyy,dd/MM/yyyy," etc
-    QList<QDate > availList;
+    QList<AvailableDate > availList;
     int numShifts;
     int numWeekendShifts;
     int numAMShifts;
+
+    void genUID();
 
 };
 

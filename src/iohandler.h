@@ -8,6 +8,7 @@
 #include "staff.h"
 #include "exam.h"
 #include "sdate.h"
+#include "stafflist.h"
 
 
 class IOHandler
@@ -17,8 +18,8 @@ public:
     typedef enum _FileExtension FileExtension;
 
     IOHandler();
-    bool loadStaffTeam(const QString &fileName, QList<Staff::Ptr> &staffList, QList<Exam::Ptr> &examList);
-    bool saveStaffTeam(const QString &fileName, const QList<Staff::Ptr> &staffList, const QList<Exam::Ptr> &examList);
+    bool loadStaffTeam(const QString &fileName, StaffList &staffList, QList<Exam::Ptr> &examList);
+    bool saveStaffTeam(const QString &fileName, const StaffList &staffList, const QList<Exam::Ptr> &examList);
 
     bool loadSchedule(const QString &fileName, QList<SDate> &dateList, QList<QList<int > *> &nightClasses, QList<int > &donsNeeded, QList<int > &rasNeeded );
     bool saveSchedule(const QString &fileName, QList<SDate> &dateList, QList<QList<int > *> &nightClasses, QList<int > &donsNeeded, QList<int > &rasNeeded );
@@ -36,15 +37,15 @@ private:
     void setErrorInfo(const QString &msg, const QString &title);
 
     // json
-    bool loadStaffTeamJson(QFile &file, QList<Staff::Ptr> &staffList, QList<Exam::Ptr> &examList);
-    bool saveStaffTeamJson(QFile &file, const QList<Staff::Ptr> &sList, const QList<Exam::Ptr> &eList);
+    bool loadStaffTeamJson(QFile &file, StaffList &staffList, QList<Exam::Ptr> &examList);
+    bool saveStaffTeamJson(QFile &file, const StaffList &sList, const QList<Exam::Ptr> &eList);
 
     bool loadScheduleJson(QFile &file, QList<SDate> &dateList, QList<QList<int > *> &nightClasses, QList<int > &donsNeeded, QList<int > &rasNeeded );
     bool saveScheduleJson(QFile &file, QList<SDate> &dateList, QList<QList<int > *> &nightClasses, QList<int > &donsNeeded, QList<int > &rasNeeded );
 
     // csv
-    bool loadStaffTeamFile(QFile &file, QList<Staff::Ptr> &staffList, QList<Exam::Ptr> &examList);
-    bool saveStaffTeamFile(QFile &file, const QList<Staff::Ptr> &staffList, const QList<Exam::Ptr> &examList);
+    bool loadStaffTeamFile(QFile &file, StaffList &staffList, QList<Exam::Ptr> &examList);
+    bool saveStaffTeamFile(QFile &file, const StaffList &staffList, const QList<Exam::Ptr> &examList);
 
     bool loadScheduleFile(QFile &file, QList<SDate> &dateList, QList<QList<int > *> &nightClasses, QList<int > &donsNeeded, QList<int > &rasNeeded );
     bool saveScheduleFile(QFile &file, QList<SDate> &dateList, QList<QList<int > *> &nightClasses, QList<int > &donsNeeded, QList<int > &rasNeeded );

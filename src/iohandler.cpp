@@ -13,6 +13,8 @@
 #include <QTextStream>
 #include <QList>
 
+#include "stafflist.h"
+
 IOHandler::IOHandler() :
     errorMsg(""), errorTitle("")
 {
@@ -66,7 +68,7 @@ bool IOHandler::checkFileName(const QString &fileName, FileExtension *ext) {
     return result;
 }
 
-bool IOHandler::loadStaffTeam(const QString &fileName, QList<Staff::Ptr> &staffList, QList<Exam::Ptr> &examList)
+bool IOHandler::loadStaffTeam(const QString &fileName, StaffList &staffList, QList<Exam::Ptr> &examList)
 {
     FileExtension ext;
     bool result = IOHandler::checkFileName(fileName, &ext);
@@ -102,7 +104,7 @@ bool IOHandler::loadStaffTeam(const QString &fileName, QList<Staff::Ptr> &staffL
 }
 
 
-bool IOHandler::loadStaffTeamJson(QFile &file, QList<Staff::Ptr> &staffList, QList<Exam::Ptr> &examList) {
+bool IOHandler::loadStaffTeamJson(QFile &file, StaffList &staffList, QList<Exam::Ptr> &examList) {
 
     // read the whole file into the QByteArray then put it into a string for
     // parsing
@@ -142,7 +144,7 @@ bool IOHandler::loadStaffTeamJson(QFile &file, QList<Staff::Ptr> &staffList, QLi
 }
 
 //FILE HANDLERS
-bool IOHandler::loadStaffTeamFile(QFile &file, QList<Staff::Ptr> &staffList, QList<Exam::Ptr> &examList)
+bool IOHandler::loadStaffTeamFile(QFile &file, StaffList &staffList, QList<Exam::Ptr> &examList)
 {
     QTextStream ts(&file);
 
@@ -270,7 +272,7 @@ bool IOHandler::loadStaffTeamFile(QFile &file, QList<Staff::Ptr> &staffList, QLi
 }
 
 bool IOHandler::saveStaffTeam(const QString &fileName,
-                              const QList<Staff::Ptr> &staffList,
+                              const StaffList &staffList,
                               const QList<Exam::Ptr> &examList) {
 
     FileExtension ext;
@@ -307,7 +309,7 @@ bool IOHandler::saveStaffTeam(const QString &fileName,
 }
 
 bool IOHandler::saveStaffTeamFile(QFile &file,
-                                  const QList<Staff::Ptr> &staffList,
+                                  const StaffList &staffList,
                                   const QList<Exam::Ptr> &examList)
 {
     QTextStream ts(&file);
@@ -340,7 +342,7 @@ bool IOHandler::saveStaffTeamFile(QFile &file,
 }
 
 bool IOHandler::saveStaffTeamJson(QFile &file,
-                                  const QList<Staff::Ptr> &sList,
+                                  const StaffList &sList,
                                   const QList<Exam::Ptr> &eList) {
 
     QVariantMap out;

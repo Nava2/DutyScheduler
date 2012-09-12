@@ -95,7 +95,7 @@ void MainWindow::newStaffTeam()
 void MainWindow::openStaffTeam() {
 
     // lists for loading
-    QList<Staff::Ptr> *staffList = new QList<Staff::Ptr>;
+    StaffList::Ptr staffList = StaffList::Ptr(new StaffList);
     QList<Exam::Ptr> *examList = new QList<Exam::Ptr>;
 
     // get the file name, use currentStaffTeamFile if possible
@@ -148,7 +148,7 @@ void MainWindow::saveAsStaffTeam() {
 
 void MainWindow::saveStaffTeamName(const QString &fileName)
 {
-    QList<Staff::Ptr> *_sList = m->getStaff();
+    StaffList::Ptr _sList = m->getStaff();
     QList<Exam::Ptr> *_eList = m->getExams();
 
     bool ok = iohandle.saveStaffTeam(fileName, *_sList, *_eList);
@@ -201,7 +201,7 @@ void MainWindow::loadSchedule()
     if (centralWidget() == s)
         delete s;
 
-    QList<Staff::Ptr> *team = m->getStaff();
+    StaffList::Ptr team = m->getStaff();
     QList<Exam::Ptr> *exams = m->getExams();
 
     if ((!team || team->count() == 0) || (!exams || exams->count() == 0)) {
