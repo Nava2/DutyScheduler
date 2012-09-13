@@ -3,15 +3,15 @@
 #include <QVariant>
 
 AvailableDate::AvailableDate() :
-    isRange(false)
+    _isRange(false)
 {
 }
 
-QDate &AvailableDate::date() {
+QDate AvailableDate::date() const {
     return dateVal;
 }
 
-QDate &AvailableDate::endDate() {
+QDate AvailableDate::endDate() const {
     return endDateVal;
 }
 
@@ -21,23 +21,59 @@ void AvailableDate::setDate(QDate date) {
 
 void AvailableDate::setEndDate(QDate endDate) {
     endDateVal = endDate;
-    isRange = true;
+    _isRange = true;
 }
 
-void AvailableDate::operator <<(QVariantMap &map) {
+QList<QDate > AvailableDate::getDates() const {
+    QList<QDate > out;
+    if (!isRange()) {
+        out.append(dateVal);
+        return out;
+    }
+
+    // it's a range:
+    QDate counter = dateVal,
+            endVal = endDateVal.addDays(1);
+    while (counter != endVal) {
+        out.append(counter);
+        counter = counter.addDays(1);
+    }
+
+    return out;
+}
+
+bool AvailableDate::isRange() const {
+    return _isRange;
+}
+
+void AvailableDate::setRange(const bool range) {
+    _isRange = range;
+}
+
+void AvailableDate::operator <<(const QVariantMap &map) {
     dateVal = map["date"].toDate();
-    isRange = map["range"].toBool();
-
-    if (isRange) {
-        endDateVal = map["endDate"].toDate();
-    }
+    _isRange = map["range"].toBool();
+    endDateVal = map["endDate"].toDate();
 }
 
-void AvailableDate::operator >>(QVariantMap &out) {
-    out["range"] = isRange;
+void AvailableDate::operator >>(QVariantMap &out) const {
+    out["range"] = _isRange;
     out["date"] = dateVal;
+    out["endDate"] = endDateVal;
+}
 
-    if (isRange) {
-        out["endDate"] = endDateVal;
+inline
+bool AvailableDate::operator ==(const AvailableDate &date) const {
+    bool result = dateVal == date.dateVal;
+    result &= isRange() == date.isRange();
+    if (result && isRange()) {
+        result &= date.endDateVal == endDateVal;
     }
+
+    return result;
+}
+
+inline
+bool AvailableDate::operator !=(const AvailableDate &date) const {
+    return !(*this == date);
 }

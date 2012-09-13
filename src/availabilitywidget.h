@@ -13,6 +13,10 @@
 #include <QPushButton>
 #include <QLabel>
 
+#include "availrangewidget.h"
+#include "availabledate.h"
+
+class AvailRangeWidget;
 
 class AvailabilityWidget : public QGroupBox
 {
@@ -28,7 +32,7 @@ public:
     void adjustRowCount(int count);
 
     void setToAvail(const QList<QDate > &avail);
-    QList<QDate > getAvail();
+    QList<AvailableDate > getAvail();
 
     void reset();
     
@@ -43,15 +47,14 @@ private:
     void updateCountLabel();
 
     QGridLayout *topLayout;
-    QGridLayout *internalLayout;
+    QHBoxLayout *internalLayout;
     QScrollArea *scrollArea;
     QGroupBox *scrollFrame;
 
 
     int rowNum;
     int dayCount;
-    QList<QGroupBox *> arrayGroupBox;
-    QList<QDateEdit *> arrayDateEdit;
+    QList<AvailRangeWidget *> arrayRows;
     QPushButton *addRowButton;
     QPushButton *rmRowButton;
     QLabel *countLabel;

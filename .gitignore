@@ -17,3 +17,6 @@ build*/*
 
 #user pro file
 *.user
+
+#OSX 
+.DS_Store*

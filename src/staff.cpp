@@ -203,11 +203,11 @@ QString Staff::getExams()
     return exams;
 }
 
-void Staff::setAvailability(const QList<QDate> &dtList)
+void Staff::setAvailability(const QList<AvailableDate > &dtList)
 {
     availList.clear();
 
-    foreach(QDate dt, dtList) {
+    foreach(AvailableDate dt, dtList) {
         availList.append(dt);
     }
 }
@@ -217,27 +217,42 @@ void Staff::setAvailability(const QString &str) {
 
     QStringList dates = str.split(",", QString::SkipEmptyParts);
     foreach (QString dt, dates) {
-        availList.append(QDate::fromString(dt, "dd/MM/yyyy"));
+        QDate first = QDate::fromString(dt, "dd/MM/yyyy");
+        AvailableDate d;
+        d.setDate(first);
+        availList.append(d);
     }
 }
 
-void Staff::appendAvail(const QDate &dt) {
+void Staff::appendAvail(const AvailableDate &dt) {
     availList.append(dt);
 }
 
-void Staff::removeAvail(const QDate &dt) {
+void Staff::removeAvail(const AvailableDate &dt) {
     availList.removeAll(dt);
 }
 
 QList<QDate> Staff::getAvailability()
 {
-    return availList;
+    QList<QDate > out;
+    foreach (AvailableDate ad, availList) {
+        // get the dates from the AvailableDate, let it handle the range notion
+        foreach (QDate qd, ad.getDates()) {
+            out.append(qd);
+        }
+    }
+
+    return out;
 }
 
 QString Staff::getAvailabilityStr() {
     QString out("");
-    foreach (QDate dt, availList) {
-        out += dt.toString("dd/MM/yyyy") + ",";
+
+    foreach (AvailableDate ad, availList) {
+        // get the dates from the AvailableDate, let it handle the range notion
+        foreach (QDate qd, ad.getDates()) {
+            out += qd.toString("dd/MM/yyyy") + ",";
+        }
     }
 
     return out;

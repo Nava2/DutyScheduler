@@ -48,12 +48,12 @@ public:
     void setNightClass(int);
     void setExams(QString);
 
-    void setAvailability(const QList<QDate> &dtList);
+    void setAvailability(const QList<AvailableDate> &dtList);
     void setAvailability(const QString &);
     QList<QDate> getAvailability();
     QString getAvailabilityStr();
-    void appendAvail(const QDate &dt);
-    void removeAvail(const QDate &dt);
+    void appendAvail(const AvailableDate &dt);
+    void removeAvail(const AvailableDate &dt);
 
     void addShift(bool, bool = false);
     void removeShift(bool, bool);
