@@ -20,6 +20,8 @@ public:
     explicit StaffList(QObject *parent = 0);
     StaffList(const StaffList &list);
 
+    ~StaffList();
+
     StaffList &append(const Staff::Ptr &);
     StaffList &append(const QList<Staff::Ptr> &list);
 

@@ -9,6 +9,7 @@ class AvailableDate
 {
 public:
     AvailableDate();
+    ~AvailableDate();
 
     QDate date() const;
 
@@ -26,9 +27,7 @@ public:
     void operator <<(const QVariantMap &);
     void operator >>(QVariantMap &) const;
 
-    inline
     bool operator ==(const AvailableDate &date) const;
-    inline
     bool operator !=(const AvailableDate &date) const;
 
 

@@ -34,6 +34,7 @@ private slots:
     void onRangeClick(bool);
     void onFirstChange(const QDate &date);
     void onLastChange(const QDate &date);
+    void onLeftGroupToggle(bool);
 
 signals:
     void onChangeRangeDate(const bool isRange, const QDate &newFirst, const QDate &newLast);

@@ -9,7 +9,7 @@
 #include "availabilitywidget.h"
 
 AvailRangeWidget::AvailRangeWidget(int index, QWidget *parent) :
-    QGroupBox(parent)
+    QGroupBox(parent), _range(false)
 {
     parent = dynamic_cast<AvailabilityWidget *>(parent);
 
@@ -22,6 +22,7 @@ AvailRangeWidget::AvailRangeWidget(int index, QWidget *parent) :
     groupBoxLeft->setCheckable(true);
     groupBoxLeft->setChecked(false);
     groupBoxLeft->setTitle(QString::number(++index));
+    connect(groupBoxLeft, SIGNAL(toggled(bool)), this, SLOT(onLeftGroupToggle(bool)));
     connect(groupBoxLeft, SIGNAL(toggled(bool)), parent, SLOT(onGroupBoxChecked(bool)));
 
     QHBoxLayout *lay = new QHBoxLayout;
@@ -45,7 +46,9 @@ AvailRangeWidget::AvailRangeWidget(int index, QWidget *parent) :
 
     // toggle range:
     rangeToggle = new QPushButton("-->");
-    connect(rangeToggle, SIGNAL(toggled(bool)), this, SLOT(onRangeClick(bool)));
+    rangeToggle->setCheckable(true);
+    rangeToggle->setEnabled(false);
+    connect(rangeToggle, SIGNAL(clicked(bool)), this, SLOT(onRangeClick(bool)));
 
     gridLayout = new QGridLayout;
     gridLayout->addWidget(groupBoxLeft, 0, 0, 3, 1);
@@ -58,16 +61,12 @@ AvailRangeWidget::AvailRangeWidget(int index, QWidget *parent) :
 void AvailRangeWidget::onRangeClick(bool click) {
     _range = click;
     if (_range) {
-        rangeToggle->setText("<b>--></b>");
-
         groupBoxRight->setChecked(groupBoxLeft->isChecked());
 
         if (dateEditLeft->date() > dateEditRight->date()) {
             dateEditRight->setDate(dateEditLeft->date().addDays(1));
         }
 
-    } else {
-        rangeToggle->setText("-->");
     }
 
     emit onChangeRangeDate(range(), dateEditLeft->date(), dateEditRight->date());
@@ -79,6 +78,15 @@ void AvailRangeWidget::onFirstChange(const QDate &date) {
 
 void AvailRangeWidget::onLastChange(const QDate &date) {
     emit onChangeRangeDate(range(), dateEditLeft->date(), date);
+}
+
+void AvailRangeWidget::onLeftGroupToggle(bool check) {
+    rangeToggle->setEnabled(check);
+
+    if (!check) {
+        rangeToggle->setChecked(false);
+        onRangeClick(false);
+    }
 }
 
 bool AvailRangeWidget::range() {

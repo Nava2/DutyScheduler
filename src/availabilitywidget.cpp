@@ -28,7 +28,7 @@ AvailabilityWidget::AvailabilityWidget(QWidget *parent) :
     scrollArea->setWidget(scrollFrame);
 
     rowNum = 2;
-    for (int x = 0; x < 4; )
+    for (int x = 0; x < 4; x += 2 )
     {
         AvailRangeWidget *rw = new AvailRangeWidget(x, this);
         arrayRows.append(rw);

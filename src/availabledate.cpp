@@ -7,6 +7,10 @@ AvailableDate::AvailableDate() :
 {
 }
 
+AvailableDate::~AvailableDate() {
+
+}
+
 QDate AvailableDate::date() const {
     return dateVal;
 }
@@ -62,7 +66,6 @@ void AvailableDate::operator >>(QVariantMap &out) const {
     out["endDate"] = endDateVal;
 }
 
-inline
 bool AvailableDate::operator ==(const AvailableDate &date) const {
     bool result = dateVal == date.dateVal;
     result &= isRange() == date.isRange();
@@ -73,7 +76,6 @@ bool AvailableDate::operator ==(const AvailableDate &date) const {
     return result;
 }
 
-inline
 bool AvailableDate::operator !=(const AvailableDate &date) const {
     return !(*this == date);
 }

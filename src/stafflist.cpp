@@ -16,6 +16,10 @@ StaffList::StaffList(QObject *parent) :
 {
 }
 
+StaffList::~StaffList() {
+
+}
+
 StaffList::StaffList(const StaffList &list) :
     QObject()
 {
