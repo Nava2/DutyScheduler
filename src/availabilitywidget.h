@@ -12,6 +12,7 @@
 #include <QScrollArea>
 #include <QPushButton>
 #include <QLabel>
+#include <QVBoxLayout>
 
 #include "availrangewidget.h"
 #include "availabledate.h"
@@ -47,7 +48,7 @@ private:
     void updateCountLabel();
 
     QGridLayout *topLayout;
-    QHBoxLayout *internalLayout;
+    QVBoxLayout *internalLayout;
     QScrollArea *scrollArea;
     QGroupBox *scrollFrame;
 

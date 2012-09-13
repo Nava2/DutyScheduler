@@ -8,6 +8,7 @@
 #include <QDateEdit>
 #include <QList>
 #include <QString>
+#include <QVBoxLayout>
 
 AvailabilityWidget::AvailabilityWidget(QWidget *parent) :
     QGroupBox(tr("Dates Unavailable"), parent), rowNum(0), dayCount(0)
@@ -22,7 +23,7 @@ AvailabilityWidget::AvailabilityWidget(QWidget *parent) :
     scrollFrame = new QGroupBox;
     scrollFrame->setFlat(true);
 
-    internalLayout = new QHBoxLayout(scrollFrame);
+    internalLayout = new QVBoxLayout(scrollFrame);
     internalLayout->setSpacing(10);
 
     scrollArea->setWidget(scrollFrame);
