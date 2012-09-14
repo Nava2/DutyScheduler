@@ -232,17 +232,23 @@ void Staff::removeAvail(const AvailableDate &dt) {
     availList.removeAll(dt);
 }
 
-QList<QDate> Staff::getAvailability()
+void Staff::getAvailability(QList<QDate> &out)
 {
-    QList<QDate > out;
+    out.clear();
+
     foreach (AvailableDate ad, availList) {
         // get the dates from the AvailableDate, let it handle the range notion
         foreach (QDate qd, ad.getDates()) {
             out.append(qd);
         }
     }
+}
 
-    return out;
+void Staff::getAvailability(QList<AvailableDate> &out) {
+    out.clear();
+
+    foreach (AvailableDate ad, availList)
+        out += ad;
 }
 
 QString Staff::getAvailabilityStr() {

@@ -58,6 +58,18 @@ AvailRangeWidget::AvailRangeWidget(int index, QWidget *parent) :
     setLayout(gridLayout);
 }
 
+AvailRangeWidget::~AvailRangeWidget() {
+    delete dateEditLeft;
+    delete dateEditRight;
+
+    delete groupBoxLeft;
+    delete groupBoxRight;
+
+    delete rangeToggle;
+
+    delete gridLayout;
+}
+
 void AvailRangeWidget::onRangeClick(bool click) {
     _range = click;
     if (_range) {
@@ -121,23 +133,39 @@ bool AvailRangeWidget::getDates(QList<QDate> &outDates) {
     return range();
 }
 
-AvailableDate AvailRangeWidget::getAvailDate() {
-    AvailableDate d;
-    d.setDate(dateEditLeft->date());
-    d.setEndDate(dateEditRight->date());
-    d.setRange(rangeToggle->isDown());
+bool AvailRangeWidget::getAvailDate(AvailableDate &d) {
 
-    return d;
+    bool left = groupBoxLeft->isChecked(),
+            right = groupBoxRight->isChecked(),
+            valid = true;
+    if (left && right) {
+        // both are valid dates
+        d.setDate(dateEditLeft->date());
+        d.setEndDate(dateEditRight->date());
+        d.setRange(rangeToggle->isChecked());
+    } else if (left && !right) {
+        d.setDate(dateEditLeft->date());
+        d.setRange(false);
+    } else if (!left && right) {
+        d.setDate(dateEditRight->date());
+        d.setRange(false);
+    } else {
+        valid = false;
+    }
+
+    return valid;
 }
 
 void AvailRangeWidget::setAvailDate(const AvailableDate &d) {
     dateEditLeft->setDate(d.date());
+    groupBoxLeft->setChecked(true);
 
     _range = d.isRange();
-    onRangeClick(this->range());
+    rangeToggle->setChecked(_range);
 
-    if (d.isRange()) {
+    if (d.endDate() != QDate(0, 0, 0)) {
         dateEditRight->setDate(d.endDate());
+        groupBoxRight->setChecked(true);
     }
 }
 

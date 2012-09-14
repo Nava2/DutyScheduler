@@ -511,7 +511,8 @@ void ScheduleWidget::prepInterface()
         }
 
         // get the staff's dates of availabillity
-        QList<QDate > availList = pStaff->getAvailability();
+        QList<QDate > availList;
+        pStaff->getAvailability(availList);
         foreach (QDate date, availList)
         {
             if(date.daysTo(startDate) > 0 || date.daysTo(endDate) < 0)

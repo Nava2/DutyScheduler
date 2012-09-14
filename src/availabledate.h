@@ -9,6 +9,7 @@ class AvailableDate
 {
 public:
     AvailableDate();
+    AvailableDate(const QDate &date, const bool = false);
     ~AvailableDate();
 
     QDate date() const;
@@ -23,6 +24,8 @@ public:
 
     bool isRange() const;
     void setRange(const bool);
+
+    AvailableDate &operator =(const AvailableDate &copy);
 
     void operator <<(const QVariantMap &);
     void operator >>(QVariantMap &) const;

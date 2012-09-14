@@ -50,7 +50,8 @@ public:
 
     void setAvailability(const QList<AvailableDate> &dtList);
     void setAvailability(const QString &);
-    QList<QDate> getAvailability();
+    void getAvailability(QList<QDate> &);
+    void getAvailability(QList<AvailableDate> &);
     QString getAvailabilityStr();
     void appendAvail(const AvailableDate &dt);
     void removeAvail(const AvailableDate &dt);

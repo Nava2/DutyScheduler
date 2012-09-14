@@ -32,7 +32,7 @@ public:
 
     void adjustRowCount(int count);
 
-    void setToAvail(const QList<QDate > &avail);
+    void setToAvail(const QList<AvailableDate> &avail);
     QList<AvailableDate > getAvail();
 
     void reset();
@@ -46,6 +46,8 @@ public slots:
 
 private:
     void updateCountLabel();
+
+    void sortRanges(const QList<AvailableDate> in, QList<AvailableDate> &range, QList<AvailableDate> &single);
 
     QGridLayout *topLayout;
     QVBoxLayout *internalLayout;

@@ -204,7 +204,8 @@ void MainWidget::updateSelections(QListWidgetItem * item)
 
     // QQQ
 
-    QList<QDate > avail = theTeam->at(id)->getAvailability();
+    QList<AvailableDate > avail;
+    theTeam->at(id)->getAvailability(avail);
 
     availWidget->setToAvail(avail);
 

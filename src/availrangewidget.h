@@ -15,6 +15,7 @@ class AvailRangeWidget : public QGroupBox
     Q_OBJECT
 public:
     explicit AvailRangeWidget(int index, QWidget *parent = 0);
+    ~AvailRangeWidget();
     
     bool range();
 
@@ -24,7 +25,7 @@ public:
 
     bool getDates(QList<QDate > &);
 
-    AvailableDate getAvailDate();
+    bool getAvailDate(AvailableDate &d);
     void setAvailDate(const AvailableDate &);
 
     void isChecked(bool &left, bool &right);
