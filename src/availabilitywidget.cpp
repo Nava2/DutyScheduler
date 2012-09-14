@@ -61,12 +61,12 @@ AvailabilityWidget::AvailabilityWidget(QWidget *parent) :
 
 void AvailabilityWidget::setToAvail(const QList<AvailableDate> &avail) {
     // TODO Not loading properly
-    int num_slots = (avail.size() % 2 == 0) ? avail.size() : avail.size() + 1; // round up to even number
-//    num_slots /= 2;
-    adjustRowCount(num_slots);
-
     QList<AvailableDate > range, single;
     sortRanges(avail, range, single);
+
+    int num_slots = range.size() * 2 + single.size(); // round up to even number
+//    num_slots /= 2;
+    adjustRowCount(num_slots);
 
     int rowInd = 0;
     foreach (AvailableDate d, range) {
@@ -74,6 +74,8 @@ void AvailabilityWidget::setToAvail(const QList<AvailableDate> &avail) {
 
         row->setAvailDate(d);
     }
+
+    qDebug() << "Rows" << arrayRows.count();
 
     AvailRangeWidget *row;
     AvailableDate date;
@@ -176,6 +178,9 @@ void AvailabilityWidget::sortRanges(QList<AvailableDate> in, QList<AvailableDate
     foreach (AvailableDate d, in) {
         single.append(d);
     }
+
+    qDebug() << "Total" << ranges.count() + single.count() << ":: Single"
+             << single.count() << ":: Ranges" << ranges.count();
 }
 
 void AvailabilityWidget::onGroupBoxChecked(bool on) {
@@ -190,7 +195,7 @@ void AvailabilityWidget::onGroupBoxChecked(bool on) {
 }
 
 void AvailabilityWidget::addRow() {
-    AvailRangeWidget *rw = new AvailRangeWidget(rowNum*2);
+    AvailRangeWidget *rw = new AvailRangeWidget(rowNum*2, this);
 
     internalLayout->addWidget(rw);
     arrayRows += rw;
