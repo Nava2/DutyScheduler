@@ -1,6 +1,7 @@
 # Qt stuff
 build*/*
 *.pro.user
+duty*/
 
 # Compiled Object files
 *.slo
