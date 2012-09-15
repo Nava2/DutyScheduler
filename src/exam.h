@@ -12,7 +12,7 @@ public:
     typedef QSharedPointer<Exam> Ptr;
 
     Exam();
-    Exam(const int, const QDate &, const bool);
+    Exam(const int, const QDate &, const bool, const bool);
     Exam(const Exam &);
     Exam(const QVariantMap &);
 
@@ -23,8 +23,11 @@ public:
 
     void setNight(bool);
 
-    bool getNight();
+    bool isNight();
     int getId();
+
+    bool isMidterm() const;
+    void setMidterm(const bool);
 
     void addStaff(const QString &id);
     void removeStaff(const QString &id);
@@ -32,6 +35,7 @@ public:
 private:
     int id;
     bool night;
+    bool midterm;
 
     QList<QString > staffIds;
 };

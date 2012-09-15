@@ -116,6 +116,13 @@ StaffList &StaffList::operator >>(QVariantMap &json) {
     return *this;
 }
 
+StaffList &StaffList::operator =(const StaffList &list) {
+    _list = list._list;
+    _hashList = list._hashList;
+
+    return *this;
+}
+
 StaffList::const_iterator StaffList::begin() const {
     return _list.begin();
 }

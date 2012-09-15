@@ -32,8 +32,17 @@ public:
     bool getGender();
     int getNightClass();
     bool isNightClass(const QDate &date);
-    QList<Exam::Ptr> getExams();
-    QString getExamsStr();
+
+    void setFinals(QString, const QList<Exam::Ptr> &examList);
+    void setFinals(const QList<Exam::Ptr> &);
+    void addFinal(const Exam::Ptr e);
+    QList<Exam::Ptr> getFinals();
+    QString getFinalsStr();
+
+    void setMidterms(const QList<Exam::Ptr> &);
+    void addMidterm(const Exam::Ptr e);
+    QList<Exam::Ptr> getMidterms();
+    QString getMidtermsStr();
 
     int getShifts();
     int getWeekendShifts();
@@ -47,8 +56,7 @@ public:
     void setPosition(bool);
     void setGender(bool);
     void setNightClass(int);
-    void setExams(QString, const QList<Exam::Ptr> &examList);
-    void setExams(const QList<Exam::Ptr> &);
+\
 
     void setAvailability(const QList<AvailableDate> &dtList);
     void setAvailability(const QString &);
@@ -73,7 +81,7 @@ private:
     bool position;
     bool gender;
     int nightClass;
-    QList<Exam::Ptr> exams; // "(id),(id2),(id5),"
+    QList<Exam::Ptr> finals, midterms; // "(id),(id2),(id5),"
 //     QString availability;// "dd/MM/yyyy,dd/MM/yyyy," etc
     QList<AvailableDate > availList;
     int numShifts;

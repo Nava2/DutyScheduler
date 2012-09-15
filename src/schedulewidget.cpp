@@ -37,7 +37,7 @@ ScheduleWidget::ScheduleWidget(const QString &staffteamfilename, const ScheduleW
     for(int z = 0; z<length; z++)
     {
         if(examSchedule)
-            sDateIterator = new SDate(dateCounter,theTeam->count(),theTeam->count());
+            sDateIterator = new SDate(dateCounter,theTeam.count(),theTeam.count());
         else
             sDateIterator = new SDate(dateCounter, donsNeeded[dateCounter.dayOfWeek()-1], rasNeeded[dateCounter.dayOfWeek()-1]);
 
@@ -61,15 +61,20 @@ ScheduleWidget::ScheduleWidget(const QString &staffteamfilename, const ScheduleW
 
 }
 
-ScheduleWidget::ScheduleWidget(const QString &fileNameSchedule, StaffList::Ptr team, QList<Exam::Ptr> *exams, QWidget *parent) // this constructor is used by LoadSchedule
+ScheduleWidget::ScheduleWidget(const QString &fileNameSchedule,
+                               StaffList &team,
+                               QList<Exam::Ptr> &finals,
+                               QList<Exam::Ptr> &midterms,
+                               QWidget *parent) // this constructor is used by LoadSchedule
     : QWidget(parent)
 {
     iohandle = new IOHandler;
 
-    iohandle->loadSchedule(fileNameSchedule, datesList, nightClasses, donsNeeded, rasNeeded);
+    iohandle->loadSchedule(fileNameSchedule, team, datesList, nightClasses, donsNeeded, rasNeeded);
 
     theTeam = team;
-    theExams = new QList<Exam::Ptr>(*exams);
+    theFinals = finals;
+    theMidterms = midterms;
 
     startDate = datesList.first();
     endDate = datesList.last();
@@ -77,18 +82,18 @@ ScheduleWidget::ScheduleWidget(const QString &fileNameSchedule, StaffList::Ptr t
     foreach (SDate _sdate, datesList) {
         bool weekend = _sdate.isWeekend();
 
-        if (theTeam->at(_sdate.getAM())->getId() < theTeam->count())
-            theTeam->at(_sdate.getAM())->addShift(weekend, true);    //add the shift count to the staff object
+        if (theTeam[_sdate.getAM()]->getId() < theTeam.count())
+            theTeam[_sdate.getAM()]->addShift(weekend, true);    //add the shift count to the staff object
 
         foreach (QString id, _sdate.getDons()) {
-            Staff::Ptr pstaff = theTeam->at(id);
-            if (pstaff->getId() < theTeam->count())
+            Staff::Ptr pstaff = theTeam[id];
+            if (pstaff->getId() < theTeam.count())
                 pstaff->addShift(weekend);
         }
 
         foreach (QString id, _sdate.getRas()) {
-            Staff::Ptr pstaff = theTeam->at(id);
-            if (pstaff->getId() < theTeam->count())
+            Staff::Ptr pstaff = theTeam[id];
+            if (pstaff->getId() < theTeam.count())
                 pstaff->addShift(weekend);
         }
 
@@ -99,25 +104,25 @@ ScheduleWidget::ScheduleWidget(const QString &fileNameSchedule, StaffList::Ptr t
     onDeckItems = new QList<QListWidgetItem*>;
     onDutyItems = new QList<QListWidgetItem*>;
 
-    for(int x = 0; x < theTeam->count(); x++)
+    foreach (Staff::Ptr pstaff, theTeam)
     {
         // make the ondeck list
         QListWidgetItem *item = new QListWidgetItem();
-        item->setText(theTeam->at(x)->getFirstName() + " " + theTeam->at(x)->getLastName());
-        item->setData(Qt::UserRole, theTeam->at(x)->uid());
+        item->setText(pstaff->getFirstName() + " " + pstaff->getLastName());
+        item->setData(Qt::UserRole, pstaff->uid());
         onDeckItems->append(item);
         onDeckList->insertItem(0,item);
 
 
         // make the onduty list
         QListWidgetItem *item2 = new QListWidgetItem();
-        item2->setText(theTeam->at(x)->getFirstName() + " " + theTeam->at(x)->getLastName());
-        item2->setData(Qt::UserRole, theTeam->at(x)->uid());
+        item2->setText(pstaff->getFirstName() + " " + pstaff->getLastName());
+        item2->setData(Qt::UserRole, pstaff->uid());
         onDutyItems->append(item2);
         onDutyList->insertItem(0,item2);
         item2->setHidden(true);
 
-        if(theTeam->at(x)->getPosition())
+        if (pstaff->getPosition())
         {
             item->setBackgroundColor(QColor(255,0,0,127));
             item2->setBackgroundColor(QColor(255,0,0,127));
@@ -145,7 +150,7 @@ ScheduleWidget::ScheduleWidget(const QString &fileNameSchedule, StaffList::Ptr t
     QTableWidgetItem *row = averagesTable->item(0, 0);
     QString id = row->data(Qt::UserRole).toString();
 
-    schedViewWidget->setToStaff((*theTeam)[id], datesList);
+    schedViewWidget->setToStaff(theTeam[id], datesList);
 
     updateNeeded();
 
@@ -163,10 +168,6 @@ ScheduleWidget::~ScheduleWidget()
         it_i = statsTableItems->erase(it_i);
     }
     delete statsTableItems;
-
-    if (theExams) {
-        delete theExams;
-    }
 
     for(int x = 0; x < 7; x++)
     {
@@ -312,7 +313,7 @@ void ScheduleWidget::createScheduleStats()
     averagesTable->setItem(1,2,raAverageItem);
     averagesTable->setItem(1,3,raAverageWeekendItem);
 
-    statsTable = new QTableWidget(theTeam->count(),5);
+    statsTable = new QTableWidget(theTeam.count(),5);
     statsTable->setStatusTip("This table shows the number of shifts assigned to each staff member. Click a staff member's name to show their individual schedule.");
     connect(statsTable,SIGNAL(itemClicked(QTableWidgetItem*)),this,SLOT(showStaffSchedule(QTableWidgetItem*)));
     statsTable->setHorizontalHeaderLabels(QString("Name,Position,Total Shifts,Weekend Shifts,AM Shifts").split(","));
@@ -328,19 +329,19 @@ void ScheduleWidget::createScheduleStats()
 
     statsTableItems = new QList<QTableWidgetItem*>;
 
-    for (int x = 0; x < theTeam->count(); x++)
+    for (int x = 0; x < theTeam.count(); x++)
     {
         statsTable->setRowHeight(x,20);
         //name
         QTableWidgetItem *nameItem = new QTableWidgetItem();
-        nameItem->setText(theTeam->at(x)->getFirstName() + " " + theTeam->at(x)->getLastName().left(1));
-        nameItem->setData(Qt::UserRole,theTeam->at(x)->uid());
+        nameItem->setText(theTeam.at(x)->getFirstName() + " " + theTeam.at(x)->getLastName().left(1));
+        nameItem->setData(Qt::UserRole,theTeam.at(x)->uid());
         nameItem->setFlags(flags);
         statsTableItems->append(nameItem);
 
         //position
         QTableWidgetItem *positionItem = new QTableWidgetItem();
-        if(theTeam->at(x)->getPosition())
+        if(theTeam.at(x)->getPosition())
             positionItem->setText("Don");
         else
             positionItem->setText("RA");
@@ -350,19 +351,19 @@ void ScheduleWidget::createScheduleStats()
 
         //total
         QTableWidgetItem *totalItem = new QTableWidgetItem();
-        totalItem->setText(QString::number(theTeam->at(x)->getShifts()));
+        totalItem->setText(QString::number(theTeam.at(x)->getShifts()));
         totalItem->setFlags(flags);
         totalItem->setTextAlignment(Qt::AlignCenter);
 
         //weekend
         QTableWidgetItem *weekendItem = new QTableWidgetItem();
-        weekendItem->setText(QString::number(theTeam->at(x)->getWeekendShifts()));
+        weekendItem->setText(QString::number(theTeam.at(x)->getWeekendShifts()));
         weekendItem->setFlags(flags);
         weekendItem->setTextAlignment(Qt::AlignCenter);
 
         //AM
         QTableWidgetItem *amItem = new QTableWidgetItem();
-        amItem->setText(QString::number(theTeam->at(x)->getAMShifts()));
+        amItem->setText(QString::number(theTeam.at(x)->getAMShifts()));
         amItem->setFlags(flags);
         amItem->setTextAlignment(Qt::AlignCenter);
 
@@ -450,10 +451,11 @@ void ScheduleWidget::createLists()
 
 void ScheduleWidget::loadStaffTeamData(QString filename)
 {
-    theTeam = StaffList::Ptr(new StaffList);
-    theExams = new QList<Exam::Ptr>;
+    theTeam.clear();
+    theFinals.clear();
+    theMidterms.clear();
 
-    bool ok = iohandle->loadStaffTeam(filename, *theTeam, *theExams);
+    bool ok = iohandle->loadStaffTeam(filename, theTeam, theFinals, theMidterms);
 
     if (!ok) {
         QString title, msg;
@@ -468,7 +470,7 @@ void ScheduleWidget::prepInterface()
     onDeckItems = new QList<QListWidgetItem*>;
     onDutyItems = new QList<QListWidgetItem*>;
 
-    foreach (Staff::Ptr pStaff, *theTeam) {
+    foreach (Staff::Ptr pStaff, theTeam) {
         // make the ondeck list
         QListWidgetItem *item = new QListWidgetItem();
         item->setText(pStaff->getFirstName() + " " + pStaff->getLastName());
@@ -525,7 +527,7 @@ void ScheduleWidget::prepInterface()
 
         if(examSchedule)
         {
-            foreach (Exam::Ptr pExam, pStaff->getExams())
+            foreach (Exam::Ptr pExam, pStaff->getFinals())
             {
                 Exam exam = *pExam;
 
@@ -534,7 +536,7 @@ void ScheduleWidget::prepInterface()
 
                 int dateIndex = dateToIndex(exam);
 
-                if(exam.getNight())
+                if(exam.isNight())
                     datesList[dateIndex].addCantWork(pStaff->uid());
 
                 if(dateIndex != 0)
@@ -546,7 +548,7 @@ void ScheduleWidget::prepInterface()
     QTableWidgetItem *row = averagesTable->item(0, 0);
     QString id = row->data(Qt::UserRole).toString();
 
-    schedViewWidget->setToStaff((*theTeam)[id], datesList);
+    schedViewWidget->setToStaff(theTeam[id], datesList);
 
 }
 
@@ -562,7 +564,7 @@ void ScheduleWidget::dateClicked(QDate dateSelected)
 
     int dateIndex = dateToIndex(dateSelected); // get the index of the date in "datesList"
 
-    for(int x = 0; x<theTeam->count(); x++)
+    for(int x = 0; x<theTeam.count(); x++)
     {
         QListWidgetItem *deckItem = onDeckItems->at(x);
         QListWidgetItem *dutyItem = onDutyItems->at(x);
@@ -606,7 +608,7 @@ void ScheduleWidget::addStaff(QListWidgetItem *item)
 {
     QString staffId = onDeckList->currentItem()->data(Qt::UserRole).toString();
     int dateIndex = dateToIndex(calendar->selectedDate());
-    bool pos = theTeam->at(staffId)->getPosition();
+    bool pos = theTeam.at(staffId)->getPosition();
 
     if (datesList[dateIndex].isOn(staffId))
         return;
@@ -642,7 +644,7 @@ void ScheduleWidget::addStaff(QListWidgetItem *item)
 
     bool isWeekend = datesList[dateIndex].isWeekend();
 
-    theTeam->at(staffId)->addShift(isWeekend, false);
+    theTeam.at(staffId)->addShift(isWeekend, false);
 
     updateStats();
 }
@@ -655,7 +657,7 @@ void ScheduleWidget::removeStaff(QListWidgetItem *item)
 
     bool isAM = (staffId == datesList[dateIndex].getAM());
     // remove the staff from the sDate object for the selected day.
-    datesList[dateIndex].removeStaff(staffId, theTeam->at(staffId)->getPosition());
+    datesList[dateIndex].removeStaff(staffId, theTeam.at(staffId)->getPosition());
 
     //make the item invisible in the on duty list.
     item->setHidden(true);
@@ -677,7 +679,7 @@ void ScheduleWidget::removeStaff(QListWidgetItem *item)
 
     bool isWeekend = datesList[dateIndex].isWeekend();
 
-    theTeam->at(staffId)->removeShift(isWeekend, isAM);
+    theTeam.at(staffId)->removeShift(isWeekend, isAM);
 
     updateStats();
 }
@@ -687,7 +689,7 @@ void ScheduleWidget::setAsAM()
     QString staffId = onDeckList->currentItem()->data(Qt::UserRole).toString();
     int dateIndex = dateToIndex(calendar->selectedDate());
 
-    if (!theTeam->at(staffId)->getPosition())
+    if (!theTeam.at(staffId)->getPosition())
         return;
 
     if (datesList[dateIndex].isOn(staffId))
@@ -723,7 +725,7 @@ void ScheduleWidget::setAsAM()
 
     bool isWeekend = datesList[dateIndex].isWeekend();
 
-    theTeam->at(staffId)->addShift(isWeekend, true);
+    theTeam.at(staffId)->addShift(isWeekend, true);
 
     updateStats();
 }
@@ -741,7 +743,7 @@ void ScheduleWidget::showMenu(QPoint p)
 
     QMenu *rightClickMenu = new QMenu(this);
 
-    if(onDeckItems->contains(item) && theTeam->at(staffId)->getPosition())
+    if(onDeckItems->contains(item) && theTeam.at(staffId)->getPosition())
     {
         rightClickMenu->addAction(setAsAMAction);
     }
@@ -783,8 +785,8 @@ void ScheduleWidget::showStaffSchedule(QTableWidgetItem *item)
         return;
 
     QString staffId = item->data(Qt::UserRole).toString();
-    if (theTeam->at(staffId)->getId() < theTeam->count())
-        schedViewWidget->setToStaff(theTeam->at(staffId), datesList);
+    if (theTeam.at(staffId)->getId() < theTeam.count())
+        schedViewWidget->setToStaff(theTeam.at(staffId), datesList);
     else
         qDebug() << "Trying to set bad index" << staffId;
 }
@@ -827,7 +829,7 @@ void ScheduleWidget::setAsAM(const QString &staffId)
     if (nightClasses[calendar->selectedDate().dayOfWeek()-1]->contains(staffId))
         return;
 
-    if (!theTeam->at(staffId)->getPosition())
+    if (!theTeam.at(staffId)->getPosition())
         return;
 
     if (datesList[dateIndex].isOn(staffId))
@@ -841,7 +843,7 @@ void ScheduleWidget::setAsAM(const QString &staffId)
 
     datesList[dateIndex].setAM(staffId);
 
-    Staff::Ptr pstaff = (*theTeam)[staffId];
+    Staff::Ptr pstaff = theTeam[staffId];
 
     onDeckItems->at(pstaff->getId())->setHidden(true);
     QListWidgetItem *item = onDutyItems->at(pstaff->getId());
@@ -874,7 +876,7 @@ void ScheduleWidget::addStaff(const QString &staffId)
 {
 
     int dateIndex = dateToIndex(calendar->selectedDate());
-    bool pos = theTeam->at(staffId)->getPosition();
+    bool pos = theTeam.at(staffId)->getPosition();
 
     if (!datesList[dateIndex].canWork(staffId))
         return;
@@ -900,7 +902,7 @@ void ScheduleWidget::addStaff(const QString &staffId)
     }
     datesList[dateIndex].addStaff(staffId, pos);
 
-    Staff::Ptr pstaff = (*theTeam)[staffId];
+    Staff::Ptr pstaff = theTeam[staffId];
 
     onDeckItems->at(pstaff->getId())->setHidden(true);
     onDutyItems->at(pstaff->getId())->setHidden(false);
@@ -1002,8 +1004,8 @@ void ScheduleWidget::exportSchedule()
                 *lists.at(dayOfWeekCounter) = on.split(",",QString::SkipEmptyParts);
 
                 for(int z = 0; z < lists.at(dayOfWeekCounter)->count(); z++)             // swap the staff id's for their names in the string list
-                    lists.at(dayOfWeekCounter)->replace(z, "\"" + theTeam->at(lists.at(dayOfWeekCounter)->at(z).toInt())->getFirstName()
-                                                   + " " + theTeam->at(lists.at(dayOfWeekCounter)->at(z).toInt())->getLastName().left(1)+"\"");
+                    lists.at(dayOfWeekCounter)->replace(z, "\"" + theTeam.at(lists.at(dayOfWeekCounter)->at(z).toInt())->getFirstName()
+                                                   + " " + theTeam.at(lists.at(dayOfWeekCounter)->at(z).toInt())->getLastName().left(1)+"\"");
             }
             if(lists.at(dayOfWeekCounter)->count() > maxNeededForWeek)               // this tells us how many rows will be needed this week.
                 maxNeededForWeek = lists.at(dayOfWeekCounter)->count();
@@ -1080,7 +1082,7 @@ void ScheduleWidget::updateStats()
     for(int x = 0; x < statsTableItems->count(); x++)
     {
         QString staffId = statsTableItems->at(x)->data(Qt::UserRole).toString();
-        Staff::Ptr pstaff = theTeam->at(staffId);
+        Staff::Ptr pstaff = theTeam.at(staffId);
         int row = statsTableItems->at(x)->row();
 
         statsTable->item(row,2)->setText(QString::number(pstaff->getShifts()));

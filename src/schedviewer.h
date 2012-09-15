@@ -31,6 +31,7 @@ private:
     QLabel *amLabel;
     QLabel *noWorkLabel;
     QLabel *nightClassLabel;
+    QLabel *midtermLabel;
     QLabel *nameLabel;
     QVBoxLayout *externLayout;
     QGridLayout *internLayout, *labelLayout;

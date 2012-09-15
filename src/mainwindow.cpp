@@ -95,8 +95,8 @@ void MainWindow::newStaffTeam()
 void MainWindow::openStaffTeam() {
 
     // lists for loading
-    StaffList::Ptr staffList = StaffList::Ptr(new StaffList);
-    QList<Exam::Ptr> *examList = new QList<Exam::Ptr>;
+    StaffList staffList;
+    QList<Exam::Ptr> finalList, midtermList;
 
     // get the file name, use currentStaffTeamFile if possible
     QString fileName("");
@@ -107,7 +107,7 @@ void MainWindow::openStaffTeam() {
                                                 QFileInfo(currentStaffTeamFile).dir().path());
     }
 
-    bool ok = iohandle.loadStaffTeam(fileName, *staffList, *examList);
+    bool ok = iohandle.loadStaffTeam(fileName, staffList, finalList, midtermList);
 
     if (!ok) {
         // baaaad
@@ -119,9 +119,10 @@ void MainWindow::openStaffTeam() {
     }
 
     m->reset();
-    m->load(staffList, examList);
+    m->load(staffList, finalList, midtermList);
     sList = staffList;
-    eList = examList;
+    this->finalList = finalList;
+    this->midtermList = midtermList;
     currentStaffTeamFile = fileName;
 }
 
@@ -148,10 +149,11 @@ void MainWindow::saveAsStaffTeam() {
 
 void MainWindow::saveStaffTeamName(const QString &fileName)
 {
-    StaffList::Ptr _sList = m->getStaff();
-    QList<Exam::Ptr> *_eList = m->getExams();
+    StaffList _sList = m->getStaff();
+    QList<Exam::Ptr> _fList, _mList;
+    m->getExams(_fList, _mList);
 
-    bool ok = iohandle.saveStaffTeam(fileName, *_sList, *_eList);
+    bool ok = iohandle.saveStaffTeam(fileName, _sList, _fList, _mList);
 
     if (!ok) {
         // badnews bears.
@@ -163,7 +165,8 @@ void MainWindow::saveStaffTeamName(const QString &fileName)
     }
 
     sList = _sList;
-    eList = _eList;
+    finalList = _fList;
+    midtermList = _mList;
 }
 
 void MainWindow::saveSchedule()
@@ -201,10 +204,11 @@ void MainWindow::loadSchedule()
     if (centralWidget() == s)
         delete s;
 
-    StaffList::Ptr team = m->getStaff();
-    QList<Exam::Ptr> *exams = m->getExams();
+    StaffList team = m->getStaff();
+    QList<Exam::Ptr> finals, midterms;
+    m->getExams(finals, midterms);
 
-    if ((!team || team->count() == 0) || (!exams || exams->count() == 0)) {
+    if (team.count() == 0 || (finals.count() + midterms.count() == 0)) {
         QString StaffTeamFilename = iohandle.getCurrentStaffFile();
 
         if (StaffTeamFilename.isEmpty()) {
@@ -215,6 +219,7 @@ void MainWindow::loadSchedule()
             msgBox2.setDefaultButton(QMessageBox::Ok);
             msgBox2.exec();
 
+            int x = 0;
             iohandle.clearErrorInfo();
             do {
                 StaffTeamFilename = QFileDialog::getOpenFileName(this, "Open Staff Team..", QDir::home().path());
@@ -223,13 +228,13 @@ void MainWindow::loadSchedule()
                 iohandle.getErrorInfo(msg, title);
                 if (!msg.isEmpty() && !title.isEmpty())
                     QMessageBox::warning(this, title, msg);
-            } while (!iohandle.checkFileName(StaffTeamFilename));
+            } while (!iohandle.checkFileName(StaffTeamFilename) && x++ < 2);
         }
 
-        iohandle.loadStaffTeam(StaffTeamFilename, *team, *exams);
+        iohandle.loadStaffTeam(StaffTeamFilename, team, finals, midterms);
     }
 
-    s = new ScheduleWidget(fileName, team, exams );
+    s = new ScheduleWidget(fileName, team, finals, midterms );
 
     setCentralWidget(s);
 

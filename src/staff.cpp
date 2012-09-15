@@ -52,7 +52,7 @@ Staff::Staff(const Staff &old) {
     position = old.position;
     gender = old.gender;
 
-    exams = old.exams;
+    finals = old.finals;
     numShifts = old.numShifts;
     numWeekendShifts = old.numWeekendShifts;
     numAMShifts = old.numAMShifts;
@@ -92,7 +92,6 @@ void Staff::operator << (const QVariantMap &json) {
         d << qv.toMap();
         availList.append(d);
     }
-
 
     QVariantMap shiftMap = json["shifts"].toMap();
     numWeekendShifts = shiftMap["wkend"].toInt();
@@ -187,32 +186,50 @@ void Staff::setNightClass(int night)
 {   nightClass = night; }
 
 
-void Staff::setExams(QString ex, const QList<Exam::Ptr> &examList)
+void Staff::setFinals(QString ex, const QList<Exam::Ptr> &examList)
 {
-    exams.clear();
+    finals.clear();
     QStringList list = ex.split(',', QString::SkipEmptyParts);
     foreach (QString ex, list) {
         ex.remove("(", Qt::CaseInsensitive);
         ex.remove(")", Qt::CaseInsensitive);
 
         int id = ex.toInt();
-        exams.append(examList[id]);
+        finals.append(examList[id]);
         examList[id]->addStaff(uid());
     }
 }
 
-void Staff::setExams(const QList<Exam::Ptr> &exams) {
-    this->exams = exams;
+void Staff::setMidterms(const QList<Exam::Ptr> &exams) {
+    midterms = exams;
 }
 
-QList<Exam::Ptr> Staff::getExams()
+void Staff::addMidterm(const Exam::Ptr e) {
+    if (!midterms.contains(e))
+        midterms.append(e);
+}
+
+QList<Exam::Ptr> Staff::getMidterms() {
+    return midterms;
+}
+
+void Staff::setFinals(const QList<Exam::Ptr> &exams) {
+    finals = exams;
+}
+
+void Staff::addFinal(const Exam::Ptr e) {
+    if (!finals.contains(e))
+        finals.append(e);
+}
+
+QList<Exam::Ptr> Staff::getFinals()
 {
-    return exams;
+    return finals;
 }
 
-QString Staff::getExamsStr() {
+QString Staff::getFinalsStr() {
     QString out;
-    foreach (Exam::Ptr ex, exams) {
+    foreach (Exam::Ptr ex, finals) {
         out += "(" + QString::number(ex->getId()) + "),";
     }
 

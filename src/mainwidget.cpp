@@ -7,18 +7,19 @@
 MainWidget::MainWidget(QWidget *parent)
     : QWidget(parent)
 {
-    theTeam = StaffList::Ptr(new StaffList);
-    finalExams = new QList<Exam::Ptr>;
     createStaffElements();
 }
 
 MainWidget::~MainWidget()
 {
     theTeam.clear();
-
-    delete finalExams;
+    finalExams.clear();
+    midtermExams.clear();
 
     staffTeamList->clear();
+
+    delete availWidget;
+
     delete staffTeamList;
 
     delete examWidget;
@@ -56,10 +57,10 @@ void MainWidget::updateStaffMember()
     QListWidgetItem *i = staffTeamList->currentItem();//get the list item from the list widget
     QString id = i->data(Qt::UserRole).toString();//the list item's user data is the staff id
     i->setText(firstNameEdit->text() + " " + lastNameEdit->text()); //change the text in the list
-    Staff::Ptr pstaff = theTeam->at(id);
+    Staff::Ptr pstaff = theTeam.at(id);
     pstaff->update(firstNameEdit->text().trimmed(),lastNameEdit->text().trimmed(),p,g,n); //change the actual staff object
     pstaff->setAvailability(availWidget->getAvail());// set the avail
-    pstaff->setExams(exams);//set exams
+    pstaff->setFinals(exams);//set exams
     clearSelections();
 }
 
@@ -84,7 +85,7 @@ void MainWidget::addStaffMember()
     }
 
     // MAKE THE STAFF
-    Staff::Ptr s(new Staff(theTeam->count(), //make a staff member pointer
+    Staff::Ptr s(new Staff(theTeam.count(), //make a staff member pointer
                             firstNameEdit->text().trimmed(),
                             lastNameEdit->text().trimmed(), p, g, n));
     //AVAILABILITY
@@ -94,10 +95,10 @@ void MainWidget::addStaffMember()
     QList<Exam::Ptr > exams;
     examWidget->getFinals(exams);
 
-    s->setExams(exams);
+    s->setFinals(exams);
 
     // DATA STUFF
-    theTeam->append(s); // add this staff to the team qlist
+    theTeam.append(s); // add this staff to the team qlist
 
     QListWidgetItem *item = new QListWidgetItem; // this item represents the staff in the visible list widget
 
@@ -149,7 +150,7 @@ void MainWidget::updateSelections(QListWidgetItem * item)
     clearSelections();
     //get the id of the selected staff member
     QString uid = item->data(Qt::UserRole).toString();
-    Staff::Ptr pstaff = theTeam->at(uid);
+    Staff::Ptr pstaff = theTeam.at(uid);
 
     //now update the right hand stuff so that it matches the selected staff
     firstNameEdit->setText(pstaff->getFirstName());
@@ -181,18 +182,26 @@ void MainWidget::updateSelections(QListWidgetItem * item)
     availWidget->setToAvail(avail);
 
     //EXAMS
-    examWidget->setFinals(pstaff->getExams());
+    examWidget->setFinals(pstaff->getFinals());
 }
 
-void MainWidget::addExam(const Exam::Ptr e) {
-    finalExams->append(e);//adds the pointer to the exam in the main exams list for the team
+void MainWidget::addFinal(const Exam::Ptr e) {
+    finalExams.append(e);//adds the pointer to the exam in the main exams list for the team
 }
 
-void MainWidget::removeExam(const Exam::Ptr e)
+void MainWidget::removeFinal(const Exam::Ptr e)
 {
     // nothing to do yet?
 }
 
+void MainWidget::addMidterm(const Exam::Ptr e) {
+    midtermExams.append(e);
+}
+
+void MainWidget::removeMidterm(const Exam::Ptr e)
+{
+    // nothing to do yet?
+}
 
 // GUI STUFF
 void MainWidget::createStaffElements()
@@ -216,7 +225,7 @@ void MainWidget::createStaffElements()
     availWidget = new AvailabilityWidget;
 
     // exams widget:
-    examWidget = new ExamWidget(*finalExams, this);
+    examWidget = new ExamWidget(midtermExams, finalExams, this);
 
     //set up the layout
     QGridLayout *layout = new QGridLayout;
@@ -327,28 +336,24 @@ void MainWidget::createStaffControls()
 // GETTERS/SETTERS for staff and exams
 void MainWidget::reset()
 {
-    theTeam->clear();
+    theTeam.clear();
 
-    if (finalExams) {
-        finalExams->clear();
-        delete finalExams;
-    }
-
-    theTeam = StaffList::Ptr(new StaffList);
-    finalExams = new QList<Exam::Ptr>;
+    finalExams.clear();
+    midtermExams.clear();
 
     staffTeamList->clear();
 
     examWidget->reset();
 }
 
-StaffList::Ptr MainWidget::getStaff()
+StaffList MainWidget::getStaff()
 {
     return theTeam;
 }
 
-QList<Exam::Ptr> *MainWidget::getExams() {
-    return finalExams;
+void MainWidget::getExams(QList<Exam::Ptr> &fOut, QList<Exam::Ptr> &mOut) {
+    fOut = finalExams;
+    mOut = midtermExams;
 }
 
 QList<QString > MainWidget::getUIDs() {
@@ -375,16 +380,17 @@ QString MainWidget::getTeam()
     return teamList;
 }
 
-void MainWidget::load(StaffList::Ptr staffList, QList<Exam::Ptr> *examList)
+void MainWidget::load(const StaffList &staffList, const QList<Exam::Ptr> &finalList, const QList<Exam::Ptr> &midtermList)
 {
     theTeam = staffList;
-    finalExams = examList;
+    finalExams = finalList;
+    midtermExams = midtermList;
 
-    for(int x=0; x<theTeam->count(); x++)
+    for(int x=0; x<theTeam.count(); x++)
     {
         QListWidgetItem *item = new QListWidgetItem;
-        item->setText(theTeam->at(x)->getFirstName() + " " + theTeam->at(x)->getLastName());
-        item->setData(Qt::UserRole, theTeam->at(x)->uid());
+        item->setText(theTeam[x]->getFirstName() + " " + theTeam[x]->getLastName());
+        item->setData(Qt::UserRole, theTeam[x]->uid());
         staffTeamList->insertItem(0,item);
     }
 

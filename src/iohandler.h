@@ -21,10 +21,10 @@ public:
     virtual
     ~IOHandler();
 
-    bool loadStaffTeam(const QString &fileName, StaffList &staffList, QList<Exam::Ptr> &examList);
-    bool saveStaffTeam(const QString &fileName, const StaffList &staffList, const QList<Exam::Ptr> &examList);
+    bool loadStaffTeam(const QString &fileName, StaffList &staffList, QList<Exam::Ptr> &finalsList, QList<Exam::Ptr> &midtermsList);
+    bool saveStaffTeam(const QString &fileName, const StaffList &staffList, const QList<Exam::Ptr> &finals, const QList<Exam::Ptr> &midterms);
 
-    bool loadSchedule(const QString &fileName, QList<SDate> &dateList, QList<QList<QString > *> &nightClasses, QList<int > &donsNeeded, QList<int > &rasNeeded );
+    bool loadSchedule(const QString &fileName, const StaffList &team, QList<SDate> &dateList, QList<QList<QString> *> &nightClasses, QList<int > &donsNeeded, QList<int> &rasNeeded );
     bool saveSchedule(const QString &fileName, QList<SDate> &dateList, QList<QList<QString > *> &nightClasses, QList<int > &donsNeeded, QList<int > &rasNeeded );
 
     void getErrorInfo(QString &title, QString &msg);
@@ -40,8 +40,8 @@ private:
     void setErrorInfo(const QString &msg, const QString &title);
 
     // json
-    bool loadStaffTeamJson(QFile &file, StaffList &staffList, QList<Exam::Ptr> &examList);
-    bool saveStaffTeamJson(QFile &file, const StaffList &sList, const QList<Exam::Ptr> &eList);
+    bool loadStaffTeamJson(QFile &file, StaffList &staffList, QList<Exam::Ptr> &finalList, QList<Exam::Ptr> &midtermList);
+    bool saveStaffTeamJson(QFile &file, const StaffList &sList, const QList<Exam::Ptr> &finalList, const QList<Exam::Ptr> &midtermList);
 
     bool loadScheduleJson(QFile &file, QList<SDate> &dateList, QList<QList<QString > *> &nightClasses, QList<int > &donsNeeded, QList<int > &rasNeeded );
     bool saveScheduleJson(QFile &file, QList<SDate> &dateList, QList<QList<QString > *> &nightClasses, QList<int > &donsNeeded, QList<int > &rasNeeded );

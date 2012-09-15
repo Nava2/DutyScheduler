@@ -40,11 +40,13 @@ public:
     virtual
     ~MainWidget();
     void reset();
-    StaffList::Ptr getStaff();
-    QList<Exam::Ptr> * getExams();
+    StaffList getStaff();
+    void getExams(QList<Exam::Ptr> &fOut, QList<Exam::Ptr> &mOut);
     QList<QString > getUIDs();
     QString getTeam();
-    void load(StaffList::Ptr staffList, QList<Exam::Ptr> *examList);
+    void load(const StaffList &staffList,
+              const QList<Exam::Ptr> &finalList,
+              const QList<Exam::Ptr> &midtermList);
 
 
 private slots:
@@ -54,15 +56,18 @@ private slots:
     void removeStaffMember();
     void clearSelections();
     void updateSelections(QListWidgetItem*);
-    void addExam(const Exam::Ptr e);
-    void removeExam(const Exam::Ptr e);
+    void addFinal(const Exam::Ptr e);
+    void removeFinal(const Exam::Ptr e);
+
+    void addMidterm(const Exam::Ptr e);
+    void removeMidterm(const Exam::Ptr e);
 
 
 
 private:
     //DATA
-    QList<Exam::Ptr> *finalExams, *midtermExams;
-    StaffList::Ptr theTeam;
+    QList<Exam::Ptr> finalExams, midtermExams;
+    StaffList theTeam;
 
     //GUI
     void createStaffElements();

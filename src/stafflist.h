@@ -40,6 +40,8 @@ public:
     StaffList &operator <<(const QVariantMap &json);
     StaffList &operator >>(QVariantMap &json);
 
+    StaffList &operator =(const StaffList &list);
+
     const_iterator begin() const;
     const_iterator end() const;
 

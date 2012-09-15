@@ -36,6 +36,7 @@ SchedViewer::SchedViewer(const QDate &startDate, const QDate &lastDate, QWidget 
     LABEL_CREATE(onLabel, "On Duty", Qt::magenta);
     LABEL_CREATE(noWorkLabel, "Requested Off", Qt::cyan);
     LABEL_CREATE(nightClassLabel, "Night Class", Qt::blue);
+    LABEL_CREATE(midtermLabel, "Midterm", Qt::yellow)
 
 #undef LABEL_CREATE
 
@@ -89,6 +90,7 @@ SchedViewer::~SchedViewer()
     DELETE_IF(onLabel);
     DELETE_IF(nameLabel);
     DELETE_IF(noWorkLabel);
+    DELETE_IF(midtermLabel);
 
     DELETE_IF(labelLayout);
     DELETE_IF(labelBox);
@@ -129,6 +131,16 @@ void SchedViewer::setToStaff(Staff::Ptr pStaff, QList<SDate> &datesList) {
         }
 
         calendarStaff->setDateTextFormat(sdate, format);
+    }
+
+    format.setBackground(Qt::yellow);
+    foreach (Exam::Ptr p, pStaff->getMidterms()) {
+        Exam ex = *p;
+        if (ex.isNight()) {
+            calendarStaff->setDateTextFormat(ex, format);
+        }
+
+        calendarStaff->setDateTextFormat(ex.addDays(-1), format);
     }
 
     staffMember = pStaff;

@@ -3,21 +3,18 @@
 #include <QDate>
 
 Exam::Exam()
-    : QDate()
+    : QDate(), id(9999), night(false), midterm(false)
 {
-    id = 99999;
-    night = false;
 }
 
-Exam::Exam(const int i, const QDate &date, const bool n)
-    : QDate(date)
+Exam::Exam(const int i, const QDate &date, const bool midterm, const bool night)
+    : QDate(date), night(night), midterm(midterm)
 {
     this->id = i;
-    night = n;
 }
 
 Exam::Exam(const QVariantMap &json)
-    : QDate(), id(0), night(0) {
+    : QDate(), id(0), night(false), midterm(false) {
     *this << json;
 }
 
@@ -25,6 +22,7 @@ Exam::Exam(const Exam &old) {
     this->id = old.id;
     setYMD(old.year(), old.month(), old.day());
     night = old.night;
+    midterm = old.midterm;
 }
 
 void Exam::setNight(bool n)
@@ -32,9 +30,17 @@ void Exam::setNight(bool n)
     night = n;
 }
 
-bool Exam::getNight()
+bool Exam::isNight()
 {
     return night;
+}
+
+bool Exam::isMidterm() const {
+    return midterm;
+}
+
+void Exam::setMidterm(const bool midterm) {
+    this->midterm = midterm;
 }
 
 int Exam::getId()
@@ -58,6 +64,7 @@ void Exam::operator <<(const QVariantMap &json) {
     QDate date = json["date"].toDate();
     setYMD(date.year(), date.month(), date.day());
     night = json["night"].toBool();
+    midterm = json["midterm"].toBool();
 
     QVariantList list = json["ids"].toList();
     staffIds.clear();
@@ -71,6 +78,7 @@ void Exam::operator >>(QVariantMap &json) {
     json["id"] = id;
     json["date"] = (QDate)(*this);
     json["night"] = night;
+    json["midterm"] = midterm;
 
     QVariantList t_idList;
     foreach (QString uid, staffIds) {
@@ -80,7 +88,9 @@ void Exam::operator >>(QVariantMap &json) {
 }
 
 bool Exam::operator ==(const Exam &ex) {
-    return ((QDate)(*this) == (QDate)(ex)) && night == ex.night;
+    return ((QDate)(*this) == (QDate)(ex))
+            && night == ex.night
+            && midterm == ex.midterm;
 }
 
 bool Exam::operator !=(const Exam &ex) {

@@ -12,6 +12,7 @@
 #include <QVariantList>
 #include <QTextStream>
 #include <QList>
+#include <QDebug>
 
 #include "stafflist.h"
 
@@ -72,7 +73,7 @@ bool IOHandler::checkFileName(const QString &fileName, FileExtension *ext) {
     return result;
 }
 
-bool IOHandler::loadStaffTeam(const QString &fileName, StaffList &staffList, QList<Exam::Ptr> &examList)
+bool IOHandler::loadStaffTeam(const QString &fileName, StaffList &staffList, QList<Exam::Ptr> &finalList, QList<Exam::Ptr> &midtermList)
 {
     FileExtension ext;
     bool result = IOHandler::checkFileName(fileName, &ext);
@@ -88,10 +89,11 @@ bool IOHandler::loadStaffTeam(const QString &fileName, StaffList &staffList, QLi
         // act based on extension
         switch (ext) {
         case JSON: {
-            result = loadStaffTeamJson(file, staffList, examList);
+            result = loadStaffTeamJson(file, staffList, finalList, midtermList);
         } break;
         case CSV: {
-            result = loadStaffTeamFile(file, staffList, examList);
+            result = loadStaffTeamFile(file, staffList, finalList);
+            qDebug() << "CSV is outdated.";
         } break;
         case BAD:
         default: {
@@ -108,7 +110,7 @@ bool IOHandler::loadStaffTeam(const QString &fileName, StaffList &staffList, QLi
 }
 
 
-bool IOHandler::loadStaffTeamJson(QFile &file, StaffList &staffList, QList<Exam::Ptr> &examList) {
+bool IOHandler::loadStaffTeamJson(QFile &file, StaffList &staffList, QList<Exam::Ptr> &finals, QList<Exam::Ptr> &midterms) {
 
     // read the whole file into the QByteArray then put it into a string for
     // parsing
@@ -136,12 +138,17 @@ bool IOHandler::loadStaffTeamJson(QFile &file, StaffList &staffList, QList<Exam:
     }
 
     // read exam objects
-    QVariantList exams = v["exams"].toList();
+    QVariantMap examMap = v["exams"].toMap();
+    QVariantList v_finals = examMap["finals"].toList();
+    foreach (QVariant qv, v_finals) {
+        Exam::Ptr pexam (new Exam(qv.toMap()));
+        finals.append(pexam);
+    }
 
-    // repeat the same steps as the staff members
-    foreach ( QVariant val, exams ) {
-        Exam::Ptr pExam(new Exam(val.toMap()));
-        examList.append(pExam);
+    QVariantList v_midterms = examMap["mid"].toList();
+    foreach (QVariant qv, v_midterms) {
+        Exam::Ptr pexam (new Exam(qv.toMap()));
+        midterms.append(pexam);
     }
 
     return true;
@@ -245,7 +252,7 @@ bool IOHandler::loadStaffTeamFile(QFile &file, StaffList &staffList, QList<Exam:
             s = Staff::Ptr(new Staff(id, first, last,
                                      pos, gen, night));
             s->setAvailability(avail);
-            s->setExams(exams, examList);
+            s->setFinals(exams, examList);
 
             staffList.append(s);
         }
@@ -264,7 +271,7 @@ bool IOHandler::loadStaffTeamFile(QFile &file, StaffList &staffList, QList<Exam:
             else
                 e_night = false;
 
-            e = Exam::Ptr(new Exam(id, date, e_night));
+            e = Exam::Ptr(new Exam(id, date, false, e_night));
 
             examList.append(e);
         }
@@ -277,7 +284,8 @@ bool IOHandler::loadStaffTeamFile(QFile &file, StaffList &staffList, QList<Exam:
 
 bool IOHandler::saveStaffTeam(const QString &fileName,
                               const StaffList &staffList,
-                              const QList<Exam::Ptr> &examList) {
+                              const QList<Exam::Ptr> &finals,
+                              const QList<Exam::Ptr> &midterms) {
 
     FileExtension ext;
     bool result = IOHandler::checkFileName(fileName, &ext);
@@ -293,10 +301,11 @@ bool IOHandler::saveStaffTeam(const QString &fileName,
         // act based on extension
         switch (ext) {
         case JSON: {
-            result = saveStaffTeamJson(file, staffList, examList);
+            result = saveStaffTeamJson(file, staffList, finals, midterms);
         } break;
         case CSV: {
-            result = saveStaffTeamFile(file, staffList, examList);
+            result = saveStaffTeamFile(file, staffList, finals);
+            qWarning() << "WARNING: CSV DEPRECIATED.";
         } break;
         case BAD:
         default: {
@@ -330,7 +339,7 @@ bool IOHandler::saveStaffTeamFile(QFile &file,
            << QString(t_staff->getGender()?"M":"F") << ","
            << QString::number(t_staff->getNightClass()) << ","
            << t_staff->getAvailabilityStr()
-           << t_staff->getExamsStr() << endl;
+           << t_staff->getFinalsStr() << endl;
     }
 
     ts << "[EXAMS]" << endl;
@@ -339,7 +348,7 @@ bool IOHandler::saveStaffTeamFile(QFile &file,
     {
         ts << QString::number(ex->getId()) << ","
            << ex->toString("dd/MM/yyyy") << ","
-           << (ex->getNight() ? "1" : "0") << endl;
+           << (ex->isNight() ? "1" : "0") << endl;
     }
 
     return true;
@@ -347,7 +356,8 @@ bool IOHandler::saveStaffTeamFile(QFile &file,
 
 bool IOHandler::saveStaffTeamJson(QFile &file,
                                   const StaffList &sList,
-                                  const QList<Exam::Ptr> &eList) {
+                                  const QList<Exam::Ptr> &finalList,
+                                  const QList<Exam::Ptr> &midtermList) {
 
     QVariantMap out;
 
@@ -362,16 +372,28 @@ bool IOHandler::saveStaffTeamJson(QFile &file,
 
     out["team"] = o_sList;
 
-    QVariantList o_sExams;
+    QVariantMap o_ExamMap;
 
-    foreach (Exam::Ptr pExam, eList) {
+    QVariantList o_fExams;
+    foreach (Exam::Ptr pExam, finalList) {
         QVariantMap eMap;
         *pExam >> eMap;
 
-        o_sExams.append(eMap);
+        o_fExams.append(eMap);
     }
 
-    out["exams"] = o_sExams;
+    QVariantList o_mExams;
+    foreach (Exam::Ptr pExam, midtermList) {
+        QVariantMap eMap;
+        *pExam >> eMap;
+
+        o_mExams.append(eMap);
+    }
+
+    o_ExamMap["finals"] = o_fExams;
+    o_ExamMap["mid"] = o_mExams;
+
+    out["exams"] = o_ExamMap;
 
     bool ok = false;
     QByteArray ba = QtJson::Json::serialize(out, ok);
@@ -387,7 +409,12 @@ bool IOHandler::saveStaffTeamJson(QFile &file,
 // SCHEDULES
 /////////////
 
-bool IOHandler::loadSchedule(const QString &fileName, QList<SDate> &dateList, QList<QList<QString > *> &nightClasses, QList<int > &donsNeeded, QList<int > &rasNeeded )
+bool IOHandler::loadSchedule(const QString &fileName,
+                             const StaffList &team,
+                             QList<SDate> &dateList,
+                             QList<QList<QString > *> &nightClasses,
+                             QList<int > &donsNeeded,
+                             QList<int > &rasNeeded )
 {
     FileExtension ext;
     bool result = IOHandler::checkFileName(fileName, &ext);
@@ -407,11 +434,24 @@ bool IOHandler::loadSchedule(const QString &fileName, QList<SDate> &dateList, QL
         } break;
         case CSV: {
             result = loadScheduleFile(file, dateList, nightClasses, donsNeeded, rasNeeded);
+            qWarning() << "WARNING: DO NOT USE CSV.";
         } break;
         case BAD:
         default: {
             return false;
         } break;
+        }
+
+        // add each person who can't work due to midterms
+        foreach (Staff::Ptr ptr, team) {
+            foreach (Exam::Ptr pexam, ptr->getMidterms()) {
+                foreach (SDate sd, dateList) {
+                    if (sd == *pexam) {
+                        sd.addCantWork(ptr->uid());
+                        break;
+                    }
+                }
+            }
         }
 
         currentScheduleFile = fileName;

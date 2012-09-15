@@ -15,34 +15,43 @@ class ExamWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit ExamWidget(QList<Exam::Ptr> &midterms, QList<Exam::Ptr> &finals, QWidget *parent = 0);
+    explicit ExamWidget(QList<Exam::Ptr> &finals, QList<Exam::Ptr> &midterms, QWidget *parent = 0);
     virtual
     ~ExamWidget();
 
     void reset();
 
-    void setFinals(const QList<Exam::Ptr> &out);
+    void setFinals(const QList<Exam::Ptr> &in);
     void getFinals(QList<Exam::Ptr> &out);
+
+    void setMidterms(const QList<Exam::Ptr> &in);
+    void getMidterms(QList<Exam::Ptr> &out);
     
 signals:
     void OnFinalAdded(const Exam::Ptr);
     void OnFinalRemoved(const Exam::Ptr);
 
+    void OnMidtermAdded(const Exam::Ptr);
+    void OnMidtermRemoved(const Exam::Ptr);
+
 public slots:
     void addFinal();
     void removeFinal();
 
+    void addMidterm();
+    void removeMidterm();
+
 private:
-    QGroupBox *ScheduleGroupBox;
-    QListWidget *examList;
-    QDateEdit *dateEdit;
-    QCheckBox *nightCheck;
-    QPushButton *addButton;
-    QPushButton *removeButton;
+    QGroupBox *finalScheduleGroupBox, *midtermScheduleGroupBox;
+    QListWidget *finalList, *midtermList;
+    QDateEdit *finalDateEdit, *midtermDateEdit;
+    QCheckBox *finalNightCheck, *midtermNightCheck;
+    QPushButton *addFinalButton, *addMidtermButton;
+    QPushButton *removeFinalButton, *removeMidtermButton;
 
     QTabWidget *tabWidget;
 
-    QList<Exam::Ptr > &finals, &midterms;
+    QList<Exam::Ptr > &midterms, &finals;
     
 };
 
