@@ -40,7 +40,7 @@ public:
     void reset();
     StaffList::Ptr getStaff();
     QList<Exam::Ptr> * getExams();
-    QList<int> getTeamIDs();
+    QList<QString > getUIDs();
     QString getTeam();
     void load(StaffList::Ptr staffList, QList<Exam::Ptr> *examList);
 

@@ -21,8 +21,8 @@ public:
     bool loadStaffTeam(const QString &fileName, StaffList &staffList, QList<Exam::Ptr> &examList);
     bool saveStaffTeam(const QString &fileName, const StaffList &staffList, const QList<Exam::Ptr> &examList);
 
-    bool loadSchedule(const QString &fileName, QList<SDate> &dateList, QList<QList<int > *> &nightClasses, QList<int > &donsNeeded, QList<int > &rasNeeded );
-    bool saveSchedule(const QString &fileName, QList<SDate> &dateList, QList<QList<int > *> &nightClasses, QList<int > &donsNeeded, QList<int > &rasNeeded );
+    bool loadSchedule(const QString &fileName, QList<SDate> &dateList, QList<QList<QString > *> &nightClasses, QList<int > &donsNeeded, QList<int > &rasNeeded );
+    bool saveSchedule(const QString &fileName, QList<SDate> &dateList, QList<QList<QString > *> &nightClasses, QList<int > &donsNeeded, QList<int > &rasNeeded );
 
     void getErrorInfo(QString &title, QString &msg);
     void clearErrorInfo();
@@ -40,15 +40,15 @@ private:
     bool loadStaffTeamJson(QFile &file, StaffList &staffList, QList<Exam::Ptr> &examList);
     bool saveStaffTeamJson(QFile &file, const StaffList &sList, const QList<Exam::Ptr> &eList);
 
-    bool loadScheduleJson(QFile &file, QList<SDate> &dateList, QList<QList<int > *> &nightClasses, QList<int > &donsNeeded, QList<int > &rasNeeded );
-    bool saveScheduleJson(QFile &file, QList<SDate> &dateList, QList<QList<int > *> &nightClasses, QList<int > &donsNeeded, QList<int > &rasNeeded );
+    bool loadScheduleJson(QFile &file, QList<SDate> &dateList, QList<QList<QString > *> &nightClasses, QList<int > &donsNeeded, QList<int > &rasNeeded );
+    bool saveScheduleJson(QFile &file, QList<SDate> &dateList, QList<QList<QString > *> &nightClasses, QList<int > &donsNeeded, QList<int > &rasNeeded );
 
     // csv
     bool loadStaffTeamFile(QFile &file, StaffList &staffList, QList<Exam::Ptr> &examList);
     bool saveStaffTeamFile(QFile &file, const StaffList &staffList, const QList<Exam::Ptr> &examList);
 
-    bool loadScheduleFile(QFile &file, QList<SDate> &dateList, QList<QList<int > *> &nightClasses, QList<int > &donsNeeded, QList<int > &rasNeeded );
-    bool saveScheduleFile(QFile &file, QList<SDate> &dateList, QList<QList<int > *> &nightClasses, QList<int > &donsNeeded, QList<int > &rasNeeded );
+    bool loadScheduleFile(QFile &file, QList<SDate> &dateList, QList<QList<QString > *> &nightClasses, QList<int > &donsNeeded, QList<int > &rasNeeded );
+    bool saveScheduleFile(QFile &file, QList<SDate> &dateList, QList<QList<QString > *> &nightClasses, QList<int > &donsNeeded, QList<int > &rasNeeded );
 
 
 };

@@ -16,16 +16,16 @@ public:
     ~SDate();
 
     bool isSpecial(); // is this special duty?
-    bool isOn(int) const;// is this staff on duty already?
+    bool isOn(const QString &) const;// is this staff on duty already?
     bool isFull() const;
     bool rasFull() const; // do we have enough ras?
     bool donsFull() const;// do we have enough dons? including RA.
-    bool canWork(int) const;//can someone work?
+    bool canWork(const QString &) const;//can someone work?
 
     void setSpecial(bool);//set the special duty flag
 
 
-    int getAM() const;//return the AM's ID
+    QString getAM() const;//return the AM's ID
     int getWeekday() const;
     int getRasNeeded() const;
     void setRasNeeded(const int);
@@ -38,40 +38,41 @@ public:
     bool isWeekend() const;
 
     QString getCantWorkStr();
-    QList<int > getCantWork() {
+    QList<QString > getCantWork() {
         return cantWork;
     }
 
     QString getDonsStr();
-    QList<int > getDons() {
+    QList<QString > getDons() {
         return donsOn;
     }
 
     QString getRasStr();
-    QList<int > getRas() {
+    QList<QString > getRas() {
         return rasOn;
     }
 
     QString exportOn();
 
-    void setAM(int);//set the AM with their id
-    void addStaff(int,bool); // add a staff to be on duty
-    void removeStaff(int, bool);
+    void setAM(const QString &);//set the AM with their id
+    void addStaff(const QString &s,bool); // add a staff to be on duty
+    void removeStaff(const QString &s, bool);
 
-    void addCantWork(int);
-    bool staffCantWork(int);
+    void addCantWork(const QString &);
+    bool staffCantWork(const QString &);
 
     void operator >>(QVariantMap &);
     void operator <<(const QVariantMap &);
 
+    static
+    const QString AM_NOT_SET;
 
 private:
-    QDate theDate;
     bool spDuty;
-    int AM;
-    QList<int> donsOn;
-    QList<int> rasOn;
-    QList<int> cantWork;
+    QString AM;
+    QList<QString > donsOn;
+    QList<QString > rasOn;
+    QList<QString > cantWork;
     bool defaultNeededD, defaultNeededR;
     int rasNeeded;
     int donsNeeded;

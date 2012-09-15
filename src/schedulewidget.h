@@ -77,8 +77,8 @@ private:
     void updateNeeded();
     int dateToIndex(const QDate &);
 
-    void setAsAM(int);
-    void addStaff(int);
+    void setAsAM(const QString &);
+    void addStaff(const QString &);
 
 
     QGroupBox *scheduleGroupBox;
@@ -132,15 +132,15 @@ private:
 
     bool examSchedule;
 
-    QList<QList<int> *> nightClasses; // each list contains the id's of the staff who can't work that night. Mon = 0
+    QList<QList<QString> *> nightClasses; // each list contains the id's of the staff who can't work that night. Mon = 0
     QList<QListWidgetItem*> * onDeckItems; // this contains a CONSTANT source of list widget items, one for each staff.
     QList<QListWidgetItem*> * onDutyItems;
     QList<SDate> datesList;
 
     QAction *setAsAMAction;
 
-    QList<int> *copyList;
-    int copyAM;
+    QList<QString > *copyList;
+    QString copyAM;
 
 };
 

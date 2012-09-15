@@ -106,6 +106,8 @@ void SchedViewer::setToStaff(Staff::Ptr pStaff, QList<SDate> &datesList) {
 
     if (!pStaff) {
         pStaff = staffMember;
+        if (!pStaff)
+            return;
     }
 
     nameLabel->setText("<b>Name:</b> " + pStaff->getFirstName() + " " + pStaff->getLastName());
@@ -113,12 +115,12 @@ void SchedViewer::setToStaff(Staff::Ptr pStaff, QList<SDate> &datesList) {
     QTextCharFormat format = calendarStaff->weekdayTextFormat(Qt::Monday);
     foreach (SDate sdate, datesList)
     {
-        if (sdate.isOn(pStaff->getId()))
+        if (sdate.isOn(pStaff->uid()))
         {
             format.setBackground(Qt::magenta);
-            if (sdate.getAM() == pStaff->getId())
+            if (sdate.getAM() == pStaff->uid())
                 format.setBackground(Qt::green);
-        } else if (!sdate.canWork(pStaff->getId())) {
+        } else if (!sdate.canWork(pStaff->uid())) {
             format.setBackground(Qt::cyan);
         } else if (pStaff->isNightClass(sdate)) {
             format.setBackground(Qt::blue);

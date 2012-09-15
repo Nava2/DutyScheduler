@@ -383,7 +383,7 @@ bool IOHandler::saveStaffTeamJson(QFile &file,
 // SCHEDULES
 /////////////
 
-bool IOHandler::loadSchedule(const QString &fileName, QList<SDate> &dateList, QList<QList<int > *> &nightClasses, QList<int > &donsNeeded, QList<int > &rasNeeded )
+bool IOHandler::loadSchedule(const QString &fileName, QList<SDate> &dateList, QList<QList<QString > *> &nightClasses, QList<int > &donsNeeded, QList<int > &rasNeeded )
 {
     FileExtension ext;
     bool result = IOHandler::checkFileName(fileName, &ext);
@@ -418,7 +418,7 @@ bool IOHandler::loadSchedule(const QString &fileName, QList<SDate> &dateList, QL
     return result;
 }
 
-bool IOHandler::saveScheduleJson(QFile &file, QList<SDate> &dateList, QList<QList<int > *> &nightClasses, QList<int > &donsNeeded, QList<int > &rasNeeded ) {
+bool IOHandler::saveScheduleJson(QFile &file, QList<SDate> &dateList, QList<QList<QString > *> &nightClasses, QList<int > &donsNeeded, QList<int > &rasNeeded ) {
 
     QVariantMap out;
 
@@ -435,10 +435,10 @@ bool IOHandler::saveScheduleJson(QFile &file, QList<SDate> &dateList, QList<QLis
 
     // 2D array of night classes with IDs
     QVariantList o_nListAll;
-    foreach (QList<int > *nightList, nightClasses) {
+    foreach (QList<QString > *nightList, nightClasses) {
         QVariantList o_nListSingle;
 
-        foreach( int id, *nightList ) {
+        foreach( QString id, *nightList ) {
            o_nListSingle.append(id);
         }
 
@@ -473,7 +473,7 @@ bool IOHandler::saveScheduleJson(QFile &file, QList<SDate> &dateList, QList<QLis
 
 }
 
-bool IOHandler::saveSchedule(const QString &fileName, QList<SDate> &dateList, QList<QList<int > *> &nightClasses, QList<int > &donsNeeded, QList<int > &rasNeeded )
+bool IOHandler::saveSchedule(const QString &fileName, QList<SDate> &dateList, QList<QList<QString > *> &nightClasses, QList<int > &donsNeeded, QList<int > &rasNeeded )
 {
     FileExtension ext;
     bool result = IOHandler::checkFileName(fileName, &ext);
@@ -508,7 +508,7 @@ bool IOHandler::saveSchedule(const QString &fileName, QList<SDate> &dateList, QL
     return result;
 }
 
-bool IOHandler::loadScheduleFile(QFile &file, QList<SDate> &dateList, QList<QList<int > *> &nightClasses, QList<int > &donsNeeded, QList<int > &rasNeeded ) {
+bool IOHandler::loadScheduleFile(QFile &file, QList<SDate> &dateList, QList<QList<QString > *> &nightClasses, QList<int > &donsNeeded, QList<int > &rasNeeded ) {
 
     dateList.clear();
 
@@ -531,12 +531,12 @@ bool IOHandler::loadScheduleFile(QFile &file, QList<SDate> &dateList, QList<QLis
         rasNeeded.append(inp.at(x+7).toInt());
     }
 
-    foreach (QList<int > *_list, nightClasses)
+    foreach (QList<QString > *_list, nightClasses)
         delete _list;
     nightClasses.clear();
 
     for(int q = 0; q<7; q++)                                                //get night classes
-        nightClasses.append(new QList<int>);
+        nightClasses.append(new QList<QString >);
 
     for(int x = 0; x<7; x++)
     {
@@ -546,9 +546,9 @@ bool IOHandler::loadScheduleFile(QFile &file, QList<SDate> &dateList, QList<QLis
 
         inp = inp.at(1).split(":", QString::SkipEmptyParts);
 
-        QList<int > *list = nightClasses[x];
+        QList<QString > *list = nightClasses[x];
         for (int y = 0; y < inp.count(); y++)
-            list->append(inp.at(y).toInt());
+            list->append(inp.at(y));
 
     }
 
@@ -576,27 +576,27 @@ bool IOHandler::loadScheduleFile(QFile &file, QList<SDate> &dateList, QList<QLis
 
         QStringList unavail = inp.at(2).split(",", QString::SkipEmptyParts);
         for(int z = 0; z < unavail.count(); z++)
-            sdate.addCantWork(unavail.at(z).toInt());
+            sdate.addCantWork(unavail.at(z));
 
-        sdate.setAM(inp.at(3).toInt());             //add the staff to the date object
+        sdate.setAM(inp.at(3));             //add the staff to the date object
 
         QStringList dons_list = inp.at(4).split(",", QString::SkipEmptyParts);
         for(int d = 0; d < dons_list.count(); d++)
         {
-            sdate.addStaff(dons_list.at(d).toInt(), true);      //add staff id to date obj
+            sdate.addStaff(dons_list.at(d), true);      //add staff id to date obj
         }
 
         QStringList ras_list = inp.at(5).split(",", QString::SkipEmptyParts);
         for(int r = 0; r < ras_list.count(); r++)
         {
-            sdate.addStaff(ras_list.at(r).toInt(), false);      //add staff id to date obj
+            sdate.addStaff(ras_list.at(r), false);      //add staff id to date obj
         }
     }
 
     return true;
 }
 
-bool IOHandler::saveScheduleFile(QFile &file, QList<SDate> &dateList, QList<QList<int > *> &nightClasses, QList<int > &donsNeeded, QList<int > &rasNeeded ) {
+bool IOHandler::saveScheduleFile(QFile &file, QList<SDate> &dateList, QList<QList<QString > *> &nightClasses, QList<int > &donsNeeded, QList<int > &rasNeeded ) {
     QTextStream ts(&file);
 
     ts << "start:" << (dateList.first()).toString("dd/MM/yyyy") << endl;
@@ -618,7 +618,7 @@ bool IOHandler::saveScheduleFile(QFile &file, QList<SDate> &dateList, QList<QLis
         ts << QString::number(n) << "-";
         for(int i = 0; i < nightClasses[n]->count(); i++)
         {
-            ts << QString::number(nightClasses[n]->at(i)) << ":";
+            ts << nightClasses[n]->at(i) << ":";
         }
         ts << endl;
     }
@@ -634,7 +634,7 @@ bool IOHandler::saveScheduleFile(QFile &file, QList<SDate> &dateList, QList<QLis
             ts << "N:";
 
         ts << sdate.getCantWorkStr() << ":";
-        ts << QString::number(sdate.getAM()) << ":";
+        ts << sdate.getAM() << ":";
         ts << sdate.getDonsStr() << ":";
         ts << sdate.getRasStr() << endl;
     }
@@ -642,7 +642,7 @@ bool IOHandler::saveScheduleFile(QFile &file, QList<SDate> &dateList, QList<QLis
     return true;
 }
 
-bool IOHandler::loadScheduleJson(QFile &file, QList<SDate> &dateList, QList<QList<int > *> &nightClasses, QList<int > &donsNeeded, QList<int > &rasNeeded ) {
+bool IOHandler::loadScheduleJson(QFile &file, QList<SDate> &dateList, QList<QList<QString > *> &nightClasses, QList<int > &donsNeeded, QList<int > &rasNeeded ) {
 
     // read the whole file into the QByteArray then put it into a string for
     // parsing
@@ -671,7 +671,7 @@ bool IOHandler::loadScheduleJson(QFile &file, QList<SDate> &dateList, QList<QLis
     }
 
     // 2D array of night classes with IDs
-    foreach (QList<int > *_list, nightClasses)
+    foreach (QList<QString > *_list, nightClasses)
         delete _list;
     nightClasses.clear();
 
@@ -679,9 +679,9 @@ bool IOHandler::loadScheduleJson(QFile &file, QList<SDate> &dateList, QList<QLis
     foreach (QVariant _nListSingle, nListAll) {
         QVariantList nListSingle = _nListSingle.toList();
 
-        QList<int > *list = new QList<int >;
+        QList<QString > *list = new QList<QString >;
         foreach( QVariant id, nListSingle ) {
-           list->append(id.toInt());
+           list->append(id.toString());
         }
 
         nightClasses.append(list);

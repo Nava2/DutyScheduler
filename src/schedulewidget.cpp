@@ -50,7 +50,7 @@ ScheduleWidget::ScheduleWidget(const QString &staffteamfilename, const ScheduleW
 
     //create the night class lists
     for(int q = 0; q<7; q++)
-        nightClasses.append(new QList<int>);
+        nightClasses.append(new QList<QString >);
 
     //call some other functions
     loadStaffTeamData(staffteamfilename);
@@ -77,17 +77,19 @@ ScheduleWidget::ScheduleWidget(const QString &fileNameSchedule, StaffList::Ptr t
     foreach (SDate _sdate, datesList) {
         bool weekend = _sdate.isWeekend();
 
-        if (_sdate.getAM() < theTeam->count())
+        if (theTeam->at(_sdate.getAM())->getId() < theTeam->count())
             theTeam->at(_sdate.getAM())->addShift(weekend, true);    //add the shift count to the staff object
 
-        foreach (int id, _sdate.getDons()) {
-            if (id < theTeam->count())
-                theTeam->at(id)->addShift(weekend);
+        foreach (QString id, _sdate.getDons()) {
+            Staff::Ptr pstaff = theTeam->at(id);
+            if (pstaff->getId() < theTeam->count())
+                pstaff->addShift(weekend);
         }
 
-        foreach (int id, _sdate.getRas()) {
-            if (id < theTeam->count())
-                theTeam->at(id)->addShift(weekend);
+        foreach (QString id, _sdate.getRas()) {
+            Staff::Ptr pstaff = theTeam->at(id);
+            if (pstaff->getId() < theTeam->count())
+                pstaff->addShift(weekend);
         }
 
     }
@@ -102,7 +104,7 @@ ScheduleWidget::ScheduleWidget(const QString &fileNameSchedule, StaffList::Ptr t
         // make the ondeck list
         QListWidgetItem *item = new QListWidgetItem();
         item->setText(theTeam->at(x)->getFirstName() + " " + theTeam->at(x)->getLastName());
-        item->setData(Qt::UserRole,theTeam->at(x)->getId());
+        item->setData(Qt::UserRole, theTeam->at(x)->uid());
         onDeckItems->append(item);
         onDeckList->insertItem(0,item);
 
@@ -110,7 +112,7 @@ ScheduleWidget::ScheduleWidget(const QString &fileNameSchedule, StaffList::Ptr t
         // make the onduty list
         QListWidgetItem *item2 = new QListWidgetItem();
         item2->setText(theTeam->at(x)->getFirstName() + " " + theTeam->at(x)->getLastName());
-        item2->setData(Qt::UserRole,theTeam->at(x)->getId());
+        item2->setData(Qt::UserRole, theTeam->at(x)->uid());
         onDutyItems->append(item2);
         onDutyList->insertItem(0,item2);
         item2->setHidden(true);
@@ -141,7 +143,7 @@ ScheduleWidget::ScheduleWidget(const QString &fileNameSchedule, StaffList::Ptr t
     dateClicked(startDate);
 
     QTableWidgetItem *row = averagesTable->item(0, 0);
-    int id = row->data(Qt::UserRole).toInt();
+    QString id = row->data(Qt::UserRole).toString();
 
     schedViewWidget->setToStaff((*theTeam)[id], datesList);
 
@@ -212,8 +214,8 @@ void ScheduleWidget::createScheduleGroupBox()
 
 void ScheduleWidget::createScheduleControls()
 {
-    copyList = new QList<int>;
-    copyAM = 999;
+    copyList = new QList<QString >;
+    copyAM = SDate::AM_NOT_SET;
 
     scheduleControls = new QGroupBox("Controls");
 
@@ -326,15 +328,13 @@ void ScheduleWidget::createScheduleStats()
 
     statsTableItems = new QList<QTableWidgetItem*>;
 
-
-
     for (int x = 0; x < theTeam->count(); x++)
     {
         statsTable->setRowHeight(x,20);
         //name
         QTableWidgetItem *nameItem = new QTableWidgetItem();
         nameItem->setText(theTeam->at(x)->getFirstName() + " " + theTeam->at(x)->getLastName().left(1));
-        nameItem->setData(Qt::UserRole,theTeam->at(x)->getId());
+        nameItem->setData(Qt::UserRole,theTeam->at(x)->uid());
         nameItem->setFlags(flags);
         statsTableItems->append(nameItem);
 
@@ -472,7 +472,7 @@ void ScheduleWidget::prepInterface()
         // make the ondeck list
         QListWidgetItem *item = new QListWidgetItem();
         item->setText(pStaff->getFirstName() + " " + pStaff->getLastName());
-        item->setData(Qt::UserRole, pStaff->getId());
+        item->setData(Qt::UserRole, pStaff->uid());
 
         qDebug() << item->data(Qt::UserRole) << ")\t" << item->text();
 
@@ -482,7 +482,7 @@ void ScheduleWidget::prepInterface()
         // make the onduty list
         QListWidgetItem *item2 = new QListWidgetItem();
         item2->setText(pStaff->getFirstName() + " " + pStaff->getLastName());
-        item2->setData(Qt::UserRole, pStaff->getId());
+        item2->setData(Qt::UserRole, pStaff->uid());
         onDutyItems->append(item2);
         onDutyList->insertItem(0,item2);
         item2->setHidden(true);
@@ -504,7 +504,7 @@ void ScheduleWidget::prepInterface()
                 if(nights & mask)
                 {   // add this staff member to the list of who's
                     // unavailable on this night
-                    nightClasses[y]->append(pStaff->getId());
+                    nightClasses[y]->append(pStaff->uid());
                 }
                 mask <<= 1;
             }
@@ -520,7 +520,7 @@ void ScheduleWidget::prepInterface()
 
             int index = dateToIndex(date);
 
-            datesList[index].addCantWork(pStaff->getId());
+            datesList[index].addCantWork(pStaff->uid());
         }
 
         if(examSchedule)
@@ -543,16 +543,16 @@ void ScheduleWidget::prepInterface()
                 int dateIndex = dateToIndex(exam);
 
                 if(exam.getNight())
-                    datesList[dateIndex].addCantWork(pStaff->getId());
+                    datesList[dateIndex].addCantWork(pStaff->uid());
 
                 if(dateIndex != 0)
-                    datesList[dateIndex-1].addCantWork(pStaff->getId());
+                    datesList[dateIndex-1].addCantWork(pStaff->uid());
             }
         }
     }
 
     QTableWidgetItem *row = averagesTable->item(0, 0);
-    int id = row->data(Qt::UserRole).toInt();
+    QString id = row->data(Qt::UserRole).toString();
 
     schedViewWidget->setToStaff((*theTeam)[id], datesList);
 
@@ -575,7 +575,7 @@ void ScheduleWidget::dateClicked(QDate dateSelected)
         QListWidgetItem *deckItem = onDeckItems->at(x);
         QListWidgetItem *dutyItem = onDutyItems->at(x);
 
-        int id = deckItem->data(Qt::UserRole).toInt();
+        QString id = deckItem->data(Qt::UserRole).toString();
         QFont font = dutyItem->font();
         //check who's on duty already
         if (datesList[dateIndex].isOn(id))
@@ -612,7 +612,7 @@ void ScheduleWidget::dateClicked(QDate dateSelected)
 
 void ScheduleWidget::addStaff(QListWidgetItem *item)
 {
-    int staffId = onDeckList->currentItem()->data(Qt::UserRole).toInt();
+    QString staffId = onDeckList->currentItem()->data(Qt::UserRole).toString();
     int dateIndex = dateToIndex(calendar->selectedDate());
     bool pos = theTeam->at(staffId)->getPosition();
 
@@ -658,7 +658,7 @@ void ScheduleWidget::addStaff(QListWidgetItem *item)
 void ScheduleWidget::removeStaff(QListWidgetItem *item)
 {
 
-    int staffId = onDutyList->currentItem()->data(Qt::UserRole).toInt();
+    QString staffId = onDutyList->currentItem()->data(Qt::UserRole).toString();
     int dateIndex = dateToIndex(calendar->selectedDate());
 
     bool isAM = (staffId == datesList[dateIndex].getAM());
@@ -692,7 +692,7 @@ void ScheduleWidget::removeStaff(QListWidgetItem *item)
 
 void ScheduleWidget::setAsAM()
 {
-    int staffId = onDeckList->currentItem()->data(Qt::UserRole).toInt();
+    QString staffId = onDeckList->currentItem()->data(Qt::UserRole).toString();
     int dateIndex = dateToIndex(calendar->selectedDate());
 
     if (!theTeam->at(staffId)->getPosition())
@@ -701,7 +701,7 @@ void ScheduleWidget::setAsAM()
     if (datesList[dateIndex].isOn(staffId))
         return;
 
-    if (datesList[dateIndex].getAM() != 999)
+    if (datesList[dateIndex].getAM() != SDate::AM_NOT_SET)
         return;
 
     if (datesList[dateIndex].isSpecial())
@@ -745,7 +745,7 @@ void ScheduleWidget::showMenu(QPoint p)
     if (item == 0)
         return;
 
-    int staffId = item->data(Qt::UserRole).toInt();
+    QString staffId = item->data(Qt::UserRole).toString();
 
     QMenu *rightClickMenu = new QMenu(this);
 
@@ -790,8 +790,8 @@ void ScheduleWidget::showStaffSchedule(QTableWidgetItem *item)
     if(item->column() != 0)
         return;
 
-    int staffId = item->data(Qt::UserRole).toInt();
-    if (staffId < theTeam->count())
+    QString staffId = item->data(Qt::UserRole).toString();
+    if (theTeam->at(staffId)->getId() < theTeam->count())
         schedViewWidget->setToStaff(theTeam->at(staffId), datesList);
     else
         qDebug() << "Trying to set bad index" << staffId;
@@ -804,7 +804,7 @@ void ScheduleWidget::copySlot()
     for(int x = 0; x < onDutyItems->count(); x++)
     {
         if(!onDutyItems->at(x)->isHidden())
-            copyList->append(onDutyItems->at(x)->data(Qt::UserRole).toInt());
+            copyList->append(onDutyItems->at(x)->data(Qt::UserRole).toString());
     }
 
 }
@@ -817,16 +817,16 @@ void ScheduleWidget::pasteSlot()
         addStaff(copyList->at(x));
     }
 
-    copyAM = 999;
+    copyAM = SDate::AM_NOT_SET;
     copyList->clear();
 }
 
 
-void ScheduleWidget::setAsAM(int staffId)
+void ScheduleWidget::setAsAM(const QString &staffId)
 {
     int dateIndex = dateToIndex(calendar->selectedDate());
 
-    if (staffId == 999)
+    if (staffId == SDate::AM_NOT_SET)
         return;
 
     if (!datesList[dateIndex].canWork(staffId))
@@ -841,7 +841,7 @@ void ScheduleWidget::setAsAM(int staffId)
     if (datesList[dateIndex].isOn(staffId))
         return;
 
-    if (datesList[dateIndex].getAM() != 999)
+    if (datesList[dateIndex].getAM() != SDate::AM_NOT_SET)
         return;
 
     if (datesList[dateIndex].isSpecial())
@@ -849,9 +849,10 @@ void ScheduleWidget::setAsAM(int staffId)
 
     datesList[dateIndex].setAM(staffId);
 
+    Staff::Ptr pstaff = (*theTeam)[staffId];
 
-    onDeckItems->at(staffId)->setHidden(true);
-    QListWidgetItem *item = onDutyItems->at(staffId);
+    onDeckItems->at(pstaff->getId())->setHidden(true);
+    QListWidgetItem *item = onDutyItems->at(pstaff->getId());
 
     QFont font = item->font();
     font.setBold(true);
@@ -871,13 +872,13 @@ void ScheduleWidget::setAsAM(int staffId)
 
     bool isWeekend = datesList[dateIndex].isWeekend();
 
-    theTeam->at(staffId)->addShift(isWeekend, true);
+    pstaff->addShift(isWeekend, true);
 
     updateStats();
 }
 
 
-void ScheduleWidget::addStaff(int staffId)
+void ScheduleWidget::addStaff(const QString &staffId)
 {
 
     int dateIndex = dateToIndex(calendar->selectedDate());
@@ -907,8 +908,10 @@ void ScheduleWidget::addStaff(int staffId)
     }
     datesList[dateIndex].addStaff(staffId, pos);
 
-    onDeckItems->at(staffId)->setHidden(true);
-    onDutyItems->at(staffId)->setHidden(false);
+    Staff::Ptr pstaff = (*theTeam)[staffId];
+
+    onDeckItems->at(pstaff->getId())->setHidden(true);
+    onDutyItems->at(pstaff->getId())->setHidden(false);
     updateNeeded();
 
     //color the calendar if the date is full
@@ -923,7 +926,7 @@ void ScheduleWidget::addStaff(int staffId)
 
     bool isWeekend = datesList[dateIndex].isWeekend();
 
-    theTeam->at(staffId)->addShift(isWeekend, false);
+    pstaff->addShift(isWeekend, false);
 
     updateStats();
 }
@@ -1084,24 +1087,21 @@ void ScheduleWidget::updateStats()
 
     for(int x = 0; x < statsTableItems->count(); x++)
     {
-        int staffId = statsTableItems->at(x)->data(Qt::UserRole).toInt();
+        QString staffId = statsTableItems->at(x)->data(Qt::UserRole).toString();
+        Staff::Ptr pstaff = theTeam->at(staffId);
         int row = statsTableItems->at(x)->row();
 
-        statsTable->item(row,2)->setText(QString::number(theTeam->at(staffId)->getShifts()));
-        statsTable->item(row,3)->setText(QString::number(theTeam->at(staffId)->getWeekendShifts()));
-        statsTable->item(row,4)->setText(QString::number(theTeam->at(staffId)->getAMShifts()));
+        statsTable->item(row,2)->setText(QString::number(pstaff->getShifts()));
+        statsTable->item(row,3)->setText(QString::number(pstaff->getWeekendShifts()));
+        statsTable->item(row,4)->setText(QString::number(pstaff->getAMShifts()));
 
-        if(theTeam->at(staffId)->getPosition())
-        {
-            dAverage += theTeam->at(staffId)->getShifts();
-            dWAverage += theTeam->at(staffId)->getWeekendShifts();
-            amAverage += theTeam->at(staffId)->getAMShifts();
+        dAverage += pstaff->getShifts();
+        dWAverage += pstaff->getWeekendShifts();
+
+        if (pstaff->getPosition()) {
+            amAverage += pstaff->getAMShifts();
             dCount++;
-        }
-        else
-        {
-            rAverage += theTeam->at(staffId)->getShifts();
-            rWAverage += theTeam->at(staffId)->getWeekendShifts();
+        } else {
             rCount++;
         }
 

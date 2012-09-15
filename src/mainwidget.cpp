@@ -32,18 +32,9 @@ void MainWidget::updateStaffMember()
     if(firstNameEdit->text() == "" || lastNameEdit->text() == "")
         return;
 
-    bool g;//gender
-    if(maleRadio->isChecked())
-    {    g = true;  }
-    if(femaleRadio->isChecked())
-    {    g = false; }
+    bool g = maleRadio->isChecked(); // gender
 
-
-    bool p;//position
-    if(donRadio->isChecked())
-    {    p = true;  }
-    if(raRadio->isChecked())
-    {    p = false; }
+    bool p = donRadio->isChecked();
 
     int n = 0;//night class indicator
     int mask = 1;
@@ -69,7 +60,7 @@ void MainWidget::updateStaffMember()
     }
 
     QListWidgetItem *i = staffTeamList->currentItem();//get the list item from the list widget
-    int id = i->data(Qt::UserRole).toInt();//the list item's user data is the staff id
+    QString id = i->data(Qt::UserRole).toString();//the list item's user data is the staff id
     i->setText(firstNameEdit->text() + " " + lastNameEdit->text()); //change the text in the list
     theTeam->at(id)->update(firstNameEdit->text().trimmed(),lastNameEdit->text().trimmed(),p,g,n); //change the actual staff object
     theTeam->at(id)->setAvailability(availWidget->getAvail());// set the avail
@@ -82,18 +73,9 @@ void MainWidget::addStaffMember()
     if(firstNameEdit->text() == "" || lastNameEdit->text() == "")
         return;
 
-    bool g;//gender
-    if(maleRadio->isChecked())
-    {    g = true;  }
-    if(femaleRadio->isChecked())
-    {    g = false; }
+    bool g = maleRadio->isChecked(); // gender
 
-
-    bool p;//position
-    if(donRadio->isChecked())
-    {    p = true;  }
-    if(raRadio->isChecked())
-    {    p = false; }
+    bool p = donRadio->isChecked(); // position
 
     int n = 0;//night class indicator
     int mask = 1;
@@ -131,7 +113,7 @@ void MainWidget::addStaffMember()
 
     item->setText(s->getFirstName() + " " + s->getLastName()); // set the text of the list item
 
-    item->setData(Qt::UserRole, s->getId());//attach the staff's id number to the list item for later use.
+    item->setData(Qt::UserRole, s->uid());//attach the staff's id number to the list item for later use.
 
     staffTeamList->insertItem(0,item);
 
@@ -178,17 +160,18 @@ void MainWidget::updateSelections(QListWidgetItem * item)
 {
     clearSelections();
     //get the id of the selected staff member
-    int id = item->data(Qt::UserRole).toInt();
+    QString uid = item->data(Qt::UserRole).toString();
+    Staff::Ptr pstaff = theTeam->at(uid);
 
     //now update the right hand stuff so that it matches the selected staff
-    firstNameEdit->setText(theTeam->at(id)->getFirstName());
-    lastNameEdit->setText(theTeam->at(id)->getLastName());
+    firstNameEdit->setText(pstaff->getFirstName());
+    lastNameEdit->setText(pstaff->getLastName());
 
-    donRadio->setChecked(theTeam->at(id)->getPosition());
-    maleRadio->setChecked(theTeam->at(id)->getGender());
+    donRadio->setChecked(pstaff->getPosition());
+    maleRadio->setChecked(pstaff->getGender());
 
     //Night Classes
-    int nights = theTeam->at(id)->getNightClass();
+    int nights = pstaff->getNightClass();
     int mask = 0x01;
     for (int x = 0; x<7; x++)
     {
@@ -205,12 +188,12 @@ void MainWidget::updateSelections(QListWidgetItem * item)
     // QQQ
 
     QList<AvailableDate > avail;
-    theTeam->at(id)->getAvailability(avail);
+    pstaff->getAvailability(avail);
 
     availWidget->setToAvail(avail);
 
     //EXAMS
-    QString e = theTeam->at(id)->getExams();
+    QString e = pstaff->getExams();
     QStringList exams = e.split(',',QString::SkipEmptyParts);
     int exams_int[exams.size()];
 
@@ -456,11 +439,11 @@ QList<Exam::Ptr> *MainWidget::getExams()
     return theExams;
 }
 
-QList<int> MainWidget::getTeamIDs() {
-    QList<int> out;
+QList<QString > MainWidget::getUIDs() {
+    QList<QString > out;
 
     for (int i = 0; i < staffTeamList->count(); i++) {
-        out.append(staffTeamList->item(i)->data(Qt::UserRole).toInt());
+        out.append(staffTeamList->item(i)->data(Qt::UserRole).toString());
     }
 
     return out;
@@ -470,11 +453,11 @@ QString MainWidget::getTeam()
 {
     QString teamList = "";
 
-    QList<int> ids = getTeamIDs();
+    QList<QString > ids = getUIDs();
 
-    foreach(int id, ids)
+    foreach(QString id, ids)
     {
-        teamList += QString::number(id) + ",";
+        teamList += id + ",";
     }
 
     return teamList;
@@ -489,7 +472,7 @@ void MainWidget::load(StaffList::Ptr staffList, QList<Exam::Ptr> *examList)
     {
         QListWidgetItem *item = new QListWidgetItem;
         item->setText(theTeam->at(x)->getFirstName() + " " + theTeam->at(x)->getLastName());
-        item->setData(Qt::UserRole, theTeam->at(x)->getId());
+        item->setData(Qt::UserRole, theTeam->at(x)->uid());
         staffTeamList->insertItem(0,item);
     }
 
