@@ -20,7 +20,7 @@ Staff::Staff()
     numWeekendShifts = 0;
     numAMShifts = 0;
 
-    _uid = -1;
+    _uid = "xxx";
     UIDSet = false;
 }
 
@@ -203,11 +203,17 @@ void Staff::setFinals(QString ex, const QList<Exam::Ptr> &examList)
 
 void Staff::setMidterms(const QList<Exam::Ptr> &exams) {
     midterms = exams;
+
+    foreach (Exam::Ptr ptr, midterms) {
+        ptr->addStaff(uid());
+    }
 }
 
 void Staff::addMidterm(const Exam::Ptr e) {
-    if (!midterms.contains(e))
+    if (!midterms.contains(e)) {
         midterms.append(e);
+        e->addStaff(uid());
+    }
 }
 
 QList<Exam::Ptr> Staff::getMidterms() {
@@ -216,11 +222,17 @@ QList<Exam::Ptr> Staff::getMidterms() {
 
 void Staff::setFinals(const QList<Exam::Ptr> &exams) {
     finals = exams;
+
+    foreach (Exam::Ptr ptr, finals) {
+        ptr->addStaff(uid());
+    }
 }
 
 void Staff::addFinal(const Exam::Ptr e) {
-    if (!finals.contains(e))
+    if (!finals.contains(e)) {
         finals.append(e);
+        e->addStaff(uid());
+    }
 }
 
 QList<Exam::Ptr> Staff::getFinals()

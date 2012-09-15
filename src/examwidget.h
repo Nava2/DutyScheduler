@@ -21,6 +21,9 @@ public:
 
     void reset();
 
+    void getExams(QList<Exam::Ptr > &fOut, QList<Exam::Ptr> &mOut);
+    void setExams(const QList<Exam::Ptr > &fIn, const QList<Exam::Ptr> &mIn);
+
     void setFinals(const QList<Exam::Ptr> &in);
     void getFinals(QList<Exam::Ptr> &out);
 

@@ -65,14 +65,15 @@ AvailabilityWidget::~AvailabilityWidget() {
     }
     arrayRows.clear();
 
-    delete scrollFrame;
+    delete internalLayout;
     delete scrollArea;
+    delete scrollFrame;
 
     delete addRowButton;
     delete rmRowButton;
     delete countLabel;
 
-    delete internalLayout;
+
     delete topLayout;
 }
 

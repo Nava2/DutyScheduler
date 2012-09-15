@@ -18,9 +18,9 @@ Exam::Exam(const QVariantMap &json)
     *this << json;
 }
 
-Exam::Exam(const Exam &old) {
+Exam::Exam(const Exam &old)
+    : QDate(old) {
     this->id = old.id;
-    setYMD(old.year(), old.month(), old.day());
     night = old.night;
     midterm = old.midterm;
 }
@@ -64,7 +64,7 @@ void Exam::operator <<(const QVariantMap &json) {
     QDate date = json["date"].toDate();
     setYMD(date.year(), date.month(), date.day());
     night = json["night"].toBool();
-    midterm = json["midterm"].toBool();
+    midterm = json["mid"].toBool();
 
     QVariantList list = json["ids"].toList();
     staffIds.clear();
@@ -78,7 +78,7 @@ void Exam::operator >>(QVariantMap &json) {
     json["id"] = id;
     json["date"] = (QDate)(*this);
     json["night"] = night;
-    json["midterm"] = midterm;
+    json["mid"] = midterm;
 
     QVariantList t_idList;
     foreach (QString uid, staffIds) {

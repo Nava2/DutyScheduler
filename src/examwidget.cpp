@@ -96,6 +96,18 @@ void ExamWidget::reset() {
     midtermNightCheck->setChecked(false);
 }
 
+void ExamWidget::getExams(QList<Exam::Ptr > &fOut, QList<Exam::Ptr> &mOut) {
+    getFinals(fOut);
+    getMidterms(mOut);
+}
+
+void ExamWidget::setExams(const QList<Exam::Ptr> &fIn, const QList<Exam::Ptr> &mIn) {
+    reset();
+
+    setFinals(fIn);
+    setMidterms(mIn);
+}
+
 void ExamWidget::setFinals(const QList<Exam::Ptr> &in) {
     foreach (Exam::Ptr ex, in)
     {

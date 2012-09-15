@@ -51,8 +51,8 @@ void MainWidget::updateStaffMember()
     // done in one call later..
 
     //EXAMS
-    QList<Exam::Ptr > exams;
-    examWidget->getFinals(exams);
+    QList<Exam::Ptr > finals, midterms;
+    examWidget->getExams(finals, midterms);
 
     QListWidgetItem *i = staffTeamList->currentItem();//get the list item from the list widget
     QString id = i->data(Qt::UserRole).toString();//the list item's user data is the staff id
@@ -60,7 +60,8 @@ void MainWidget::updateStaffMember()
     Staff::Ptr pstaff = theTeam.at(id);
     pstaff->update(firstNameEdit->text().trimmed(),lastNameEdit->text().trimmed(),p,g,n); //change the actual staff object
     pstaff->setAvailability(availWidget->getAvail());// set the avail
-    pstaff->setFinals(exams);//set exams
+    pstaff->setFinals(finals);//set exams
+    pstaff->setMidterms(midterms);
     clearSelections();
 }
 
@@ -182,7 +183,7 @@ void MainWidget::updateSelections(QListWidgetItem * item)
     availWidget->setToAvail(avail);
 
     //EXAMS
-    examWidget->setFinals(pstaff->getFinals());
+    examWidget->setExams(pstaff->getFinals(), pstaff->getMidterms());
 }
 
 void MainWidget::addFinal(const Exam::Ptr e) {
