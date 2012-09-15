@@ -86,10 +86,23 @@ bool IOHandler::loadStaffTeam(const QString &fileName, StaffList &staffList, QLi
             return false;
         }
 
+        // clear all lists:
+        staffList.clear();
+        finalList.clear();
+        midtermList.clear();
+
         // act based on extension
         switch (ext) {
         case JSON: {
             result = loadStaffTeamJson(file, staffList, finalList, midtermList);
+
+            // remap IDs
+            foreach (Exam::Ptr e, midtermList) {
+                foreach (QString id, e->getStaff()) {
+                    if (staffList[id])
+                        staffList[id]->addMidterm(e);
+                }
+            }
         } break;
         case CSV: {
             result = loadStaffTeamFile(file, staffList, finalList);
@@ -99,6 +112,13 @@ bool IOHandler::loadStaffTeam(const QString &fileName, StaffList &staffList, QLi
         default: {
             return false;
         } break;
+        }
+
+        foreach (Exam::Ptr e, finalList) {
+            foreach (QString id, e->getStaff()) {
+                if (staffList[id])
+                    staffList[id]->addFinal(e);
+            }
         }
 
         currentStaffFile = fileName;

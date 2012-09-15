@@ -66,8 +66,8 @@ AvailabilityWidget::~AvailabilityWidget() {
     arrayRows.clear();
 
     delete internalLayout;
-    delete scrollArea;
     delete scrollFrame;
+    delete scrollArea;
 
     delete addRowButton;
     delete rmRowButton;

@@ -32,6 +32,8 @@ public:
     void addStaff(const QString &id);
     void removeStaff(const QString &id);
 
+    QList<QString > getStaff();
+
 private:
     int id;
     bool night;

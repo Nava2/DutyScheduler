@@ -90,6 +90,8 @@ private:
 
     void genUID();
 
+    bool examListContains(const Exam::Ptr e, const QList<Exam::Ptr> &list);
+
 };
 
 #endif // STAFF_H

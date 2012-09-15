@@ -36,6 +36,9 @@ public:
     Staff::Ptr at(const QString &uid) const;
     Staff::Ptr operator [](const int index) const;
     Staff::Ptr operator [](const QString &uid) const;
+
+    bool contains(const QString &uid) const;
+    bool contains(const int id) const;
     
     StaffList &operator <<(const QVariantMap &json);
     StaffList &operator >>(QVariantMap &json);

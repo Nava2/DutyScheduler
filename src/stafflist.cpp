@@ -89,6 +89,14 @@ Staff::Ptr StaffList::at(const QString &uid) const {
     return _hashList[uid];
 }
 
+bool StaffList::contains(const QString &uid) const {
+    return _hashList.contains(uid);
+}
+
+bool StaffList::contains(const int id) const {
+    return (id > 0) && (id < _list.size());
+}
+
 Staff::Ptr StaffList::operator [](const QString &uid) const {
     return at(uid);
 }

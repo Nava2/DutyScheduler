@@ -78,7 +78,10 @@ Staff::~Staff()
 void Staff::operator << (const QVariantMap &json) {
     this->id = json["id"].toInt();
     _uid = json["uid"].toString();
-    UIDSet = _uid.isEmpty();
+    UIDSet = !_uid.isEmpty();
+
+    midterms.clear();
+    finals.clear();
 
     QVariantMap name = json["name"].toMap();
     firstName = name["f"].toString();
@@ -186,7 +189,16 @@ void Staff::setGender(bool gen)
 void Staff::setNightClass(int night)
 {   nightClass = night; }
 
+bool Staff::examListContains(const Exam::Ptr e, const QList<Exam::Ptr> &list) {
+    foreach (Exam::Ptr ptr, list) {
+        if (*ptr == *e)
+            return true;
+    }
 
+    return false;
+}
+
+// kept for compatibility
 void Staff::setFinals(QString ex, const QList<Exam::Ptr> &examList)
 {
     finals.clear();
@@ -210,7 +222,7 @@ void Staff::setMidterms(const QList<Exam::Ptr> &exams) {
 }
 
 void Staff::addMidterm(const Exam::Ptr e) {
-    if (!midterms.contains(e)) {
+    if (!examListContains(e, midterms)) {
         midterms.append(e);
         e->addStaff(uid());
     }
@@ -229,7 +241,7 @@ void Staff::setFinals(const QList<Exam::Ptr> &exams) {
 }
 
 void Staff::addFinal(const Exam::Ptr e) {
-    if (!finals.contains(e)) {
+    if (!examListContains(e, finals)) {
         finals.append(e);
         e->addStaff(uid());
     }

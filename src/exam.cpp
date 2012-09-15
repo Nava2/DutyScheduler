@@ -57,6 +57,10 @@ void Exam::removeStaff(const QString &id) {
     staffIds.removeAll(id);
 }
 
+QList<QString > Exam::getStaff() {
+    return staffIds;
+}
+
 // JSON IO
 // in
 void Exam::operator <<(const QVariantMap &json) {
