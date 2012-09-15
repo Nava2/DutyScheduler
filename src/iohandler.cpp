@@ -395,17 +395,29 @@ bool IOHandler::saveStaffTeamJson(QFile &file,
     QVariantMap o_ExamMap;
 
     QVariantList o_fExams;
+    int id = 0;
     foreach (Exam::Ptr pExam, finalList) {
+        if (pExam->getStaff().size() == 0)
+            continue;
+
         QVariantMap eMap;
         *pExam >> eMap;
+
+        eMap["id"] = id++;
 
         o_fExams.append(eMap);
     }
 
     QVariantList o_mExams;
+    id = 0;
     foreach (Exam::Ptr pExam, midtermList) {
+        if (pExam->getStaff().size() == 0)
+            continue;
+
         QVariantMap eMap;
         *pExam >> eMap;
+
+        eMap["id"] = id++;
 
         o_mExams.append(eMap);
     }
