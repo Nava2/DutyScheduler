@@ -59,6 +59,23 @@ AvailabilityWidget::AvailabilityWidget(QWidget *parent) :
     rmRowButton->setEnabled(rowNum > 2);
 }
 
+AvailabilityWidget::~AvailabilityWidget() {
+    foreach(AvailRangeWidget *r, arrayRows) {
+        delete r;
+    }
+    arrayRows.clear();
+
+    delete scrollFrame;
+    delete scrollArea;
+
+    delete addRowButton;
+    delete rmRowButton;
+    delete countLabel;
+
+    delete internalLayout;
+    delete topLayout;
+}
+
 void AvailabilityWidget::setToAvail(const QList<AvailableDate> &avail) {
     // TODO Not loading properly
     QList<AvailableDate > range, single;
@@ -228,9 +245,7 @@ void AvailabilityWidget::removeRow() {
         // range:
         QList<QDate > dateList;
         rw->getDates(dateList);
-        foreach(QDate x, dateList) {
-            dayCount--;
-        }
+        dayCount -= dateList.size();
     }
 
     // delete after so the removeWidget call isn't messed up

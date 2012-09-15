@@ -78,6 +78,7 @@ Staff::~Staff()
 void Staff::operator << (const QVariantMap &json) {
     this->id = json["id"].toInt();
     _uid = json["uid"].toString();
+    UIDSet = _uid.isEmpty();
 
     QVariantMap name = json["name"].toMap();
     firstName = name["f"].toString();
@@ -99,7 +100,7 @@ void Staff::operator << (const QVariantMap &json) {
        numAMShifts = shiftMap["am"].toInt();
     numShifts = shiftMap["ttl"].toInt();
 
-    if (_uid.isEmpty())
+    if (!UIDSet)
         genUID();
 }
 

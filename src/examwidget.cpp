@@ -149,6 +149,25 @@ void ExamWidget::addFinal() {
                          false,
                          finalNightCheck->isChecked()));
 
+    QString text = e->toString("dd/MM/yyyy");
+    if (e->isNight()) {
+        text += " (Night)";
+    }
+
+    bool examInList = false;
+    foreach (Exam::Ptr ptr, finals) {
+        if (*ptr == *e) {
+            for (int i = 0; i < finalList->count(); i++ ) {
+                if (finalList->item(i)->text() == text) {
+                    return;
+                }
+            }
+
+            examInList = true;
+            e = ptr; // use the stored ptr, let the other go out of scope
+        }
+    }
+
     QListWidgetItem *item = new QListWidgetItem();
 
     if (finalNightCheck->isChecked())
@@ -160,7 +179,8 @@ void ExamWidget::addFinal() {
 
     finalList->insertItem(0,item);//adds the list item to the small exams list
 
-    emit OnFinalAdded(e);
+    if (!examInList)
+        emit OnFinalAdded(e);
 }
 
 void ExamWidget::addMidterm() {
@@ -169,23 +189,39 @@ void ExamWidget::addMidterm() {
                          true,
                          midtermNightCheck->isChecked()));
 
-    QListWidgetItem *item = new QListWidgetItem();
+    QString text = e->toString("dd/MM/yyyy");
+    if (e->isNight()) {
+        text += " (Night)";
+    }
 
-    if (midtermNightCheck->isChecked())
-        item->setText(e->toString("dd/MM/yyyy") + " (night)");
-    else
-        item->setText(e->toString("dd/MM/yyyy"));
+    // don't re-add it if already there..
+    bool examInList = false;
+    foreach (Exam::Ptr ptr, midterms) {
+        if (*ptr == *e) {
+            for (int i = 0; i < midtermList->count(); i++ ) {
+                if (midtermList->item(i)->text() == text) {
+                    return;
+                }
+            }
 
-    item->setData(Qt::UserRole,e->getId());
+            examInList = true;
+            e = ptr; // use the stored ptr, let the other go out of scope
+        }
+    }
+
+    QListWidgetItem *item = new QListWidgetItem(text);
+    item->setData(Qt::UserRole, e->getId());
 
     midtermList->insertItem(0,item);//adds the list item to the small exams list
 
-    emit OnMidtermAdded(e);
+    if (!examInList)
+        emit OnMidtermAdded(e);
 }
 
 void ExamWidget::removeFinal() {
     QListWidgetItem *i;
     i = finalList->takeItem(finalList->currentRow());
+
     Exam::Ptr e = finals[i->data(Qt::UserRole).toInt()];
     delete i;
 
@@ -195,6 +231,9 @@ void ExamWidget::removeFinal() {
 void ExamWidget::removeMidterm() {
     QListWidgetItem *i;
     i = midtermList->takeItem(midtermList->currentRow());
+
+//    qDebug() << "eid =" << i->data(Qt::UserRole).toInt() << " :: count =" << midterms.size();
+
     Exam::Ptr e = midterms[i->data(Qt::UserRole).toInt()];
     delete i;
 

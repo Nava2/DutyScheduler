@@ -225,7 +225,7 @@ void MainWidget::createStaffElements()
     availWidget = new AvailabilityWidget;
 
     // exams widget:
-    examWidget = new ExamWidget(midtermExams, finalExams, this);
+    examWidget = new ExamWidget(finalExams, midtermExams, this);
 
     //set up the layout
     QGridLayout *layout = new QGridLayout;
