@@ -45,6 +45,7 @@ public:
     void saveMidSchedule(QString);
     ScheduleWidget(const QString &fileNameSchedule, StaffList::Ptr team, QList<Exam::Ptr> *exams, QWidget *parent = NULL);
 
+    virtual
     ~ScheduleWidget();
 
 private slots:

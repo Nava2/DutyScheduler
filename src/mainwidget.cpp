@@ -8,7 +8,7 @@ MainWidget::MainWidget(QWidget *parent)
     : QWidget(parent)
 {
     theTeam = StaffList::Ptr(new StaffList);
-    theExams = new QList<Exam::Ptr>;
+    finalExams = new QList<Exam::Ptr>;
     createStaffElements();
 }
 
@@ -16,13 +16,12 @@ MainWidget::~MainWidget()
 {
     theTeam.clear();
 
-    delete theExams;
+    delete finalExams;
 
     staffTeamList->clear();
     delete staffTeamList;
 
-    examsList->clear();
-    delete examsList;
+    delete examWidget;
 
 }
 
@@ -51,20 +50,16 @@ void MainWidget::updateStaffMember()
     // done in one call later..
 
     //EXAMS
-    QString e = "";
-    QListWidgetItem *i_e;
-    for (int x = 0; x < examsList->count(); x++)
-    {
-        i_e = examsList->item(x);
-        e += "(" + i_e->data(Qt::UserRole).toString() + "),";
-    }
+    QList<Exam::Ptr > exams;
+    examWidget->getFinals(exams);
 
     QListWidgetItem *i = staffTeamList->currentItem();//get the list item from the list widget
     QString id = i->data(Qt::UserRole).toString();//the list item's user data is the staff id
     i->setText(firstNameEdit->text() + " " + lastNameEdit->text()); //change the text in the list
-    theTeam->at(id)->update(firstNameEdit->text().trimmed(),lastNameEdit->text().trimmed(),p,g,n); //change the actual staff object
-    theTeam->at(id)->setAvailability(availWidget->getAvail());// set the avail
-    theTeam->at(id)->setExams(e);//set exams
+    Staff::Ptr pstaff = theTeam->at(id);
+    pstaff->update(firstNameEdit->text().trimmed(),lastNameEdit->text().trimmed(),p,g,n); //change the actual staff object
+    pstaff->setAvailability(availWidget->getAvail());// set the avail
+    pstaff->setExams(exams);//set exams
     clearSelections();
 }
 
@@ -96,15 +91,10 @@ void MainWidget::addStaffMember()
     s->setAvailability(availWidget->getAvail());
 
     //EXAMS
-    QString e = "";
-    QListWidgetItem *i;
-    for (int x = 0; x < examsList->count(); x++)
-    {
-        i = examsList->item(x);
-        e += "(" + i->data(Qt::UserRole).toString() + "),";
-    }
+    QList<Exam::Ptr > exams;
+    examWidget->getFinals(exams);
 
-    s->setExams(e);
+    s->setExams(exams);
 
     // DATA STUFF
     theTeam->append(s); // add this staff to the team qlist
@@ -151,9 +141,7 @@ void MainWidget::clearSelections()
 
     availWidget->reset();
 
-    examsList->clear();
-    examDateEdit->setDate(QDate::currentDate());
-    examNightCheck->setChecked(false);
+    examWidget->reset();
 }
 
 void MainWidget::updateSelections(QListWidgetItem * item)
@@ -193,64 +181,16 @@ void MainWidget::updateSelections(QListWidgetItem * item)
     availWidget->setToAvail(avail);
 
     //EXAMS
-    QString e = pstaff->getExams();
-    QStringList exams = e.split(',',QString::SkipEmptyParts);
-    int exams_int[exams.size()];
-
-    for (int z = 0; z < exams.size(); z++)
-    {
-        QString temp = "";
-        temp = exams.at(z);
-        temp.remove("(", Qt::CaseInsensitive);
-        temp.remove(")", Qt::CaseInsensitive);
-        exams_int[z] = temp.toInt();
-    }
-
-    QListWidgetItem *i;
-    for (int a = 0; a < exams.size(); a++)
-    {
-
-        QString text = "";
-        if(theExams->at(exams_int[a])->getNight())
-        {
-            text = theExams->at(exams_int[a])->toString("dd/MM/yyyy") + " (night)";
-        }
-        else
-        {
-            text = theExams->at(exams_int[a])->toString("dd/MM/yyyy");
-        }
-        i = new QListWidgetItem(text);
-        i->setData(Qt::UserRole,exams_int[a]);
-        examsList->insertItem(0,i);
-    }
-
+    examWidget->setFinals(pstaff->getExams());
 }
 
-void MainWidget::addExam()
-{
-    Exam::Ptr e(new Exam(theExams->count(),
-                         examDateEdit->date(),
-                         examNightCheck->isChecked()));
-
-    QListWidgetItem *item = new QListWidgetItem();
-
-    if (examNightCheck->isChecked())
-        item->setText(e->toString("dd/MM/yyyy") + " (night)");
-    else
-        item->setText(e->toString("dd/MM/yyyy"));
-
-    item->setData(Qt::UserRole,e->getId());
-
-    theExams->append(e);//adds the pointer to the exam in the main exams list for the team
-    examsList->insertItem(0,item);//adds the list item to the small exams list
-
+void MainWidget::addExam(const Exam::Ptr e) {
+    finalExams->append(e);//adds the pointer to the exam in the main exams list for the team
 }
 
-void MainWidget::removeExam()
+void MainWidget::removeExam(const Exam::Ptr e)
 {
-    QListWidgetItem *i;
-    i = examsList->takeItem(examsList->currentRow());
-    delete i;
+    // nothing to do yet?
 }
 
 
@@ -261,7 +201,6 @@ void MainWidget::createStaffElements()
     createPositionGroupBox();
     createGenderGroupBox();
     createNightClassGroupBox();
-    createExamScheduleGroupBox();
     createStaffControls();
     createNameGroupBox();
 
@@ -276,6 +215,9 @@ void MainWidget::createStaffElements()
     // availability widget:
     availWidget = new AvailabilityWidget;
 
+    // exams widget:
+    examWidget = new ExamWidget(*finalExams, this);
+
     //set up the layout
     QGridLayout *layout = new QGridLayout;
     layout->addWidget(staffTeamList,0,0,6,1);
@@ -285,7 +227,7 @@ void MainWidget::createStaffElements()
     layout->addWidget(genderGroupBox,1,3,1,1);
     layout->addWidget(nightClassGroupBox,2,2,1,2);
     layout->addWidget(availWidget,3,2,1,2);
-    layout->addWidget(examScheduleGroupBox,4,2,1,2);
+    layout->addWidget(examWidget,4,2,1,2);
     setLayout(layout);
 
     setWindowTitle("Duty Schedule Creation Aid");
@@ -354,35 +296,6 @@ void MainWidget::createNightClassGroupBox()
 
 }
 
-
-
-void MainWidget::createExamScheduleGroupBox()
-{
-    examScheduleGroupBox = new QGroupBox(tr("Exams"));
-    examsList = new QListWidget;
-    examDateEdit = new QDateEdit;
-    examNightCheck = new QCheckBox(tr("Night Exam"));
-    addExamButton = new QPushButton(tr("ADD EXAM"));
-    removeExamButton = new QPushButton(tr("REMOVE EXAM"));
-    examDateEdit->setDate(QDate::currentDate());
-    examDateEdit->setCalendarPopup(true);
-
-    examsList->setStatusTip("The list of exams for the selected staff member.");
-
-
-    connect(addExamButton,SIGNAL(clicked()),this,SLOT(addExam()));
-    connect(removeExamButton,SIGNAL(clicked()),this,SLOT(removeExam()));
-
-    QGridLayout *layout = new QGridLayout;
-    layout->addWidget(examsList,0,0,4,1);
-    layout->addWidget(examDateEdit,0,1);
-    layout->addWidget(examNightCheck,1,1);
-    layout->addWidget(addExamButton,2,1);
-    layout->addWidget(removeExamButton,3,1);
-
-    examScheduleGroupBox->setLayout(layout);
-}
-
 void MainWidget::createStaffControls()
 {
     controlsGroupBox = new QGroupBox();
@@ -416,17 +329,17 @@ void MainWidget::reset()
 {
     theTeam->clear();
 
-    if (theExams) {
-        theExams->clear();
-        delete theExams;
+    if (finalExams) {
+        finalExams->clear();
+        delete finalExams;
     }
 
     theTeam = StaffList::Ptr(new StaffList);
-    theExams = new QList<Exam::Ptr>;
+    finalExams = new QList<Exam::Ptr>;
 
     staffTeamList->clear();
 
-    examsList->clear();
+    examWidget->reset();
 }
 
 StaffList::Ptr MainWidget::getStaff()
@@ -434,9 +347,8 @@ StaffList::Ptr MainWidget::getStaff()
     return theTeam;
 }
 
-QList<Exam::Ptr> *MainWidget::getExams()
-{
-    return theExams;
+QList<Exam::Ptr> *MainWidget::getExams() {
+    return finalExams;
 }
 
 QList<QString > MainWidget::getUIDs() {
@@ -466,7 +378,7 @@ QString MainWidget::getTeam()
 void MainWidget::load(StaffList::Ptr staffList, QList<Exam::Ptr> *examList)
 {
     theTeam = staffList;
-    theExams = examList;
+    finalExams = examList;
 
     for(int x=0; x<theTeam->count(); x++)
     {

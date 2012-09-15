@@ -16,7 +16,6 @@ Staff::Staff()
     position = false;
     gender = false;
     nightClass = 0;
-    exams = "";
     numShifts = 0;
     numWeekendShifts = 0;
     numAMShifts = 0;
@@ -33,7 +32,6 @@ Staff::Staff(int i, QString first, QString last, bool pos, bool gen, int night)
     position = pos;
     gender = gen;
     nightClass = night;
-    exams = "";
     numShifts = 0;
     numWeekendShifts = 0;
     numAMShifts = 0;
@@ -88,7 +86,6 @@ void Staff::operator << (const QVariantMap &json) {
     position = json["pos"].toBool();
     gender = json["gndr"].toBool();
     nightClass = json["night"].toInt();
-    exams = json["exams"].toString();
 
     foreach (QVariant qv, json["avail"].toList()) {
         AvailableDate d;
@@ -119,7 +116,6 @@ void Staff::operator >>(QVariantMap &json) {
     json["pos"] = position;
     json["gndr"] = gender;
     json["night"] = nightClass;
-    json["exams"] = exams;
 
     QVariantList list;
     foreach (AvailableDate d, availList) {
@@ -146,8 +142,6 @@ void Staff::update(QString first, QString last, bool pos, bool gen, int night)
     position = pos;
     gender = gen;
     nightClass = night;
-    exams = "";
-
 }
 
 
@@ -193,14 +187,36 @@ void Staff::setNightClass(int night)
 {   nightClass = night; }
 
 
-void Staff::setExams(QString ex)
+void Staff::setExams(QString ex, const QList<Exam::Ptr> &examList)
 {
-    exams = ex;
+    exams.clear();
+    QStringList list = ex.split(',', QString::SkipEmptyParts);
+    foreach (QString ex, list) {
+        ex.remove("(", Qt::CaseInsensitive);
+        ex.remove(")", Qt::CaseInsensitive);
+
+        int id = ex.toInt();
+        exams.append(examList[id]);
+        examList[id]->addStaff(uid());
+    }
 }
 
-QString Staff::getExams()
+void Staff::setExams(const QList<Exam::Ptr> &exams) {
+    this->exams = exams;
+}
+
+QList<Exam::Ptr> Staff::getExams()
 {
     return exams;
+}
+
+QString Staff::getExamsStr() {
+    QString out;
+    foreach (Exam::Ptr ex, exams) {
+        out += "(" + QString::number(ex->getId()) + "),";
+    }
+
+    return out;
 }
 
 void Staff::setAvailability(const QList<AvailableDate > &dtList)

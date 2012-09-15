@@ -24,6 +24,8 @@ class AvailabilityWidget : public QGroupBox
     Q_OBJECT
 public:
     explicit AvailabilityWidget(QWidget *parent = 0);
+    virtual
+    ~AvailabilityWidget() { ; }
 
 
     void buildSubgroupBox(const int &i, QGridLayout *parentLayout,

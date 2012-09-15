@@ -20,6 +20,10 @@ IOHandler::IOHandler() :
 {
 }
 
+IOHandler::~IOHandler() {
+    ;
+}
+
 void IOHandler::getErrorInfo(QString &title, QString &msg) {
    msg = errorMsg;
    title = errorTitle;
@@ -241,7 +245,7 @@ bool IOHandler::loadStaffTeamFile(QFile &file, StaffList &staffList, QList<Exam:
             s = Staff::Ptr(new Staff(id, first, last,
                                      pos, gen, night));
             s->setAvailability(avail);
-            s->setExams(exams);
+            s->setExams(exams, examList);
 
             staffList.append(s);
         }
@@ -326,7 +330,7 @@ bool IOHandler::saveStaffTeamFile(QFile &file,
            << QString(t_staff->getGender()?"M":"F") << ","
            << QString::number(t_staff->getNightClass()) << ","
            << t_staff->getAvailabilityStr()
-           << t_staff->getExams() << endl;
+           << t_staff->getExamsStr() << endl;
     }
 
     ts << "[EXAMS]" << endl;

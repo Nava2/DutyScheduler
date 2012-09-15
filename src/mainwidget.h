@@ -7,6 +7,7 @@
 #include "staff.h"
 #include "availabilitywidget.h"
 #include "stafflist.h"
+#include "examwidget.h"
 
 QT_BEGIN_NAMESPACE
 class QCalendarWidget;
@@ -36,6 +37,7 @@ class MainWidget : public QWidget
 
 public:
     MainWidget(QWidget *parent = 0);
+    virtual
     ~MainWidget();
     void reset();
     StaffList::Ptr getStaff();
@@ -52,14 +54,14 @@ private slots:
     void removeStaffMember();
     void clearSelections();
     void updateSelections(QListWidgetItem*);
-    void addExam();
-    void removeExam();
+    void addExam(const Exam::Ptr e);
+    void removeExam(const Exam::Ptr e);
 
 
 
 private:
     //DATA
-    QList<Exam::Ptr> *theExams;
+    QList<Exam::Ptr> *finalExams, *midtermExams;
     StaffList::Ptr theTeam;
 
     //GUI
@@ -100,12 +102,7 @@ private:
 
     AvailabilityWidget *availWidget;
 
-    QGroupBox *examScheduleGroupBox;
-    QListWidget *examsList;
-    QDateEdit *examDateEdit;
-    QCheckBox *examNightCheck;
-    QPushButton *addExamButton;
-    QPushButton *removeExamButton;
+    ExamWidget *examWidget;
 
 };
 

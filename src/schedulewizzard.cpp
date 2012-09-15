@@ -32,6 +32,9 @@ ScheduleWizzard::ScheduleWizzard(QWidget *parent) :
     setWindowTitle("Initial Schedule Settings");
 }
 
+ScheduleWizzard::~ScheduleWizzard() {
+    ;
+}
 
 void ScheduleWizzard::createDatesGroupBox()
 {

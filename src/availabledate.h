@@ -10,6 +10,7 @@ class AvailableDate
 public:
     AvailableDate();
     AvailableDate(const QDate &date, const bool = false);
+    virtual
     ~AvailableDate();
 
     QDate date() const;

@@ -26,7 +26,8 @@ SOURCES += main.cpp \
     availabledate.cpp \
     schedviewer.cpp \
     stafflist.cpp \
-    availrangewidget.cpp
+    availrangewidget.cpp \
+    examwidget.cpp
 
 HEADERS  += \
     staff.h \
@@ -44,4 +45,5 @@ HEADERS  += \
     availabledate.h \
     schedviewer.h \
     stafflist.h \
-    availrangewidget.h
+    availrangewidget.h \
+    examwidget.h

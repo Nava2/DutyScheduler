@@ -18,6 +18,9 @@ public:
     typedef enum _FileExtension FileExtension;
 
     IOHandler();
+    virtual
+    ~IOHandler();
+
     bool loadStaffTeam(const QString &fileName, StaffList &staffList, QList<Exam::Ptr> &examList);
     bool saveStaffTeam(const QString &fileName, const StaffList &staffList, const QList<Exam::Ptr> &examList);
 

@@ -15,6 +15,7 @@ class AvailRangeWidget : public QGroupBox
     Q_OBJECT
 public:
     explicit AvailRangeWidget(int index, QWidget *parent = 0);
+    virtual
     ~AvailRangeWidget();
     
     bool range();

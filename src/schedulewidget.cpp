@@ -525,17 +525,9 @@ void ScheduleWidget::prepInterface()
 
         if(examSchedule)
         {
-            QStringList list = pStaff->getExams().split(",",QString::SkipEmptyParts);
-
-            for(int p = 0; p < list.count(); p++)
+            foreach (Exam::Ptr pExam, pStaff->getExams())
             {
-                QString inp = list.at(p);
-
-                inp.remove("(",Qt::CaseInsensitive);
-                inp.remove(")",Qt::CaseInsensitive);
-                int id = inp.toInt();
-
-                Exam exam = *(theExams->at(id));
+                Exam exam = *pExam;
 
                 if(exam.daysTo(startDate) > 0 || exam.daysTo(endDate) < 0)
                     continue;

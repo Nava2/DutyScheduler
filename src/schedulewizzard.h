@@ -31,6 +31,9 @@ class ScheduleWizzard : public QDialog
     Q_OBJECT
 public:
     explicit ScheduleWizzard(QWidget *parent = 0);
+    virtual
+    ~ScheduleWizzard();
+
     QString getValues();
 
     bool isExamSchedule() const {
