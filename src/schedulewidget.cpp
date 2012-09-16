@@ -37,7 +37,7 @@ ScheduleWidget::ScheduleWidget(const QString &staffteamfilename, const ScheduleW
     for(int z = 0; z<length; z++)
     {
         if(examSchedule)
-            sDateIterator = new SDate(dateCounter,theTeam.count(),theTeam.count());
+            sDateIterator = new SDate(dateCounter, theTeam.count(), theTeam.count());
         else
             sDateIterator = new SDate(dateCounter, donsNeeded[dateCounter.dayOfWeek()-1], rasNeeded[dateCounter.dayOfWeek()-1]);
 
@@ -530,6 +530,22 @@ void ScheduleWidget::prepInterface()
             datesList[index].addCantWork(pStaff->uid());
         }
 
+        foreach (Exam::Ptr pExam, pStaff->getMidterms())
+        {
+            Exam exam = *pExam;
+
+            if(exam.daysTo(startDate) > 0 || exam.daysTo(endDate) < 0)
+                continue;
+
+            int dateIndex = dateToIndex(exam);
+
+            if(exam.isNight())
+                datesList[dateIndex].addCantWork(pStaff->uid());
+
+            if(dateIndex != 0)
+                datesList[dateIndex-1].addCantWork(pStaff->uid());
+        }
+
         if(examSchedule)
         {
             foreach (Exam::Ptr pExam, pStaff->getFinals())
@@ -559,7 +575,7 @@ void ScheduleWidget::prepInterface()
 
 int ScheduleWidget::dateToIndex(const QDate &date)
 {
-    int index = startDate.daysTo(date);
+    int index = datesList[0].daysTo(date);
     return index;
 }
 

@@ -112,7 +112,15 @@ bool SDate::isFull() const
 
 void SDate::addCantWork(const QString &input)
 {
-    cantWork.append(input);
+    if (!cantWork.contains(input))
+        cantWork.append(input);
+}
+
+void SDate::addCantWork(const QList<QString > &input)
+{
+    foreach (QString uid, input) {
+        addCantWork(uid);
+    }
 }
 
 bool SDate::staffCantWork(const QString &input)

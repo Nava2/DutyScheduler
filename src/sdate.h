@@ -59,6 +59,7 @@ public:
     void removeStaff(const QString &s, bool);
 
     void addCantWork(const QString &);
+    void addCantWork(const QList<QString > &);
     bool staffCantWork(const QString &);
 
     void operator >>(QVariantMap &);

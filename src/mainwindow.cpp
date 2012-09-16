@@ -45,6 +45,7 @@ void MainWindow::createActions()
 
     saveStaffTeamAct = new QAction("Save Team", this);
     saveStaffTeamAct->setStatusTip("Save the opened staff team");
+    saveStaffTeamAct->setEnabled(false);
     connect(saveStaffTeamAct, SIGNAL(triggered()),this, SLOT(saveStaffTeam()));
 
     saveAsStaffTeamAct = new QAction("Save Team As", this);
@@ -157,7 +158,7 @@ void MainWindow::onSaveTimer() {
             saveStaffTeamName(iohandle.getCurrentStaffFile() + "~");
 
             iohandle.setCurrentStaffFile(oldFile); // replace the save file
-            saveNecessary = false;
+            setSaveNecessary(false);
         } else {
             qDebug() << "no file name specified in auto-save";
         }
@@ -170,7 +171,7 @@ void MainWindow::onSaveTimer() {
             s->saveMidSchedule(iohandle.getCurrentScheduleFile() + "~");
 
             iohandle.setCurrentScheduleFile(oldFile); // replace the save file
-            saveNecessary = false;
+            setSaveNecessary(false);
         } else {
             qDebug() << "no file name specified in auto-save";
         }
@@ -182,8 +183,13 @@ void MainWindow::onSaveTimer() {
     }
 }
 
+void MainWindow::setSaveNecessary(const bool nec) {
+    saveNecessary = nec;
+    saveStaffTeamAct->setEnabled(nec);
+}
+
 void MainWindow::onUpdateSaveState() {
-    saveNecessary = true;
+    setSaveNecessary(true);
 }
 
 void MainWindow::saveAsStaffTeam() {
@@ -212,7 +218,7 @@ void MainWindow::saveStaffTeamName(const QString &fileName)
     finalList = _fList;
     midtermList = _mList;
 
-    saveNecessary = false;
+    setSaveNecessary(false);
 }
 
 void MainWindow::saveSchedule()
@@ -230,7 +236,7 @@ void MainWindow::saveSchedule()
 
     currentScheduleFile = fileName;
 
-    saveNecessary = false;
+    setSaveNecessary(false);
 }
 
 void MainWindow::loadSchedule()

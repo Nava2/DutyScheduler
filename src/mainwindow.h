@@ -57,6 +57,7 @@ private slots:
 
 
 private:
+    void setSaveNecessary(const bool nec);
 
     // file management
     IOHandler iohandle;

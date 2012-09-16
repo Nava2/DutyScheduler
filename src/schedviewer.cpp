@@ -61,7 +61,7 @@ SchedViewer::SchedViewer(const QDate &startDate, const QDate &lastDate, QWidget 
         //set palette
         label->setPalette(palette);
 
-        labelLayout->addWidget(label, x, 1, 1, 1);
+        labelLayout->addWidget(label, x / 2, 1 + x % 2, 1, 1);
     }
 
     labelLayout->addWidget(nameLabel, 0, 0, -1, 1);
