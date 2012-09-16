@@ -9,18 +9,23 @@
 #include "json.h"
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
+    : QMainWindow(parent), currentStaffTeamFile(""), currentScheduleFile(""),
+      saveNecessary(false)
 {
     createActions();
     createMenu();
     (void)statusBar();
 
-    currentStaffTeamFile = "";
-    usingStaffTeamFile = "";
-
-    m = new MainWidget();
+    m = new MainWidget(this);
 
     setCentralWidget(m);
+
+    saveTimer = new QTimer(this);
+    saveTimer->setInterval(1000 * 60 * 5); // every 5 minutes try to save
+    connect(saveTimer, SIGNAL(timeout()), this, SLOT(onSaveTimer()));
+    saveTimer->start();
+
+    windowState = STAFF_WIDGET;
 }
 
 MainWindow::~MainWindow()
@@ -90,6 +95,8 @@ void MainWindow::newStaffTeam()
 {
     m->reset();
     currentStaffTeamFile = "";
+
+    windowState = STAFF_WIDGET;
 }
 
 void MainWindow::openStaffTeam() {
@@ -124,6 +131,8 @@ void MainWindow::openStaffTeam() {
     this->finalList = finalList;
     this->midtermList = midtermList;
     currentStaffTeamFile = fileName;
+
+    windowState = STAFF_WIDGET;
 }
 
 void MainWindow::saveStaffTeam()
@@ -135,15 +144,50 @@ void MainWindow::saveStaffTeam()
     saveStaffTeamName(currentStaffTeamFile);
 }
 
-void MainWindow::saveAsStaffTeam() {
-    if (!currentStaffTeamFile.isEmpty()) {
-        QFileInfo f(currentStaffTeamFile);
-        currentStaffTeamFile = QFileDialog::getSaveFileName(this,
-                                                            "Save as..",
-                                                            f.dir().path());
-    } else {
-        currentStaffTeamFile = QFileDialog::getSaveFileName(this);
+void MainWindow::onSaveTimer() {
+    // only save if the event was caught somewhere
+    if (!saveNecessary)
+        return;
+
+    switch (windowState) {
+    case STAFF_WIDGET: {
+        if (!iohandle.getCurrentStaffFile().isEmpty()) {
+            QString oldFile(iohandle.getCurrentStaffFile()); // store the old file
+
+            saveStaffTeamName(iohandle.getCurrentStaffFile() + "~");
+
+            iohandle.setCurrentStaffFile(oldFile); // replace the save file
+            saveNecessary = false;
+        } else {
+            qDebug() << "no file name specified in auto-save";
+        }
+
+    } break;
+    case SCHEDULE_WIDGET: {
+        if (!iohandle.getCurrentScheduleFile().isEmpty()) {
+            QString oldFile(iohandle.getCurrentScheduleFile()); // store the old file
+
+            s->saveMidSchedule(iohandle.getCurrentScheduleFile() + "~");
+
+            iohandle.setCurrentScheduleFile(oldFile); // replace the save file
+            saveNecessary = false;
+        } else {
+            qDebug() << "no file name specified in auto-save";
+        }
+    } break;
+    case SCHEDULE_WIZARD:
+    default: {
+
+    } break;
     }
+}
+
+void MainWindow::onUpdateSaveState() {
+    saveNecessary = true;
+}
+
+void MainWindow::saveAsStaffTeam() {
+    currentStaffTeamFile = iohandle.getSaveFileName(this);
     saveStaffTeamName(currentStaffTeamFile);
 }
 
@@ -171,35 +215,21 @@ void MainWindow::saveStaffTeamName(const QString &fileName)
 
 void MainWindow::saveSchedule()
 {
-    QString fileName = QFileDialog::getSaveFileName(this);
+    QString fileName;
 
-    if (fileName.isEmpty())
-        return;
+    if (currentScheduleFile.isEmpty()) {
+        fileName = iohandle.getSaveFileName(this, IOHandler::SCHEDULE);
 
-    if(fileName.right(4) != ".txt")
-    {
-        QMessageBox::warning(this, "Save Schedule","File must have extention '.txt'.");
-        return;
+        if (fileName.isEmpty())
+            return;
     }
-
-
-    QFile file(fileName);
-    if (!file.open(QFile::WriteOnly | QFile::Text))
-    {
-        QMessageBox::warning(this, "Save Schedule","Cannot write file.");
-        return;
-    }
-    file.close();
 
     s->saveMidSchedule(fileName);
-
 }
 
 void MainWindow::loadSchedule()
 {
-    QString fileName = QFileDialog::getOpenFileName(this, "Open Schedule File..", QDir::home().path());
-    if (fileName.isEmpty())
-        return;
+    QString fileName = iohandle.getOpenFileName(this, IOHandler::SCHEDULE);
 
     if (centralWidget() == s)
         delete s;
@@ -209,9 +239,7 @@ void MainWindow::loadSchedule()
     m->getExams(finals, midterms);
 
     if (team.count() == 0 || (finals.count() + midterms.count() == 0)) {
-        QString StaffTeamFilename = iohandle.getCurrentStaffFile();
-
-        if (StaffTeamFilename.isEmpty()) {
+        if (iohandle.getCurrentStaffFile().isEmpty()) {
             QMessageBox msgBox2;
             msgBox2.setWindowTitle("Duty Schedule Tool");
             msgBox2.setText("Select the staff team to use for your new schedule.");
@@ -222,25 +250,27 @@ void MainWindow::loadSchedule()
             int x = 0;
             iohandle.clearErrorInfo();
             do {
-                StaffTeamFilename = QFileDialog::getOpenFileName(this, "Open Staff Team..", QDir::home().path());
+                iohandle.getOpenFileName(this, IOHandler::SCHEDULE);
 
                 QString title(""), msg("");
                 iohandle.getErrorInfo(msg, title);
                 if (!msg.isEmpty() && !title.isEmpty())
                     QMessageBox::warning(this, title, msg);
-            } while (!iohandle.checkFileName(StaffTeamFilename) && x++ < 2);
+            } while (!iohandle.checkFileName(iohandle.getCurrentStaffFile()) && x++ < 2);
         }
 
-        iohandle.loadStaffTeam(StaffTeamFilename, team, finals, midterms);
+        iohandle.loadStaffTeam(iohandle.getCurrentStaffFile(), team, finals, midterms);
     }
 
-    s = new ScheduleWidget(fileName, team, finals, midterms );
+    s = new ScheduleWidget( fileName, team, finals, midterms, this );
 
     setCentralWidget(s);
 
     openScheduleAct->setDisabled(true);
     newScheduleAct->setDisabled(true);
     saveScheduleAct->setEnabled(true);
+
+    windowState = SCHEDULE_WIDGET;
 }
 
 void MainWindow::newSchedule()
@@ -256,6 +286,9 @@ void MainWindow::newSchedule()
         return;
 
     ScheduleWizzard sw;
+
+    windowState = SCHEDULE_WIZARD;
+
     int ret = sw.exec();
 
     if (ret == 0)
@@ -280,14 +313,15 @@ void MainWindow::newSchedule()
         msgBox2.exec();
 
         iohandle.clearErrorInfo();
+        int x = 0;
         do {
-            StaffTeamFilename = QFileDialog::getOpenFileName(this, "Open Staff Team..", QDir::home().path());
+            StaffTeamFilename = iohandle.getOpenFileName(this, IOHandler::STAFF);
 
             QString title(""), msg("");
             iohandle.getErrorInfo(msg, title);
             if (!msg.isEmpty() && !title.isEmpty())
                 QMessageBox::warning(this, title, msg);
-        } while (!iohandle.checkFileName(StaffTeamFilename));
+        } while (!iohandle.checkFileName(StaffTeamFilename) && x++ < 2);
     }
 
     QFile StaffTeamFile(StaffTeamFilename);
@@ -301,11 +335,9 @@ void MainWindow::newSchedule()
 
     m->reset();
 
-    s = new ScheduleWidget(StaffTeamFilename, sw);
+    s = new ScheduleWidget(StaffTeamFilename, sw, this);
 
-// new QScheduleApplet
     setCentralWidget(s);
-
 
     newScheduleAct->setDisabled(true);
     newStaffTeamAct->setDisabled(true);
@@ -314,6 +346,8 @@ void MainWindow::newSchedule()
     saveAsStaffTeamAct->setDisabled(true);
     saveScheduleAct->setEnabled(true);
     openScheduleAct->setDisabled(true);
+
+    windowState = SCHEDULE_WIDGET;
 }
 
 void MainWindow::about()

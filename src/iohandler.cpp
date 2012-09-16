@@ -13,6 +13,7 @@
 #include <QTextStream>
 #include <QList>
 #include <QDebug>
+#include <QFileDialog>
 
 #include "stafflist.h"
 
@@ -38,6 +39,22 @@ void IOHandler::clearErrorInfo() {
 void IOHandler::setErrorInfo(const QString &msg, const QString &title) {
     errorMsg = msg;
     errorTitle = title;
+}
+
+void IOHandler::setCurrentStaffFile(const QString &staffFile) {
+    currentStaffFile = staffFile;
+}
+
+void IOHandler::setCurrentScheduleFile(const QString &scheduleFile) {
+    currentScheduleFile = scheduleFile;
+}
+
+QString IOHandler::getCurrentStaffFile() const {
+    return currentStaffFile;
+}
+
+QString IOHandler::getCurrentScheduleFile() const {
+    return currentScheduleFile;
 }
 
 bool IOHandler::checkFileName(const QString &fileName, FileExtension *ext) {
@@ -779,6 +796,102 @@ bool IOHandler::loadScheduleJson(QFile &file, QList<SDate> &dateList, QList<QLis
 
     return true;
 
+}
+
+QString IOHandler::getSaveFileName(QWidget *parent, const IOType type) {
+    QString caption(""), dir(QDir::homePath()),
+            filters(""), selectedFilter(""),
+            *currentMember(NULL);
+
+    switch (type) {
+    case STAFF: {
+        caption = "Save Staff File..";
+        filters = "Text files (*.txt);;Json Files (*.json)";
+        selectedFilter = "Json Files (*.json)";
+
+        if (!currentStaffFile.isEmpty()) {
+            dir = QFileInfo(currentStaffFile).dir().path();
+        }
+
+        currentMember = &currentStaffFile;
+    } break;
+    case SCHEDULE: {
+        caption = "Save Schedule File..";
+        filters = "Text files (*.txt);;Json Files (*.json)";
+        selectedFilter = "Json Files (*.json)";
+
+        if (!currentScheduleFile.isEmpty()) {
+            dir = QFileInfo(currentScheduleFile).dir().path();
+        } else if (!currentStaffFile.isEmpty()) {
+            dir = QFileInfo(currentStaffFile).dir().path();
+        }
+
+        currentMember = &currentScheduleFile;
+    } break;
+    default: {
+        // baad
+    } break;
+    }
+
+    if (caption.isEmpty()) {
+        // baaad
+        return "";
+    }
+
+    QString file = QFileDialog::getSaveFileName(parent, caption, dir, filters, &selectedFilter);
+    if (!file.isEmpty()) {
+        *currentMember = file;
+    }
+
+    return file;
+}
+
+QString IOHandler::getOpenFileName(QWidget *parent, const IOType type) {
+    QString caption(""), dir(QDir::homePath()),
+            filters(""), selectedFilter(""),
+            *currentMember = NULL;
+
+    switch (type) {
+    case STAFF: {
+        caption = "Open Staff File..";
+        filters = "Text files (*.txt);;Json Files (*.json)";
+        selectedFilter = "Json Files (*.json)";
+
+        if (!currentStaffFile.isEmpty()) {
+            dir = QFileInfo(currentStaffFile).dir().path();
+        }
+
+        currentMember = &currentStaffFile;
+    } break;
+    case SCHEDULE: {
+        caption = "Open Schedule File..";
+        filters = "Text files (*.txt);;Json Files (*.json)";
+        selectedFilter = "Json Files (*.json)";
+
+        if (!currentScheduleFile.isEmpty()) {
+            dir = QFileInfo(currentScheduleFile).dir().path();
+        } else if (!currentStaffFile.isEmpty()) {
+            dir = QFileInfo(currentStaffFile).dir().path();
+        }
+
+        currentMember = &currentScheduleFile;
+    } break;
+    default: {
+        // baad
+    } break;
+    }
+
+    if (caption.isEmpty()) {
+        // baaad
+        return "";
+    }
+
+    QString file = QFileDialog::getOpenFileName(parent, caption, dir, filters, &selectedFilter);
+    if (!file.isEmpty()) {
+        *currentMember = file;
+    }
+
+    return file;
 }
 
 

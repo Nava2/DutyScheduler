@@ -15,7 +15,10 @@ class IOHandler
 {
 public:
     enum _FileExtension { CSV, JSON, BAD };
+    enum _IOType { SCHEDULE, STAFF };
+
     typedef enum _FileExtension FileExtension;
+    typedef enum _IOType IOType;
 
     IOHandler();
     virtual
@@ -29,8 +32,17 @@ public:
 
     void getErrorInfo(QString &title, QString &msg);
     void clearErrorInfo();
-    QString getCurrentStaffFile() const { return currentStaffFile; }
+
+    void setCurrentStaffFile(const QString &staffFile);
+    void setCurrentScheduleFile(const QString &scheduleFile);
+
+    QString getCurrentStaffFile() const;
+    QString getCurrentScheduleFile() const;
+
     bool checkFileName(const QString &fileName, FileExtension *ext = NULL);
+
+    QString getSaveFileName(QWidget *parent, const IOType = STAFF);
+    QString getOpenFileName(QWidget *parent, const IOType = STAFF);
 
 private:
     QString errorMsg, errorTitle;

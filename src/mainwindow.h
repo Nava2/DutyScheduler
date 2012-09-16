@@ -17,6 +17,8 @@
 #include <QListWidget>
 #include <QListWidgetItem>
 #include <QList>
+#include <QTimer>
+
 #include <iostream>
 #include "mainwidget.h"
 #include "schedulewidget.h"
@@ -49,6 +51,10 @@ private slots:
     void saveSchedule();
     void loadSchedule();
 
+    void onSaveTimer();
+    void onUpdateSaveState();
+
+
 
 private:
 
@@ -57,13 +63,17 @@ private:
 
     StaffList sList;
     QList<Exam::Ptr> finalList, midtermList;
-    QString currentStaffTeamFile;
-    QString usingStaffTeamFile;
+    QString currentStaffTeamFile,
+        currentScheduleFile;
 
     // widgets
     MainWidget *m;
     ScheduleWidget *s;
     ScheduleWizzard *w;
+
+    enum WindowState {
+        STAFF_WIDGET, SCHEDULE_WIDGET, SCHEDULE_WIZARD
+    } windowState;
 
     //menus and actions
     void createActions();
@@ -79,6 +89,9 @@ private:
     QAction *saveScheduleAct;
     QAction *openScheduleAct;
     QAction *aboutAct;
+
+    bool saveNecessary;
+    QTimer *saveTimer;
 
 
 

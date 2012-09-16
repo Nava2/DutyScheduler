@@ -2,12 +2,16 @@
 #include <QtGlobal>
 
 #include "mainwidget.h"
+#include "mainwindow.h"
 #include "stafflist.h"
 
 MainWidget::MainWidget(QWidget *parent)
     : QWidget(parent)
 {
     createStaffElements();
+
+    MainWindow *w = dynamic_cast<MainWindow *>(parent);
+    connect(this, SIGNAL(updateSaveState()), w, SLOT(onUpdateSaveState()));
 }
 
 MainWidget::~MainWidget()
@@ -63,6 +67,8 @@ void MainWidget::updateStaffMember()
     pstaff->setFinals(finals);//set exams
     pstaff->setMidterms(midterms);
     clearSelections();
+
+    emit updateSaveState();
 }
 
 void MainWidget::addStaffMember()
@@ -110,6 +116,8 @@ void MainWidget::addStaffMember()
     staffTeamList->insertItem(0,item);
 
     clearSelections();
+
+    emit updateSaveState();
 }
 
 void MainWidget::removeStaffMember()
@@ -127,6 +135,8 @@ void MainWidget::removeStaffMember()
     QListWidgetItem *i;
     i = staffTeamList->takeItem(staffTeamList->currentRow());
     delete i;
+
+    emit updateSaveState();
 }
 
 void MainWidget::clearSelections()
@@ -394,7 +404,6 @@ void MainWidget::load(const StaffList &staffList, const QList<Exam::Ptr> &finalL
         item->setData(Qt::UserRole, theTeam[x]->uid());
         staffTeamList->insertItem(0,item);
     }
-
 }
 
 

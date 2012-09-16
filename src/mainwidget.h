@@ -36,7 +36,7 @@ class MainWidget : public QWidget
     Q_OBJECT
 
 public:
-    MainWidget(QWidget *parent = 0);
+    MainWidget(QWidget *parent);
     virtual
     ~MainWidget();
     void reset();
@@ -61,6 +61,9 @@ private slots:
 
     void addMidterm(const Exam::Ptr e);
     void removeMidterm(const Exam::Ptr e);
+
+signals:
+    void updateSaveState();
 
 
 

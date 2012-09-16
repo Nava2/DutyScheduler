@@ -40,10 +40,10 @@ class ScheduleWidget : public QWidget
     Q_OBJECT
 
 public:
-    ScheduleWidget(QWidget *parent = 0);
-    ScheduleWidget(const QString &fileNameStaff, const ScheduleWizzard &swiz, QWidget *parent = NULL);
-    void saveMidSchedule(QString);
-    ScheduleWidget(const QString &fileNameSchedule, StaffList &team, QList<Exam::Ptr> &finals, QList<Exam::Ptr> &midterms, QWidget *parent = NULL);
+    ScheduleWidget(QWidget *parent);
+    ScheduleWidget(const QString &fileNameStaff, const ScheduleWizzard &swiz, QWidget *parent);
+    void saveMidSchedule(const QString &);
+    ScheduleWidget(const QString &fileNameSchedule, StaffList &team, QList<Exam::Ptr> &finals, QList<Exam::Ptr> &midterms, QWidget *parent);
 
     virtual
     ~ScheduleWidget();
@@ -60,6 +60,9 @@ private slots:
     void copySlot();
     void pasteSlot();
     void exportSchedule();
+
+signals:
+    void updateSaveState();
 
 
 private:

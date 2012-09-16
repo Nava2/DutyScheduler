@@ -8,13 +8,13 @@
 #include "schedulewizzard.h"
 #include "schedulewidget.h"
 
-
+#include "mainwindow.h"
 
 ScheduleWidget::ScheduleWidget(QWidget *parent)
     : QWidget(parent)
 {
-
-
+    MainWindow *w = dynamic_cast<MainWindow *>(parent);
+    connect(this, SIGNAL(updateSaveState()), w, SLOT(onUpdateSaveState()));
 }
 
 ScheduleWidget::ScheduleWidget(const QString &staffteamfilename, const ScheduleWizzard &swiz, QWidget *parent)
@@ -59,6 +59,8 @@ ScheduleWidget::ScheduleWidget(const QString &staffteamfilename, const ScheduleW
 
     updateNeeded();
 
+    MainWindow *w = dynamic_cast<MainWindow *>(parent);
+    connect(this, SIGNAL(updateSaveState()), w, SLOT(onUpdateSaveState()));
 }
 
 ScheduleWidget::ScheduleWidget(const QString &fileNameSchedule,
@@ -155,6 +157,9 @@ ScheduleWidget::ScheduleWidget(const QString &fileNameSchedule,
     updateNeeded();
 
     updateStats();
+
+    MainWindow *w = dynamic_cast<MainWindow *>(parent);
+    connect(this, SIGNAL(updateSaveState()), w, SLOT(onUpdateSaveState()));
 }
 
 ScheduleWidget::~ScheduleWidget()
@@ -646,6 +651,8 @@ void ScheduleWidget::addStaff(QListWidgetItem *item)
 
     theTeam.at(staffId)->addShift(isWeekend, false);
 
+    emit updateSaveState();
+
     updateStats();
 }
 
@@ -680,6 +687,8 @@ void ScheduleWidget::removeStaff(QListWidgetItem *item)
     bool isWeekend = datesList[dateIndex].isWeekend();
 
     theTeam.at(staffId)->removeShift(isWeekend, isAM);
+
+    emit updateSaveState();
 
     updateStats();
 }
@@ -727,6 +736,8 @@ void ScheduleWidget::setAsAM()
 
     theTeam.at(staffId)->addShift(isWeekend, true);
 
+    emit updateSaveState();
+
     updateStats();
 }
 
@@ -769,6 +780,8 @@ void ScheduleWidget::setSpecialDuty()
         format.setBackground(Qt::darkGray);
         calendar->setDateTextFormat(calendar->selectedDate(),format);
     }
+
+    emit updateSaveState();
 }
 
 void ScheduleWidget::updateNeeded()
@@ -811,8 +824,7 @@ void ScheduleWidget::pasteSlot()
         addStaff(copyList->at(x));
     }
 
-    copyAM = SDate::AM_NOT_SET;
-    copyList->clear();
+    emit updateSaveState();
 }
 
 
@@ -868,6 +880,8 @@ void ScheduleWidget::setAsAM(const QString &staffId)
 
     pstaff->addShift(isWeekend, true);
 
+    emit updateSaveState();
+
     updateStats();
 }
 
@@ -921,6 +935,8 @@ void ScheduleWidget::addStaff(const QString &staffId)
     bool isWeekend = datesList[dateIndex].isWeekend();
 
     pstaff->addShift(isWeekend, false);
+
+    emit updateSaveState();
 
     updateStats();
 }
@@ -1116,7 +1132,7 @@ void ScheduleWidget::updateStats()
     schedViewWidget->setToStaff(Staff::Ptr(), datesList);
 }
 
-void ScheduleWidget::saveMidSchedule(QString fileName)
+void ScheduleWidget::saveMidSchedule(const QString &fileName)
 {
     bool ok = iohandle->saveSchedule(fileName, datesList, nightClasses, donsNeeded, rasNeeded);
 
