@@ -69,7 +69,7 @@ ScheduleWidget::ScheduleWidget(const QString &fileNameSchedule,
                                QList<Exam::Ptr> &midterms,
                                QWidget *parent) // this constructor is used by LoadSchedule
     : QWidget(parent)
-{
+{    
     iohandle = new IOHandler;
 
     iohandle->loadSchedule(fileNameSchedule, team, datesList, nightClasses, donsNeeded, rasNeeded);
