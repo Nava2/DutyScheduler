@@ -535,7 +535,7 @@ bool IOHandler::saveScheduleJson(QFile &file, QList<SDate> &dateList, QList<QLis
            o_nListSingle.append(id);
         }
 
-        o_nListAll.append(o_nListSingle);
+        o_nListAll.append(QVariant(o_nListSingle));
     }
 
     out["night"] = o_nListAll;
