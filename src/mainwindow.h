@@ -59,6 +59,8 @@ private slots:
 private:
     void setSaveNecessary(const bool nec);
 
+    void closeEvent(QCloseEvent *event);
+
     // file management
     IOHandler iohandle;
 

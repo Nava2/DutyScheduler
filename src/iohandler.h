@@ -44,6 +44,8 @@ public:
     QString getSaveFileName(QWidget *parent, const IOType = STAFF);
     QString getOpenFileName(QWidget *parent, const IOType = STAFF);
 
+    bool cleanUpAutoSave();
+
 private:
     QString errorMsg, errorTitle;
 

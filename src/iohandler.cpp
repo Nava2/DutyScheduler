@@ -23,7 +23,7 @@ IOHandler::IOHandler() :
 }
 
 IOHandler::~IOHandler() {
-    ;
+    cleanUpAutoSave();
 }
 
 void IOHandler::getErrorInfo(QString &title, QString &msg) {
@@ -55,6 +55,40 @@ QString IOHandler::getCurrentStaffFile() const {
 
 QString IOHandler::getCurrentScheduleFile() const {
     return currentScheduleFile;
+}
+
+bool IOHandler::cleanUpAutoSave() {
+#ifdef QT_COMPILER_INITIALIZER_LISTS
+    QList<QString > files { currentStaffFile, currentScheduleFile };
+#else
+    QList<QString > files;
+    files.append(currentStaffFile); files.append(currentScheduleFile);
+#endif
+
+    bool successful = true;
+
+    foreach (QString file, files) {
+        QFileInfo fiAuto(file + "~"),
+                fiManual(file);
+        if (!(fiAuto.isFile() && fiManual.isFile())) {
+            // one of them doesn't exist, so bleh
+            continue;
+        }
+
+        if (fiAuto.lastModified() > fiManual.lastModified()) {
+            // the auto version is greater than the manual
+            // lets leave it because it means its fresher
+            continue;
+        } else {
+            // the manual version > auto
+            // delete the auto
+            successful &= QFile::remove(fiAuto.path());
+        }
+    }
+
+    qDebug() << "IOHandler::cleanUpAutoSave Successful:" << successful;
+
+    return successful;
 }
 
 bool IOHandler::checkFileName(const QString &fileName, FileExtension *ext) {

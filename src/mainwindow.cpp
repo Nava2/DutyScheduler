@@ -109,10 +109,7 @@ void MainWindow::openStaffTeam() {
     // get the file name, use currentStaffTeamFile if possible
     QString fileName("");
     if (currentStaffTeamFile.isEmpty()) {
-        fileName = QFileDialog::getOpenFileName(this, "Open Staff Team..", QDir::home().path());
-    } else {
-        fileName = QFileDialog::getOpenFileName(this, "Open Staff Team..",
-                                                QFileInfo(currentStaffTeamFile).dir().path());
+        fileName = iohandle.getOpenFileName(this);
     }
 
     bool ok = iohandle.loadStaffTeam(fileName, staffList, finalList, midtermList);
@@ -139,7 +136,7 @@ void MainWindow::openStaffTeam() {
 void MainWindow::saveStaffTeam()
 {
     if (currentStaffTeamFile.isEmpty()) {
-        currentStaffTeamFile = QFileDialog::getSaveFileName(this, "Save as..", QDir::home().path());
+        currentStaffTeamFile = iohandle.getSaveFileName(this);
     }
 
     saveStaffTeamName(currentStaffTeamFile);
@@ -181,6 +178,47 @@ void MainWindow::onSaveTimer() {
 
     } break;
     }
+}
+
+void MainWindow::closeEvent(QCloseEvent *event) {
+    if (saveNecessary) {
+        QString text("");
+        switch (windowState) {
+        case STAFF_WIDGET:
+            text = "The staff team has been modified.";
+            break;
+        case SCHEDULE_WIDGET:
+            text = "The schedule file has been modified.";
+            break;
+        default:
+            // nothing to do..
+            break;
+        }
+
+        if (!text.isEmpty()) {
+            // if the team/schedule has been modified, then we will save it
+            QMessageBox msgBox;
+            msgBox.setText(text);
+            msgBox.setInformativeText("Do you want to save your changes?");
+            msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+            msgBox.setDefaultButton(QMessageBox::Save);
+            int ret = msgBox.exec();
+
+            switch (ret) {
+            case QMessageBox::Save:
+                onSaveTimer();
+                break;
+            default:
+                // nothing to do then..
+                break;
+            }
+        }
+    }
+
+    // force the iohandler to cleanup itself
+    iohandle.cleanUpAutoSave();
+
+    event->accept();
 }
 
 void MainWindow::setSaveNecessary(const bool nec) {
