@@ -17,6 +17,8 @@
 #include <QListWidget>
 #include <QListWidgetItem>
 #include <QList>
+#include <QTimer>
+
 #include <iostream>
 #include "mainwidget.h"
 #include "schedulewidget.h"
@@ -24,6 +26,7 @@
 #include "exam.h"
 #include "staff.h"
 #include "sdate.h"
+#include "iohandler.h"
 
 class MainWindow : public QMainWindow
 {
@@ -31,6 +34,7 @@ class MainWindow : public QMainWindow
     
 public:
     MainWindow(QWidget *parent = 0);
+    virtual
     ~MainWindow();
 
 private slots:
@@ -42,25 +46,37 @@ private slots:
     void openStaffTeam();
     void saveStaffTeam();
     void saveAsStaffTeam();
+    void saveStaffTeamName(const QString &fileName);
 
     void saveSchedule();
     void loadSchedule();
 
+    void onSaveTimer();
+    void onUpdateSaveState();
+
+
 
 private:
+    void setSaveNecessary(const bool nec);
+
+    void closeEvent(QCloseEvent *event);
 
     // file management
-    void loadStaffTeamFile(const QString &fileName);
-    void saveStaffTeamFile(const QString &fileName);
-    QList<staff*> * sList;
-    QList<exam*> * eList;
-    QString currentStaffTeamFile;
-    QString usingStaffTeamFile;
+    IOHandler iohandle;
+
+    StaffList sList;
+    QList<Exam::Ptr> finalList, midtermList;
+    QString currentStaffTeamFile,
+        currentScheduleFile;
 
     // widgets
-    mainWidget *m;
-    scheduleWidget *s;
-    scheduleWizzard *w;
+    MainWidget *m;
+    ScheduleWidget *s;
+    ScheduleWizzard *w;
+
+    enum WindowState {
+        STAFF_WIDGET, SCHEDULE_WIDGET, SCHEDULE_WIZARD
+    } windowState;
 
     //menus and actions
     void createActions();
@@ -76,6 +92,9 @@ private:
     QAction *saveScheduleAct;
     QAction *openScheduleAct;
     QAction *aboutAct;
+
+    bool saveNecessary;
+    QTimer *saveTimer;
 
 
 

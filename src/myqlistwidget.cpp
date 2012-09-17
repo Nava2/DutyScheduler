@@ -1,6 +1,7 @@
 #include "myqlistwidget.h"
 #include <QMouseEvent>
 #include <QDebug>
+
 MyQListWidget::MyQListWidget(QWidget *parent) : QListWidget(parent)
 {
     this->viewport()->installEventFilter(this);
@@ -27,10 +28,7 @@ bool MyQListWidget::eventFilter(QObject *obj, QEvent *event)
             emit rightClickSignal(mouseEvent->pos());
             return false;
         }
-
-
     }
-    else
-        return QListWidget::eventFilter(obj, event);
-}
 
+    return QListWidget::eventFilter(obj, event);
+}

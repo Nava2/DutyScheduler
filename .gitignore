@@ -1,6 +1,7 @@
 # Qt stuff
-build/*
+build*/*
 *.pro.user
+duty*/
 
 # Compiled Object files
 *.slo
@@ -17,3 +18,6 @@ build/*
 
 #user pro file
 *.user
+
+#OSX 
+.DS_Store*

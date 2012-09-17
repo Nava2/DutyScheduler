@@ -6,6 +6,8 @@
 
 #include "staff.h"
 #include "availabilitywidget.h"
+#include "stafflist.h"
+#include "examwidget.h"
 
 QT_BEGIN_NAMESPACE
 class QCalendarWidget;
@@ -29,18 +31,22 @@ class QSpinBox;
 class QVBodLayout;
 QT_END_NAMESPACE
 
-class mainWidget : public QWidget
+class MainWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    mainWidget(QWidget *parent = 0);
-    ~mainWidget();
+    MainWidget(QWidget *parent);
+    virtual
+    ~MainWidget();
     void reset();
-    QList<staff*> * getStaff();
-    QList<exam*> * getExams();
+    StaffList getStaff();
+    void getExams(QList<Exam::Ptr> &fOut, QList<Exam::Ptr> &mOut);
+    QList<QString > getUIDs();
     QString getTeam();
-    void load(QList<staff*> * staffList, QList<exam*> * examList);
+    void load(const StaffList &staffList,
+              const QList<Exam::Ptr> &finalList,
+              const QList<Exam::Ptr> &midtermList);
 
 
 private slots:
@@ -50,15 +56,21 @@ private slots:
     void removeStaffMember();
     void clearSelections();
     void updateSelections(QListWidgetItem*);
-    void addExam();
-    void removeExam();
+    void addFinal(const Exam::Ptr e);
+    void removeFinal(const Exam::Ptr e);
+
+    void addMidterm(const Exam::Ptr e);
+    void removeMidterm(const Exam::Ptr e);
+
+signals:
+    void updateSaveState();
 
 
 
 private:
     //DATA
-    QList<exam*> *theExams;
-    QList<staff*> *theTeam;
+    QList<Exam::Ptr> finalExams, midtermExams;
+    StaffList theTeam;
 
     //GUI
     void createStaffElements();
@@ -98,12 +110,7 @@ private:
 
     AvailabilityWidget *availWidget;
 
-    QGroupBox *examScheduleGroupBox;
-    QListWidget *examsList;
-    QDateEdit *examDateEdit;
-    QCheckBox *examNightCheck;
-    QPushButton *addExamButton;
-    QPushButton *removeExamButton;
+    ExamWidget *examWidget;
 
 };
 

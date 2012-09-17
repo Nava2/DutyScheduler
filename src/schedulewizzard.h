@@ -26,12 +26,24 @@ class QDialogButtonBox;
 class QCheckBox;
 QT_END_NAMESPACE
 
-class scheduleWizzard : public QDialog
+class ScheduleWizzard : public QDialog
 {
     Q_OBJECT
 public:
-    explicit scheduleWizzard(QWidget *parent = 0);
+    explicit ScheduleWizzard(QWidget *parent = 0);
+    virtual
+    ~ScheduleWizzard();
+
     QString getValues();
+
+    bool isExamSchedule() const {
+        if (examCheckBox)
+            return examCheckBox->isChecked();
+        return false;
+    }
+
+    void getWeeklyValues(QList<int > &donOut, QList<int > &raOut) const ;
+    void getDates(QDate &start, QDate &end) const;
 
 signals:
     
@@ -66,6 +78,9 @@ private:
     QSpinBox *donThuSpinBox;
     QSpinBox *donFriSpinBox;
     QSpinBox *donSatSpinBox;
+
+    QList<QSpinBox *> donSpinBoxs;
+
     QSpinBox *raSunSpinBox;
     QSpinBox *raMonSpinBox;
     QSpinBox *raTueSpinBox;
@@ -73,6 +88,8 @@ private:
     QSpinBox *raThuSpinBox;
     QSpinBox *raFriSpinBox;
     QSpinBox *raSatSpinBox;
+
+    QList<QSpinBox *> raSpinBoxs;
 
     QCheckBox *examCheckBox;
 

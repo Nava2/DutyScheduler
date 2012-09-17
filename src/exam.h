@@ -2,24 +2,44 @@
 #define EXAM_H
 
 #include <QString>
+#include <QVariantMap>
+#include <QDate>
+#include <QSharedPointer>
 
-class exam
+class Exam : public QDate
 {
 public:
-    exam();
-    exam(int, QString, bool);
+    typedef QSharedPointer<Exam> Ptr;
 
-    void setDate(QString);
+    Exam();
+    Exam(const int, const QDate &, const bool, const bool);
+    Exam(const Exam &);
+    Exam(const QVariantMap &);
+
+    void operator <<(const QVariantMap &);
+    void operator >>(QVariantMap &);
+    bool operator ==(const Exam &ex);
+    bool operator !=(const Exam &ex);
+
     void setNight(bool);
 
-    QString getDate();
-    bool getNight();
+    bool isNight();
     int getId();
+
+    bool isMidterm() const;
+    void setMidterm(const bool);
+
+    void addStaff(const QString &id);
+    void removeStaff(const QString &id);
+
+    QList<QString > getStaff();
 
 private:
     int id;
-    QString date;
     bool night;
+    bool midterm;
+
+    QList<QString > staffIds;
 };
 
 #endif // EXAM_H

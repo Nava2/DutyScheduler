@@ -2,7 +2,7 @@
 
 
 
-scheduleWizzard::scheduleWizzard(QWidget *parent) :
+ScheduleWizzard::ScheduleWizzard(QWidget *parent) :
     QDialog(parent)
 {
 
@@ -32,18 +32,23 @@ scheduleWizzard::scheduleWizzard(QWidget *parent) :
     setWindowTitle("Initial Schedule Settings");
 }
 
+ScheduleWizzard::~ScheduleWizzard() {
+    ;
+}
 
-void scheduleWizzard::createDatesGroupBox()
+void ScheduleWizzard::createDatesGroupBox()
 {
     datesGroupBox = new QGroupBox("Dates of Schedule");
 
     startDateLabel = new QLabel("Start:");
     endDateLabel = new QLabel("End:");
-    startDateEdit = new QDateEdit();
-    endDateEdit = new QDateEdit();
+    startDateEdit = new QDateEdit;
+    endDateEdit = new QDateEdit;
 
     startDateEdit->setDate(QDate::currentDate());
+    startDateEdit->setCalendarPopup(true);
     endDateEdit->setDate(startDateEdit->date().addMonths(1));
+    endDateEdit->setCalendarPopup(true);
 
     QGridLayout *layout = new QGridLayout;
 
@@ -56,7 +61,7 @@ void scheduleWizzard::createDatesGroupBox()
 
 }
 
-void scheduleWizzard::createStaffNeededGroupBox()
+void ScheduleWizzard::createStaffNeededGroupBox()
 {
     staffNeededGroupBox = new QGroupBox("Number of Staff Needed");
 
@@ -79,6 +84,13 @@ void scheduleWizzard::createStaffNeededGroupBox()
     donSatSpinBox = new QSpinBox;
     donSunSpinBox = new QSpinBox;
 
+    donSpinBoxs.append(donMonSpinBox);
+    donSpinBoxs.append(donTueSpinBox);
+    donSpinBoxs.append(donWedSpinBox);
+    donSpinBoxs.append(donThuSpinBox);
+    donSpinBoxs.append(donFriSpinBox);
+    donSpinBoxs.append(donSatSpinBox);
+    donSpinBoxs.append(donSunSpinBox);
 
     raMonSpinBox = new QSpinBox;
     raTueSpinBox = new QSpinBox;
@@ -87,6 +99,14 @@ void scheduleWizzard::createStaffNeededGroupBox()
     raFriSpinBox = new QSpinBox;
     raSatSpinBox = new QSpinBox;
     raSunSpinBox = new QSpinBox;
+
+    raSpinBoxs.append(raMonSpinBox);
+    raSpinBoxs.append(raTueSpinBox);
+    raSpinBoxs.append(raWedSpinBox);
+    raSpinBoxs.append(raThuSpinBox);
+    raSpinBoxs.append(raFriSpinBox);
+    raSpinBoxs.append(raSatSpinBox);
+    raSpinBoxs.append(raSunSpinBox);
 
     donMonSpinBox->setValue(0);
     donTueSpinBox->setValue(0);
@@ -105,7 +125,6 @@ void scheduleWizzard::createStaffNeededGroupBox()
 
     QGridLayout *layout = new QGridLayout;
 
-
     layout->addWidget(monLabel,0,1);
     layout->addWidget(tueLabel,0,2);
     layout->addWidget(wedLabel,0,3);
@@ -118,27 +137,20 @@ void scheduleWizzard::createStaffNeededGroupBox()
     layout->addWidget(raAverageLabelFIXED,2,0);
 
 
-    layout->addWidget(donMonSpinBox,1,1);
-    layout->addWidget(donTueSpinBox,1,2);
-    layout->addWidget(donWedSpinBox,1,3);
-    layout->addWidget(donThuSpinBox,1,4);
-    layout->addWidget(donFriSpinBox,1,5);
-    layout->addWidget(donSatSpinBox,1,6);
-    layout->addWidget(donSunSpinBox,1,7);
+    int i = 1;
+    foreach (QSpinBox *box, donSpinBoxs) {
+        layout->addWidget(box, 1, i++);
+    }
 
-
-    layout->addWidget(raMonSpinBox,2,1);
-    layout->addWidget(raTueSpinBox,2,2);
-    layout->addWidget(raWedSpinBox,2,3);
-    layout->addWidget(raThuSpinBox,2,4);
-    layout->addWidget(raFriSpinBox,2,5);
-    layout->addWidget(raSatSpinBox,2,6);
-    layout->addWidget(raSunSpinBox,2,7);
+    i = 1;
+    foreach (QSpinBox *box, raSpinBoxs) {
+        layout->addWidget(box, 2, i++);
+    }
 
     staffNeededGroupBox->setLayout(layout);
 }
 
-QString scheduleWizzard::getValues()
+QString ScheduleWizzard::getValues()
 {
     QString ret = "";
 
@@ -150,23 +162,34 @@ QString scheduleWizzard::getValues()
 
     ret += QString(examCheckBox->isChecked()?"Y":"N") + ",";
 
+    foreach (QSpinBox *box, donSpinBoxs) {
+        ret += QString::number(box->value()) + ",";
+    }
 
-    ret += QString::number(donMonSpinBox->value()) + ",";
-    ret += QString::number(donTueSpinBox->value()) + ",";
-    ret += QString::number(donWedSpinBox->value()) + ",";
-    ret += QString::number(donThuSpinBox->value()) + ",";
-    ret += QString::number(donFriSpinBox->value()) + ",";
-    ret += QString::number(donSatSpinBox->value()) + ",";
-    ret += QString::number(donSunSpinBox->value()) + ",";
-
-
-    ret += QString::number(raMonSpinBox->value()) + ",";
-    ret += QString::number(raTueSpinBox->value()) + ",";
-    ret += QString::number(raWedSpinBox->value()) + ",";
-    ret += QString::number(raThuSpinBox->value()) + ",";
-    ret += QString::number(raFriSpinBox->value()) + ",";
-    ret += QString::number(raSatSpinBox->value()) + ",";
-    ret += QString::number(raSunSpinBox->value());
+    foreach (QSpinBox *box, raSpinBoxs) {
+        ret += QString::number(box->value());
+        if (box != raSunSpinBox)
+            ret += ",";
+    }
 
     return ret;
+}
+
+void ScheduleWizzard::getDates(QDate &start, QDate &end) const {
+    start = startDateEdit->date();
+    end = endDateEdit->date();
+}
+
+void ScheduleWizzard::getWeeklyValues(QList<int > &donOut, QList<int > &raOut) const {
+
+    donOut.clear();
+    raOut.clear();
+
+    foreach (QSpinBox *box, donSpinBoxs) {
+        donOut.append(box->value());
+    }
+
+    foreach (QSpinBox *box, raSpinBoxs) {
+        raOut.append(box->value());
+    }
 }

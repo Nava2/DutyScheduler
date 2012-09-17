@@ -4,53 +4,77 @@
 #include <QDate>
 #include <QList>
 #include <QString>
+#include <QVariantMap>
 
-class sDate : public QObject
+class SDate : public QDate
 {
-    Q_OBJECT
 
 public:
-    sDate();
-    sDate(QDate, int, int);
-    ~sDate();
+    SDate();
+    SDate(const QDate &, int, int);
+    SDate(const QVariantMap &map);
+    ~SDate();
 
-    QDate getDate();//return the date of this sDate
     bool isSpecial(); // is this special duty?
-    bool isOn(int);// is this staff on duty already?
-    bool isFull();
-    bool rasFull(); // do we have enough ras?
-    bool donsFull();// do we have enough dons? including RA.
-    bool canWork(int);//can someone work?
+    bool isOn(const QString &) const;// is this staff on duty already?
+    bool isFull() const;
+    bool rasFull() const; // do we have enough ras?
+    bool donsFull() const;// do we have enough dons? including RA.
+    bool canWork(const QString &) const;//can someone work?
 
     void setSpecial(bool);//set the special duty flag
 
 
-    int getAM();//return the AM's ID
-    int getWeekday();
-    int getRasNeeded();
-    int getDonsNeeded();
-    QString getCantWork();
-    QString getDons();
-    QString getRas();
+    QString getAM() const;//return the AM's ID
+    int getWeekday() const;
+    int getRasNeeded() const;
+    void setRasNeeded(const int);
+
+    int getDonsNeeded() const;
+    void setDonsNeeded(const int);
+
+    bool isDefaultNeeded() const;
+
+    bool isWeekend() const;
+
+    QString getCantWorkStr();
+    QList<QString > getCantWork() {
+        return cantWork;
+    }
+
+    QString getDonsStr();
+    QList<QString > getDons() {
+        return donsOn;
+    }
+
+    QString getRasStr();
+    QList<QString > getRas() {
+        return rasOn;
+    }
 
     QString exportOn();
 
-    void setAM(int);//set the AM with their id
-    void addStaff(int,bool); // add a staff to be on duty
-    void removeStaff(int, bool);
+    void setAM(const QString &);//set the AM with their id
+    void addStaff(const QString &s,bool); // add a staff to be on duty
+    void removeStaff(const QString &s, bool);
 
-    void addCantWork(int);
-    bool staffCantWork(int);
+    void addCantWork(const QString &);
+    void addCantWork(const QList<QString > &);
+    bool staffCantWork(const QString &);
 
+    void operator >>(QVariantMap &);
+    void operator <<(const QVariantMap &);
 
+    static
+    const QString AM_NOT_SET;
 
 private:
-    QDate theDate;
     bool spDuty;
-    int AM;
-    QList<int> *donsOn;
-    QList<int> *rasOn;
-    QList<int> *cantWork;
+    QString AM;
+    QList<QString > donsOn;
+    QList<QString > rasOn;
+    QList<QString > cantWork;
+    bool defaultNeededD, defaultNeededR;
     int rasNeeded;
     int donsNeeded;
     int weekday;

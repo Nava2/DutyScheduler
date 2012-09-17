@@ -8,6 +8,7 @@
 #include <QDateEdit>
 #include <QList>
 #include <QString>
+#include <QVBoxLayout>
 
 AvailabilityWidget::AvailabilityWidget(QWidget *parent) :
     QGroupBox(tr("Dates Unavailable"), parent), rowNum(0), dayCount(0)
@@ -22,20 +23,18 @@ AvailabilityWidget::AvailabilityWidget(QWidget *parent) :
     scrollFrame = new QGroupBox;
     scrollFrame->setFlat(true);
 
-    internalLayout = new QGridLayout(scrollFrame);
+    internalLayout = new QVBoxLayout(scrollFrame);
     internalLayout->setSpacing(10);
 
     scrollArea->setWidget(scrollFrame);
 
     rowNum = 2;
-    for (int x = 0; x < 4; x++)
+    for (int x = 0; x < 4; x += 2 )
     {
-        QDateEdit *de = new QDateEdit;
-        QGroupBox *gb = new QGroupBox;
-        arrayDateEdit.append(de);
-        arrayGroupBox.append(gb);
+        AvailRangeWidget *rw = new AvailRangeWidget(x, this);
+        arrayRows.append(rw);
 
-        buildSubgroupBox(x, internalLayout, de, gb);
+        internalLayout->addWidget(rw);
         scrollFrame->adjustSize();
     }
 
@@ -60,56 +59,86 @@ AvailabilityWidget::AvailabilityWidget(QWidget *parent) :
     rmRowButton->setEnabled(rowNum > 2);
 }
 
-void AvailabilityWidget::buildSubgroupBox(const int &i, QGridLayout *parentLayout,
-                                               QDateEdit *dateEdit,
-                                               QGroupBox *groupBox) {
-    dateEdit->setCalendarPopup(true);
-    dateEdit->setDate(QDate::currentDate());
-    dateEdit->setMinimumHeight(30);
+AvailabilityWidget::~AvailabilityWidget() {
+    foreach(AvailRangeWidget *r, arrayRows) {
+        delete r;
+    }
+    arrayRows.clear();
 
-    groupBox->setCheckable(true);
-    groupBox->setChecked(false);
-    groupBox->setMinimumHeight(50);
-    groupBox->setTitle(QString::number(i+1));
-    connect(groupBox, SIGNAL(toggled(bool)), this, SLOT(onGroupBoxChecked(bool)));
+    delete internalLayout;
+    delete scrollFrame;
+    delete scrollArea;
 
-    QGridLayout *subLayout = new QGridLayout;
+    delete addRowButton;
+    delete rmRowButton;
+    delete countLabel;
 
-    subLayout->addWidget(dateEdit);
-    groupBox->setLayout(subLayout);
 
-//    parentLayout->addWidget(groupBox, ((i>>1) & 0x01), (i & 0x01)); // left is even, right is odd
-    parentLayout->addWidget(groupBox, i / 2, i % 2);
+    delete topLayout;
 }
 
-void AvailabilityWidget::setToAvail(const QList<QDate> &avail) {
-    int num_slots = (avail.size() % 2 == 0) ? avail.size() : avail.size() + 1; // round up to even number
+void AvailabilityWidget::setToAvail(const QList<AvailableDate> &avail) {
+    // TODO Not loading properly
+    QList<AvailableDate > range, single;
+    sortRanges(avail, range, single);
 
+    int num_slots = range.size() * 2 + single.size(); // round up to even number
+//    num_slots /= 2;
     adjustRowCount(num_slots);
 
-    for (int i = 0; i < qMax(4, num_slots); i++) {
-        if (i > num_slots || i >= avail.size()) {
-            // num_slots < 4 :(
-            if (arrayGroupBox[i]->isChecked())
-                arrayGroupBox[i]->setChecked(false);
-            arrayDateEdit[i]->setDate(QDate::currentDate());
+    int rowInd = 0;
+    foreach (AvailableDate d, range) {
+        AvailRangeWidget *row = arrayRows[rowInd++];
+
+        row->setAvailDate(d);
+    }
+
+    qDebug() << "Rows" << arrayRows.count();
+
+    AvailRangeWidget *row;
+    AvailableDate date;
+    for ( int i = 0; i < single.size(); i++ ) {
+        if (i % 2 == 0) {
+            row = arrayRows[rowInd++];
+            date.setDate(single[i].date());
+            date.setEndDate(QDate(0, 0, 0));
         } else {
-            // num_slots > 4 !
-            if (!arrayGroupBox[i]->isChecked())
-                arrayGroupBox[i]->setChecked(true);
-            arrayDateEdit[i]->setDate(avail[i]);
+            date.setEndDate(single[i].date());
+
+            row->setAvailDate(date);
+
+            date = AvailableDate();
         }
+    }
+
+    if (date != AvailableDate()) {
+        row->setAvailDate(date);
     }
 
     updateCountLabel();
 }
 
-QList<QDate > AvailabilityWidget::getAvail() {
-    QList<QDate > out;
-    for ( int i = 0; i < arrayGroupBox.size(); i++ )
+QList<AvailableDate > AvailabilityWidget::getAvail() {
+    QList<AvailableDate > out;
+
+    foreach (AvailRangeWidget *row, arrayRows)
     {
-        if (arrayGroupBox[i]->isChecked())
-            out += arrayDateEdit[i]->date();
+        AvailableDate d;
+        if (!row->getAvailDate(d)) {
+            break;
+        }
+
+        if (d.isRange()) {
+            out += d;
+        } else {
+            AvailableDate a(d.date(), false);
+            out += a;
+
+            if (d.endDate() != QDate(0, 0, 0)) {
+                AvailableDate b(d.endDate(), false);
+                out += b;
+            }
+        }
     }
 
     return out;
@@ -119,10 +148,10 @@ void AvailabilityWidget::reset() {
     // TODO Make this resort back to 4?
     adjustRowCount(4);
 
-    for(int y = 0; y < arrayGroupBox.size(); y++)
+    foreach (AvailRangeWidget *row, arrayRows)
     {
-        arrayDateEdit[y]->setDate(QDate::currentDate());
-        arrayGroupBox[y]->setChecked(false);
+        row->setDates(QDate::currentDate(), QDate::currentDate());
+        row->setChecked(false, false);
     }
 
     updateCountLabel();
@@ -130,13 +159,14 @@ void AvailabilityWidget::reset() {
 
 void AvailabilityWidget::adjustRowCount(int count) {
     int num_slots = (count % 2 == 0) ? count : count + 1 ; // round up to even number
+    num_slots /= 2;
 
     // adjust rows
-    while ( arrayGroupBox.size() < num_slots ) {
+    while ( arrayRows.size() < num_slots ) {
         addRow();
     }
 
-    while ( arrayGroupBox.size() > qMax(num_slots, 4) ) {
+    while ( arrayRows.size() > qMax(num_slots, 2) ) {
         removeRow();
     }
 
@@ -147,10 +177,35 @@ void AvailabilityWidget::updateCountLabel() {
     countLabel->setText("Count: " + QString::number(dayCount));
 }
 
+void AvailabilityWidget::sortRanges(QList<AvailableDate> in, QList<AvailableDate> &ranges, QList<AvailableDate > &single) {
+    ranges.clear();
+    single.clear();
+
+    QList<AvailableDate>::iterator it;
+    for (it = in.begin(); it != in.end(); ) {
+        AvailableDate d = *it;
+        if (d.isRange()) {
+            ranges.append(d);
+
+            it = in.erase(it);
+        } else {
+            it++;
+        }
+    }
+
+    foreach (AvailableDate d, in) {
+        single.append(d);
+    }
+
+    qDebug() << "Total" << ranges.count() + single.count() << ":: Single"
+             << single.count() << ":: Ranges" << ranges.count();
+}
+
 void AvailabilityWidget::onGroupBoxChecked(bool on) {
-    if (on) {
+    QGroupBox *box = dynamic_cast<QGroupBox *>(sender());
+    if (on && !box->isChecked()) {
         dayCount++;
-    } else {
+    } else if (!on && box->isChecked()){
         dayCount--;
     }
 
@@ -158,16 +213,12 @@ void AvailabilityWidget::onGroupBoxChecked(bool on) {
 }
 
 void AvailabilityWidget::addRow() {
-    for (int x = 0; x < 2; x++)
-    {
-        QDateEdit *de = new QDateEdit;
-        QGroupBox *gb = new QGroupBox;
-        arrayDateEdit.append(de);
-        arrayGroupBox.append(gb);
+    AvailRangeWidget *rw = new AvailRangeWidget(rowNum*2, this);
 
-        buildSubgroupBox(rowNum*2+x, internalLayout, de, gb);
-        scrollFrame->adjustSize();
-    }
+    internalLayout->addWidget(rw);
+    arrayRows += rw;
+
+    scrollFrame->adjustSize();
 
     rowNum++;
 
@@ -175,27 +226,31 @@ void AvailabilityWidget::addRow() {
 }
 
 void AvailabilityWidget::removeRow() {
-    if (arrayGroupBox.size() <= 4) {
+    if (arrayRows.size() <= 2) {
         qDebug() << "Cannot have less than 2 rows.";
         return;
     }
 
-    for (int i = 0; i < 2; i++) {
-        QDateEdit *de = arrayDateEdit.last();
-        arrayDateEdit.removeLast();
+    AvailRangeWidget *rw = arrayRows.last();
+    arrayRows.removeLast();
+    internalLayout->removeWidget(rw);
 
-
-        QGroupBox *gb = arrayGroupBox.last();
-        arrayGroupBox.removeLast();
-        internalLayout->removeWidget(gb);
-
-        if (gb->isChecked())
-            dayCount--;
-
-        // delete after so the removeWidget call isn't messed up
-        delete de;
-        delete gb;
+    if (!rw->range()) {
+        // single days
+        bool checked[2];
+        rw->isChecked(checked[0], checked[1]);
+        for (int x = 0; x<2; x++)
+            if (checked[x])
+                dayCount--;
+    } else {
+        // range:
+        QList<QDate > dateList;
+        rw->getDates(dateList);
+        dayCount -= dateList.size();
     }
+
+    // delete after so the removeWidget call isn't messed up
+    delete rw;
 
     rowNum--;
 

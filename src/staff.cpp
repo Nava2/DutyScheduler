@@ -1,11 +1,14 @@
 #include "staff.h"
 
+#include <QVariantMap>
+#include <QVariant>
 #include <QString>
 #include <QStringList>
 #include <QList>
 #include <QDateTime>
+#include <QCryptographicHash>
 
-staff::staff()
+Staff::Staff()
 {
     id = 127;
     firstName = "Art";
@@ -13,13 +16,15 @@ staff::staff()
     position = false;
     gender = false;
     nightClass = 0;
-    exams = "";
     numShifts = 0;
     numWeekendShifts = 0;
     numAMShifts = 0;
+
+    _uid = "xxx";
+    UIDSet = false;
 }
 
-staff::staff(int i, QString first, QString last, bool pos, bool gen, int night)
+Staff::Staff(int i, QString first, QString last, bool pos, bool gen, int night)
 {
     id = i;
     firstName = first;
@@ -27,117 +32,297 @@ staff::staff(int i, QString first, QString last, bool pos, bool gen, int night)
     position = pos;
     gender = gen;
     nightClass = night;
-    exams = "";
     numShifts = 0;
     numWeekendShifts = 0;
     numAMShifts = 0;
+
+    genUID();
 }
 
-staff::~staff()
+Staff::Staff(const QVariantMap &json) :
+    numShifts(0), numWeekendShifts(0), numAMShifts(0)
+{
+    *this << json;
+}
+
+Staff::Staff(const Staff &old) {
+    this->id = old.id;
+    firstName = old.firstName;
+    lastName = old.lastName;
+    position = old.position;
+    gender = old.gender;
+
+    finals = old.finals;
+    numShifts = old.numShifts;
+    numWeekendShifts = old.numWeekendShifts;
+    numAMShifts = old.numAMShifts;
+
+    genUID();
+}
+
+void Staff::genUID() {
+    QString id = firstName + lastName + QString::number((int)(rand() * 1000));
+    QByteArray tuid = QCryptographicHash::hash(id.toAscii(), QCryptographicHash::Sha1);
+    tuid = tuid.toHex();
+    _uid = QString(tuid.left(3) + tuid.right(3));
+
+    UIDSet = true;
+}
+
+Staff::~Staff()
 {
 
 }
 
-void staff::update(QString first, QString last, bool pos, bool gen, int night)
+// JSON mapping:
+void Staff::operator << (const QVariantMap &json) {
+    this->id = json["id"].toInt();
+    _uid = json["uid"].toString();
+    UIDSet = !_uid.isEmpty();
+
+    midterms.clear();
+    finals.clear();
+
+    QVariantMap name = json["name"].toMap();
+    firstName = name["f"].toString();
+    lastName = name["l"].toString();
+
+    position = json["pos"].toBool();
+    gender = json["gndr"].toBool();
+    nightClass = json["night"].toInt();
+
+    foreach (QVariant qv, json["avail"].toList()) {
+        AvailableDate d;
+        d << qv.toMap();
+        availList.append(d);
+    }
+
+    QVariantMap shiftMap = json["shifts"].toMap();
+    numWeekendShifts = shiftMap["wkend"].toInt();
+    if (position)
+       numAMShifts = shiftMap["am"].toInt();
+    numShifts = shiftMap["ttl"].toInt();
+
+    if (!UIDSet)
+        genUID();
+}
+
+void Staff::operator >>(QVariantMap &json) {
+    json["id"] = id;
+    json["uid"] = uid();
+
+    QVariantMap name;
+    name["f"] = firstName;
+    name["l"] = lastName;
+    json["name"] = name;
+
+    json["pos"] = position;
+    json["gndr"] = gender;
+    json["night"] = nightClass;
+
+    QVariantList list;
+    foreach (AvailableDate d, availList) {
+        QVariantMap v;
+        d >> v;
+        list.append(QVariant(v));
+    }
+
+    json["avail"] = list;
+
+    QVariantMap shiftMap;
+    shiftMap["wkend"] = numWeekendShifts;
+    if (position)
+        shiftMap["am"] = numAMShifts;
+    shiftMap["ttl"] = numShifts;
+
+    json["shifts"] = shiftMap;
+}
+
+void Staff::update(QString first, QString last, bool pos, bool gen, int night)
 {
     firstName = first;
     lastName = last;
     position = pos;
     gender = gen;
     nightClass = night;
-    exams = "";
-
 }
 
 
-int staff::getId()
+int Staff::getId()
 {   return id;  }
 
-QString staff::getFirstName()
+QString Staff::getFirstName()
 {   return firstName;   }
 
-QString staff::getLastName()
+QString Staff::getLastName()
 {    return lastName;   }
 
-bool staff::getPosition()
+bool Staff::getPosition()
 {    return position;   }
 
-bool staff::getGender()
+bool Staff::getGender()
 {    return gender;     }
 
-int staff::getNightClass()
+int Staff::getNightClass()
 {   return nightClass;  }
 
-void staff::setId(int i)
+bool Staff::isNightClass(const QDate &date) {
+    int day = date.dayOfWeek() - 1;
+
+    return ((nightClass & (0x1 << day)) > 0);
+}
+
+void Staff::setId(int i)
 {   id = i;             }
 
-void staff::setFirstName(QString name)
-{   firstName = name;   }
+void Staff::setName(const QString &first, const QString &last) {
+    firstName = first;
+    lastName = last;
+}
 
-void staff::setLastName(QString name)
-{   lastName = name;    }
-
-void staff::setPosition(bool pos)
+void Staff::setPosition(bool pos)
 {   position = pos;     }
 
-void staff::setGender(bool gen)
+void Staff::setGender(bool gen)
 {   gender = gen;       }
 
-void staff::setNightClass(int night)
+void Staff::setNightClass(int night)
 {   nightClass = night; }
 
+bool Staff::examListContains(const Exam::Ptr e, const QList<Exam::Ptr> &list) {
+    foreach (Exam::Ptr ptr, list) {
+        if (*ptr == *e)
+            return true;
+    }
 
-void staff::setExams(QString ex)
-{
-    exams = ex;
+    return false;
 }
 
-QString staff::getExams()
+// kept for compatibility
+void Staff::setFinals(QString ex, const QList<Exam::Ptr> &examList)
 {
-    return exams;
-}
+    finals.clear();
+    QStringList list = ex.split(',', QString::SkipEmptyParts);
+    foreach (QString ex, list) {
+        ex.remove("(", Qt::CaseInsensitive);
+        ex.remove(")", Qt::CaseInsensitive);
 
-void staff::setAvailability(const QList<QDate> &dtList)
-{
-    availList.clear();
-
-    foreach(QDate dt, dtList) {
-        availList.append(dt);
+        int id = ex.toInt();
+        finals.append(examList[id]);
+        examList[id]->addStaff(uid());
     }
 }
 
-void staff::setAvailability(const QString &str) {
-    availList.clear();
+void Staff::setMidterms(const QList<Exam::Ptr> &exams) {
+    midterms = exams;
 
-    QStringList dates = str.split(",", QString::SkipEmptyParts);
-    foreach (QString dt, dates) {
-        availList.append(QDate::fromString(dt, "dd/MM/yyyy"));
+    foreach (Exam::Ptr ptr, midterms) {
+        ptr->addStaff(uid());
     }
 }
 
-void staff::appendAvail(const QDate &dt) {
-    availList.append(dt);
+void Staff::addMidterm(const Exam::Ptr e) {
+    if (!examListContains(e, midterms)) {
+        midterms.append(e);
+        e->addStaff(uid());
+    }
 }
 
-void staff::removeAvail(const QDate &dt) {
-    availList.removeAll(dt);
+QList<Exam::Ptr> Staff::getMidterms() {
+    return midterms;
 }
 
-QList<QDate> staff::getAvailability()
+void Staff::setFinals(const QList<Exam::Ptr> &exams) {
+    finals = exams;
+
+    foreach (Exam::Ptr ptr, finals) {
+        ptr->addStaff(uid());
+    }
+}
+
+void Staff::addFinal(const Exam::Ptr e) {
+    if (!examListContains(e, finals)) {
+        finals.append(e);
+        e->addStaff(uid());
+    }
+}
+
+QList<Exam::Ptr> Staff::getFinals()
 {
-    return availList;
+    return finals;
 }
 
-QString staff::getAvailabilityStr() {
-    QString out("");
-    foreach (QDate dt, availList) {
-        out += dt.toString("dd/MM/yyyy") + ",";
+QString Staff::getFinalsStr() {
+    QString out;
+    foreach (Exam::Ptr ex, finals) {
+        out += "(" + QString::number(ex->getId()) + "),";
     }
 
     return out;
 }
 
-void staff::addShift(bool weekend, bool isAM)
+void Staff::setAvailability(const QList<AvailableDate > &dtList)
+{
+    availList.clear();
+
+    foreach(AvailableDate dt, dtList) {
+        availList.append(dt);
+    }
+}
+
+void Staff::setAvailability(const QString &str) {
+    availList.clear();
+
+    QStringList dates = str.split(",", QString::SkipEmptyParts);
+    foreach (QString dt, dates) {
+        QDate first = QDate::fromString(dt, "dd/MM/yyyy");
+        AvailableDate d;
+        d.setDate(first);
+        availList.append(d);
+    }
+}
+
+void Staff::appendAvail(const AvailableDate &dt) {
+    availList.append(dt);
+}
+
+void Staff::removeAvail(const AvailableDate &dt) {
+    availList.removeAll(dt);
+}
+
+void Staff::getAvailability(QList<QDate> &out)
+{
+    out.clear();
+
+    foreach (AvailableDate ad, availList) {
+        // get the dates from the AvailableDate, let it handle the range notion
+        foreach (QDate qd, ad.getDates()) {
+            out.append(qd);
+        }
+    }
+}
+
+void Staff::getAvailability(QList<AvailableDate> &out) {
+    out.clear();
+
+    foreach (AvailableDate ad, availList)
+        out += ad;
+}
+
+QString Staff::getAvailabilityStr() {
+    QString out("");
+
+    foreach (AvailableDate ad, availList) {
+        // get the dates from the AvailableDate, let it handle the range notion
+        foreach (QDate qd, ad.getDates()) {
+            out += qd.toString("dd/MM/yyyy") + ",";
+        }
+    }
+
+    return out;
+}
+
+void Staff::addShift(bool weekend, bool isAM)
 {
     if (isAM)
         numAMShifts++;
@@ -148,7 +333,7 @@ void staff::addShift(bool weekend, bool isAM)
     numShifts++;
 }
 
-void staff::removeShift(bool weekend, bool isAM)
+void Staff::removeShift(bool weekend, bool isAM)
 {
     if (isAM)
         numAMShifts--;
@@ -159,17 +344,24 @@ void staff::removeShift(bool weekend, bool isAM)
     numShifts--;
 }
 
-int staff::getShifts()
+bool Staff::isUIDSet() const {
+    return UIDSet;
+}
+QString Staff::uid() const {
+    return _uid;
+}
+
+int Staff::getShifts()
 {
     return numShifts;
 }
 
-int staff::getWeekendShifts()
+int Staff::getWeekendShifts()
 {
     return numWeekendShifts;
 }
 
-int staff::getAMShifts()
+int Staff::getAMShifts()
 {
     return numAMShifts;
 }
