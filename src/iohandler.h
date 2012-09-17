@@ -14,7 +14,7 @@
 class IOHandler
 {
 public:
-    enum _FileExtension { CSV, JSON, BAD };
+    enum _FileExtension { CSV, JSON, UNKWN, BAD };
     enum _IOType { SCHEDULE, STAFF };
 
     typedef enum _FileExtension FileExtension;
@@ -24,7 +24,7 @@ public:
     virtual
     ~IOHandler();
 
-    bool loadStaffTeam(const QString &fileName, StaffList &staffList, QList<Exam::Ptr> &finalsList, QList<Exam::Ptr> &midtermsList);
+    bool loadStaffTeam(QString fileName, StaffList &staffList, QList<Exam::Ptr> &finalsList, QList<Exam::Ptr> &midtermsList);
     bool saveStaffTeam(const QString &fileName, const StaffList &staffList, const QList<Exam::Ptr> &finals, const QList<Exam::Ptr> &midterms);
 
     bool loadSchedule(const QString &fileName, const StaffList &team, QList<SDate> &dateList, QList<QList<QString> *> &nightClasses, QList<int > &donsNeeded, QList<int> &rasNeeded );

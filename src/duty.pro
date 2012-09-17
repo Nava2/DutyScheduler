@@ -19,7 +19,6 @@ SOURCES += main.cpp \
     mainwidget.cpp \
     exam.cpp \
     myqlistwidget.cpp \
-    myqlabel.cpp \
     json.cpp \
     iohandler.cpp \
     availabilitywidget.cpp \
@@ -38,7 +37,6 @@ HEADERS  += \
     mainwidget.h \
     exam.h \
     myqlistwidget.h \
-    myqlabel.h \
     json.h \
     iohandler.h \
     availabilitywidget.h \

@@ -104,13 +104,17 @@ bool IOHandler::checkFileName(const QString &fileName, FileExtension *ext) {
         return false;
     }
 
-    if(fileName.right(4) == ".txt")
-    {
+    int period_pos = fileName.lastIndexOf(".")+1;
+
+    if (period_pos == 0) {
+        *ext = UNKWN;
+        result = false;
+    } else if(fileName.mid(period_pos, 3) == "txt") {
         result = true;
         if (ext) {
             *ext = CSV;
         }
-    } else if (fileName.right(5) == ".json") {
+    } else if (fileName.mid(period_pos, 4) == "json") {
         result = true;
 
         if (ext) {
@@ -124,13 +128,22 @@ bool IOHandler::checkFileName(const QString &fileName, FileExtension *ext) {
     return result;
 }
 
-bool IOHandler::loadStaffTeam(const QString &fileName, StaffList &staffList, QList<Exam::Ptr> &finalList, QList<Exam::Ptr> &midtermList)
+bool IOHandler::loadStaffTeam(QString filePath, StaffList &staffList, QList<Exam::Ptr> &finalList, QList<Exam::Ptr> &midtermList)
 {
+
     FileExtension ext;
-    bool result = IOHandler::checkFileName(fileName, &ext);
+    bool result = IOHandler::checkFileName(filePath, &ext);
+
+    if (!result && ext == UNKWN) {
+        // the extension wasn't found, so we default to json
+
+        ext = JSON;
+        result = true;
+        filePath += ".json";
+    }
 
     if (result) {
-        QFile file(fileName);
+        QFile file(filePath);
         if (!file.open(QFile::ReadOnly | QFile::Text))
         {
             setErrorInfo("Duty Scheduler", "Cannot read file.");
@@ -172,7 +185,7 @@ bool IOHandler::loadStaffTeam(const QString &fileName, StaffList &staffList, QLi
             }
         }
 
-        currentStaffFile = fileName;
+        currentStaffFile = filePath;
     } else {
         currentStaffFile = "";
     }
