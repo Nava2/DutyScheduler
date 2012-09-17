@@ -248,7 +248,7 @@ void MainWindow::loadSchedule()
     m->getExams(finals, midterms);
 
     if (team.count() == 0 || (finals.count() + midterms.count() == 0)) {
-        if (iohandle.getCurrentScheduleFile().isEmpty()) {
+        if (iohandle.getCurrentStaffFile().isEmpty()) {
             QMessageBox msgBox2;
             msgBox2.setWindowTitle("Duty Schedule Tool");
             msgBox2.setText("Select the staff team to use for your new schedule.");
@@ -259,15 +259,15 @@ void MainWindow::loadSchedule()
             int x = 0;
             iohandle.clearErrorInfo();
             do {
-                iohandle.getOpenFileName(this, IOHandler::SCHEDULE);
+                iohandle.getOpenFileName(this, IOHandler::STAFF);
 
                 QString title(""), msg("");
                 iohandle.getErrorInfo(msg, title);
                 if (!msg.isEmpty() && !title.isEmpty())
                     QMessageBox::warning(this, title, msg);
-            } while (!iohandle.checkFileName(iohandle.getCurrentScheduleFile()) && x++ < 2);
+            } while (!iohandle.checkFileName(iohandle.getCurrentStaffFile()) && x++ < 2);
 
-            if (iohandle.getCurrentScheduleFile().isEmpty()) {
+            if (iohandle.getCurrentStaffFile().isEmpty()) {
                 // no file opened properly
                 qDebug() << "No Schedule file loaded.. no action required.";
                 return;

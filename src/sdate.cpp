@@ -8,18 +8,20 @@ const QString SDate::AM_NOT_SET = "xxx";
 
 SDate::SDate()
     : QDate(), spDuty(false), AM(AM_NOT_SET),
+      defaultNeededD(true), defaultNeededR(true),
       rasNeeded(0), donsNeeded(0), weekday(0) {
 }
 
 SDate::SDate(const QDate &d, int donsN, int rasN)
     : QDate(d.year(), d.month(), d.day()), spDuty(false),
-      AM(AM_NOT_SET), rasNeeded(rasN), donsNeeded(donsN),
-      weekday(d.dayOfWeek())
+      AM(AM_NOT_SET), defaultNeededD(true), defaultNeededR(true),
+      rasNeeded(rasN), donsNeeded(donsN), weekday(d.dayOfWeek())
 {
 }
 
 SDate::SDate(const QVariantMap &map) :
-    QDate(), AM(AM_NOT_SET)
+    QDate(), AM(AM_NOT_SET),
+    defaultNeededD(true), defaultNeededR(true)
 {
     *this << map;
 }

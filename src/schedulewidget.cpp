@@ -81,6 +81,10 @@ ScheduleWidget::ScheduleWidget(const QString &fileNameSchedule,
     startDate = datesList.first();
     endDate = datesList.last();
 
+    //create the night class lists
+    for(int q = 0; q<7; q++)
+        nightClasses.append(new QList<QString >);
+
     foreach (SDate _sdate, datesList) {
         bool weekend = _sdate.isWeekend();
 
