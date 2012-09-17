@@ -84,8 +84,11 @@ ScheduleWidget::ScheduleWidget(const QString &fileNameSchedule,
     foreach (SDate _sdate, datesList) {
         bool weekend = _sdate.isWeekend();
 
-        if (theTeam[_sdate.getAM()]->getId() < theTeam.count())
-            theTeam[_sdate.getAM()]->addShift(weekend, true);    //add the shift count to the staff object
+        QString amID = _sdate.getAM();
+        if (amID != SDate::AM_NOT_SET) {
+            if (theTeam[amID]->getId() < theTeam.count())
+                theTeam[amID]->addShift(weekend, true);    //add the shift count to the staff object
+        }
 
         foreach (QString id, _sdate.getDons()) {
             Staff::Ptr pstaff = theTeam[id];
@@ -530,6 +533,7 @@ void ScheduleWidget::prepInterface()
             datesList[index].addCantWork(pStaff->uid());
         }
 
+        // add midterms' ids
         foreach (Exam::Ptr pExam, pStaff->getMidterms())
         {
             Exam exam = *pExam;
@@ -826,8 +830,9 @@ void ScheduleWidget::copySlot()
 
     for(int x = 0; x < onDutyItems->count(); x++)
     {
-        if(!onDutyItems->at(x)->isHidden())
-            copyList->append(onDutyItems->at(x)->data(Qt::UserRole).toString());
+        QListWidgetItem *item = onDutyItems->at(x);
+        if(!item->isHidden())
+            copyList->append(item->data(Qt::UserRole).toString());
     }
 
 }
@@ -835,12 +840,38 @@ void ScheduleWidget::copySlot()
 void ScheduleWidget::pasteSlot()
 {
     setAsAM(copyAM);
-    for(int x = 0; x < copyList->count(); x++)
+
+    QList<QString > badList;
+    foreach (QString uid, *copyList)
     {
-        addStaff(copyList->at(x));
+        QDate cd = calendar->selectedDate();
+
+        int index = dateToIndex(cd);
+
+        SDate sd = datesList[index];
+
+        if (!sd.canWork(uid)) {
+            badList.append(uid);
+        }
     }
 
-    emit updateSaveState();
+    if (badList.count() == 0) {
+        foreach (QString uid, *copyList)
+            addStaff(uid);
+
+        emit updateSaveState();
+    } else {
+        QString out;
+        foreach (QString uid, badList) {
+            Staff::Ptr ptr = theTeam[uid];
+            out += ptr->getFirstName() + " " + ptr->getLastName() + ", ";
+        }
+
+        out = out.left(out.length() - 2);
+
+        QMessageBox::warning(this, "Can not copy date",
+                             "The following people can not work: " + out);
+    }
 }
 
 
