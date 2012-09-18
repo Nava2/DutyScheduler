@@ -141,6 +141,8 @@ private:
     QList<QListWidgetItem*> * onDutyItems;
     QList<SDate> datesList;
 
+    QColor defaultRABack, defaultDonBack;
+
     QAction *setAsAMAction;
 
     QList<QString > *copyList;

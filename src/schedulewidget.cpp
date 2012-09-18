@@ -458,6 +458,10 @@ void ScheduleWidget::createLists()
     layout = new QGridLayout;
     layout->addWidget(onDeckList,0,0);
     OnDeckGroupBox->setLayout(layout);
+
+
+    defaultRABack = Qt::white;
+    defaultDonBack = QColor(255,0,0,127);
 }
 
 
@@ -589,9 +593,15 @@ int ScheduleWidget::dateToIndex(const QDate &date)
 
 void ScheduleWidget::dateClicked(QDate dateSelected)
 {
-    currentDateLabel->setText(QDate::shortDayName(dateSelected.dayOfWeek()) + " " + QDate::shortMonthName(dateSelected.month()) + " " + QString::number(dateSelected.day()));
+    currentDateLabel->setText(QDate::shortDayName(dateSelected.dayOfWeek()) + " " +
+                              QDate::shortMonthName(dateSelected.month()) + " " +
+                              QString::number(dateSelected.day()));
 
     int dateIndex = dateToIndex(dateSelected); // get the index of the date in "datesList"
+    SDate *prev = NULL;
+    if (dateIndex > 0) {
+        prev = &(datesList[dateIndex-1]);
+    }
 
     for(int x = 0; x<theTeam.count(); x++)
     {
@@ -613,6 +623,10 @@ void ScheduleWidget::dateClicked(QDate dateSelected)
             dutyItem->setHidden(false);
             deckItem->setHidden(true);
         } else {
+            if (prev) {
+
+            }
+
             font.setBold(false);
             dutyItem->setFont(font);
             dutyItem->setHidden(true); //so this person is not onduty.
@@ -621,10 +635,17 @@ void ScheduleWidget::dateClicked(QDate dateSelected)
             if (nightClasses[dateSelected.dayOfWeek()-1]->contains(id) || datesList[dateIndex].staffCantWork(id))
             {
                 deckItem->setHidden(true);
-            }
-            else
-            {
+            } else {
                 deckItem->setHidden(false);
+            }
+
+            if (prev && prev->isOn(id)) {
+                deckItem->setBackgroundColor(Qt::yellow);
+            } else if (theTeam[id]->getPosition()) {
+                // don
+                deckItem->setBackgroundColor(defaultDonBack);
+            } else {
+                deckItem->setBackgroundColor(defaultRABack);
             }
         }
     }
@@ -1156,13 +1177,14 @@ void ScheduleWidget::updateStats()
         statsTable->item(row,3)->setText(QString::number(pstaff->getWeekendShifts()));
         statsTable->item(row,4)->setText(QString::number(pstaff->getAMShifts()));
 
-        dAverage += pstaff->getShifts();
-        dWAverage += pstaff->getWeekendShifts();
-
         if (pstaff->getPosition()) {
+            dAverage += pstaff->getShifts();
+            dWAverage += pstaff->getWeekendShifts();
             amAverage += pstaff->getAMShifts();
             dCount++;
         } else {
+            rAverage += pstaff->getShifts();
+            rWAverage += pstaff->getShifts();
             rCount++;
         }
 
