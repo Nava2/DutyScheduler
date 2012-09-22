@@ -3,6 +3,7 @@
 #include <QDateTime>
 #include <QList>
 #include <QString>
+#include <QSignalMapper>
 
 
 #include "schedulewizzard.h"
@@ -223,6 +224,22 @@ void ScheduleWidget::createScheduleGroupBox()
 
     setLayout(layout);
     setWindowTitle("Schedule Tool");
+
+    scheduleMapper = new QSignalMapper(this);
+
+    foreach (Staff::Ptr pstaff, theTeam) {
+        QAction *action = new QAction("Show Schedule", this);
+
+        connect(action, SIGNAL(triggered()), scheduleMapper, SLOT(map()));
+
+        scheduleMapper->setMapping(action, pstaff->uid());
+
+        showScheduleActions += action;
+    }
+
+    connect(scheduleMapper, SIGNAL(mapped(const QString &)),
+                 this, SLOT(showSchedule(const QString &)));
+//    connect(this, SIGNAL(showSchedule(const QString &)), this, SLOT(onShowSchedule(const QString &)));
 }
 
 void ScheduleWidget::createScheduleControls()
@@ -446,6 +463,7 @@ void ScheduleWidget::createLists()
     connect(onDeckList,SIGNAL(rightClickSignal(QPoint)),this,SLOT(showMenu(QPoint)));
     connect(onDutyList,SIGNAL(rightClickSignal(QPoint)),this,SLOT(showMenu(QPoint)));
     connect(setAsAMAction,SIGNAL(triggered()),this,SLOT(setAsAM()));
+
     connect(onDeckList,SIGNAL(leftClickSignal(QListWidgetItem*)),this,SLOT(addStaff(QListWidgetItem*)));
     connect(onDutyList,SIGNAL(leftClickSignal(QListWidgetItem*)),this,SLOT(removeStaff(QListWidgetItem*)));
 
@@ -792,17 +810,20 @@ void ScheduleWidget::showMenu(QPoint p)
 
     QListWidgetItem *item = list->itemAt(p);
 
-    if (item == 0)
+    if (item == NULL)
         return;
 
     QString staffId = item->data(Qt::UserRole).toString();
 
     QMenu *rightClickMenu = new QMenu(this);
 
-    if(onDeckItems->contains(item) && theTeam.at(staffId)->getPosition())
+    if(onDeckItems->contains(item) && theTeam[staffId]->getPosition())
     {
         rightClickMenu->addAction(setAsAMAction);
+        rightClickMenu->addSeparator();
     }
+
+    rightClickMenu->addAction(showScheduleActions[theTeam[staffId]->getId()]);
 
     //QPoint point = p + list->pos();
     rightClickMenu->exec(mapToGlobal(p + list->parentWidget()->pos() + list->pos()));
@@ -842,16 +863,21 @@ void ScheduleWidget::showStaffSchedule(QTableWidgetItem *item)
     if(item->column() != 0)
         return;
 
-    QString staffId = item->data(Qt::UserRole).toString();
-    if (theTeam.at(staffId)->getId() < theTeam.count())
-        schedViewWidget->setToStaff(theTeam.at(staffId), datesList);
+    showSchedule(item->data(Qt::UserRole).toString());
+}
+
+void ScheduleWidget::showSchedule(const QString &id) {
+    Staff::Ptr pstaff = theTeam[id];
+    if (pstaff && pstaff->getId() < theTeam.count())
+        schedViewWidget->setToStaff(pstaff, datesList);
     else
-        qDebug() << "Trying to set bad index" << staffId;
+        qDebug() << "Trying to set schedule to bad uid [" << id << "]";
 }
 
 void ScheduleWidget::copySlot()
 {
     copyAM = datesList[dateToIndex(calendar->selectedDate())].getAM();
+    copyList->clear();
 
     for(int x = 0; x < onDutyItems->count(); x++)
     {
@@ -1184,7 +1210,7 @@ void ScheduleWidget::updateStats()
             dCount++;
         } else {
             rAverage += pstaff->getShifts();
-            rWAverage += pstaff->getShifts();
+            rWAverage += pstaff->getWeekendShifts();
             rCount++;
         }
 

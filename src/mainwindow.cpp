@@ -263,11 +263,13 @@ void MainWindow::saveSchedule()
 {
     QString fileName;
 
-    if (currentScheduleFile.isEmpty()) {
+    if (iohandle.getCurrentScheduleFile().isEmpty()) {
         fileName = iohandle.getSaveFileName(this, IOHandler::SCHEDULE);
 
         if (fileName.isEmpty())
             return;
+    } else {
+        fileName = iohandle.getCurrentScheduleFile();
     }
 
     s->saveMidSchedule(fileName);

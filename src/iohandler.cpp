@@ -613,7 +613,11 @@ bool IOHandler::saveScheduleJson(QFile &file, QList<SDate> &dateList, QList<QLis
 
 }
 
-bool IOHandler::saveSchedule(const QString &fileName, QList<SDate> &dateList, QList<QList<QString > *> &nightClasses, QList<int > &donsNeeded, QList<int > &rasNeeded )
+bool IOHandler::saveSchedule(const QString &fileName,
+                             QList<SDate> &dateList,
+                             QList<QList<QString > *> &nightClasses,
+                             QList<int > &donsNeeded,
+                             QList<int > &rasNeeded )
 {
     FileExtension ext;
     bool result = IOHandler::checkFileName(fileName, &ext);

@@ -135,11 +135,7 @@ bool SDate::staffCantWork(const QString &input)
 
 bool SDate::isOn(const QString &id) const
 {
-    if(AM == id || donsOn.contains(id) || rasOn.contains(id))
-        return true;
-    else
-        return false;
-
+    return (AM == id || donsOn.contains(id) || rasOn.contains(id));
 }
 
 int SDate::getDonsNeeded() const

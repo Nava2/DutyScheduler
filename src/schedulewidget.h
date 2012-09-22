@@ -5,6 +5,7 @@
 #include <QFont>
 #include <QTableWidget>
 #include <QTableWidgetItem>
+#include <QSignalMapper>
 #include "staff.h"
 #include "exam.h"
 #include "sdate.h"
@@ -60,6 +61,8 @@ private slots:
     void copySlot();
     void pasteSlot();
     void exportSchedule();
+
+    void showSchedule(const QString &id);
 
 signals:
     void updateSaveState();
@@ -144,6 +147,9 @@ private:
     QColor defaultRABack, defaultDonBack;
 
     QAction *setAsAMAction;
+
+    QSignalMapper *scheduleMapper;
+    QList<QAction *> showScheduleActions;
 
     QList<QString > *copyList;
     QString copyAM;
