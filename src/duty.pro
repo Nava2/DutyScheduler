@@ -19,7 +19,6 @@ SOURCES += main.cpp \
     mainwidget.cpp \
     exam.cpp \
     myqlistwidget.cpp \
-    json.cpp \
     iohandler.cpp \
     availabilitywidget.cpp \
     availabledate.cpp \
@@ -37,7 +36,6 @@ HEADERS  += \
     mainwidget.h \
     exam.h \
     myqlistwidget.h \
-    json.h \
     iohandler.h \
     availabilitywidget.h \
     availabledate.h \
@@ -45,3 +43,7 @@ HEADERS  += \
     stafflist.h \
     availrangewidget.h \
     examwidget.h
+
+unix|win32: LIBS += -lqjson
+
+unix: LIBS += -L/usr/local/lib/

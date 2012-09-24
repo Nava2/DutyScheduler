@@ -2,7 +2,6 @@
 
 #include "staff.h"
 #include "exam.h"
-#include "json.h"
 #include "sdate.h"
 
 #include <QString>
@@ -14,6 +13,9 @@
 #include <QList>
 #include <QDebug>
 #include <QFileDialog>
+
+#include <qjson/parser.h>
+#include <qjson/serializer.h>
 
 #include "stafflist.h"
 
@@ -196,14 +198,15 @@ bool IOHandler::loadStaffTeam(QString filePath, StaffList &staffList, QList<Exam
 
 bool IOHandler::loadStaffTeamJson(QFile &file, StaffList &staffList, QList<Exam::Ptr> &finals, QList<Exam::Ptr> &midterms) {
 
+    QJson::Parser parser; // define parser
+
     // read the whole file into the QByteArray then put it into a string for
     // parsing
     QByteArray data = file.readAll();
-    QString str_data(data);
 
     // parse using json.h
     bool ok = false;
-    QVariantMap v = QtJson::Json::parse(str_data, ok).toMap();
+    QVariantMap v = parser.parse(data, &ok).toMap();
 
     if (!ok) {
         // no idea why it would, unless someone muddled on their own
@@ -443,6 +446,9 @@ bool IOHandler::saveStaffTeamJson(QFile &file,
                                   const QList<Exam::Ptr> &finalList,
                                   const QList<Exam::Ptr> &midtermList) {
 
+    QJson::Serializer serializer;
+    serializer.setIndentMode(QJson::IndentFull);
+
     QVariantMap out;
 
     QVariantList o_sList;
@@ -492,10 +498,11 @@ bool IOHandler::saveStaffTeamJson(QFile &file,
     out["exams"] = o_ExamMap;
 
     bool ok = false;
-    QByteArray ba = QtJson::Json::serialize(out, ok);
+    QByteArray ba = serializer.serialize(QVariant(out));
 
-    if (ok) {
+    if (ba.count() != 0) {
         file.write(ba);
+        ok = true;
     }
 
     return ok;
@@ -558,7 +565,13 @@ bool IOHandler::loadSchedule(const QString &fileName,
     return result;
 }
 
-bool IOHandler::saveScheduleJson(QFile &file, QList<SDate> &dateList, QList<QList<QString > *> &nightClasses, QList<int > &donsNeeded, QList<int > &rasNeeded ) {
+bool IOHandler::saveScheduleJson(QFile &file, QList<SDate> &dateList,
+                                 QList<QList<QString > *> &nightClasses,
+                                 QList<int > &donsNeeded,
+                                 QList<int > &rasNeeded ) {
+
+    QJson::Serializer serializer;
+    serializer.setIndentMode(QJson::IndentMedium);
 
     QVariantMap out;
 
@@ -575,7 +588,8 @@ bool IOHandler::saveScheduleJson(QFile &file, QList<SDate> &dateList, QList<QLis
 
     // 2D array of night classes with IDs
     QVariantList o_nListAll;
-    foreach (QList<QString > *nightList, nightClasses) {
+    for (int i = 0; i < 7; i++) {
+        QList<QString > *nightList = nightClasses[i];
         QVariantList o_nListSingle;
 
         foreach( QString id, *nightList ) {
@@ -603,10 +617,11 @@ bool IOHandler::saveScheduleJson(QFile &file, QList<SDate> &dateList, QList<QLis
     out["need"] = o_needed;
 
     bool ok = false;
-    QByteArray ba = QtJson::Json::serialize(out, ok);
+    QByteArray ba = serializer.serialize(QVariant(out));
 
-    if (ok) {
+    if (ba.count() != 0) {
         file.write(ba);
+        ok = true;
     }
 
     return ok;
@@ -788,14 +803,15 @@ bool IOHandler::saveScheduleFile(QFile &file, QList<SDate> &dateList, QList<QLis
 
 bool IOHandler::loadScheduleJson(QFile &file, QList<SDate> &dateList, QList<QList<QString > *> &nightClasses, QList<int > &donsNeeded, QList<int > &rasNeeded ) {
 
+    QJson::Parser parser;
+
     // read the whole file into the QByteArray then put it into a string for
     // parsing
     QByteArray data = file.readAll();
-    QString str_data(data);
 
     // parse using json.h
     bool ok = false;
-    QVariantMap v = QtJson::Json::parse(str_data, ok).toMap();
+    QVariantMap v = parser.parse(data, &ok).toMap();
 
     if (!ok) {
         // no idea why it would, unless someone muddled on their own
