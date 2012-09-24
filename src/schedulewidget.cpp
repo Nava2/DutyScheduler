@@ -1081,12 +1081,10 @@ void ScheduleWidget::exportSchedule()
 
     QTextStream ts(&file);
 
-    QList<QStringList*> lists;
-    for(int x = 0; x<7; x++)
-    {
-        QStringList *dailylist = new QStringList();
-        lists.append(dailylist);
-    }
+    QList<QStringList> lists;
+
+    for (int i = 0; i < 7; i++)
+        lists += QStringList();
 
     QStringList writtenDates;
     writtenDates << "" << "" << "" << "" << "" << "" << "";
@@ -1107,22 +1105,22 @@ void ScheduleWidget::exportSchedule()
             QString on = date.exportOn();
             if(on == "special")
             {
-                lists.at(dayOfWeekCounter)->append("Special Duty");
+                lists[dayOfWeekCounter] += "Special Duty";
             }
             else if (on == "")
             {
-                lists.at(dayOfWeekCounter)->append("No AM");
+                lists[dayOfWeekCounter] += "No AM";
             }
             else
             {
-                *lists.at(dayOfWeekCounter) = on.split(",",QString::SkipEmptyParts);
+                lists[dayOfWeekCounter] = on.split(",",QString::SkipEmptyParts);
 
-                for(int z = 0; z < lists.at(dayOfWeekCounter)->count(); z++)             // swap the staff id's for their names in the string list
-                    lists.at(dayOfWeekCounter)->replace(z, "\"" + theTeam.at(lists.at(dayOfWeekCounter)->at(z).toInt())->getFirstName()
-                                                   + " " + theTeam.at(lists.at(dayOfWeekCounter)->at(z).toInt())->getLastName().left(1)+"\"");
+                for(int z = 0; z < lists[dayOfWeekCounter].count(); z++)             // swap the staff id's for their names in the string list
+                    lists[dayOfWeekCounter].replace(z, "\"" + theTeam[lists[dayOfWeekCounter][z]]->getFirstName()
+                                                   + " " + theTeam[lists[dayOfWeekCounter][z]]->getLastName().left(1)+"\"");
             }
-            if(lists.at(dayOfWeekCounter)->count() > maxNeededForWeek)               // this tells us how many rows will be needed this week.
-                maxNeededForWeek = lists.at(dayOfWeekCounter)->count();
+            if(lists[dayOfWeekCounter].count() > maxNeededForWeek)               // this tells us how many rows will be needed this week.
+                maxNeededForWeek = lists[dayOfWeekCounter].count();
 
             dateCounter++;
             if (dateCounter >= datesList.count())                                  // check this for accuracy
@@ -1131,9 +1129,9 @@ void ScheduleWidget::exportSchedule()
 
         for (int p = 0; p < 7; p++)                                                 // fill out the days so that they are all the same length
         {
-            int count = maxNeededForWeek - lists.at(p)->count();
+            int count = maxNeededForWeek - lists[p].count();
             for(int q = 0; q <= count; q++)
-                lists.at(p)->append("\"\"");
+                lists[p] += "\"\"";
         }
 
 
@@ -1144,7 +1142,7 @@ void ScheduleWidget::exportSchedule()
         {
             for(int y = 0; y < 7; y++)
             {
-                out += lists.at(y)->at(x) + ",";
+                out += lists[y][x] + ",";
             }
             ts << out << endl;
             out = "";
@@ -1158,13 +1156,10 @@ void ScheduleWidget::exportSchedule()
         writtenDates << "" << "" << "" << "" << "" << "" << "";
 
         for(int x = 0; x < 7; x++)
-            lists.at(x)->clear();
+            lists[x].clear();
 
 
     }
-
-    for(int x = 0; x<7; x++)
-        delete lists.at(x);
 
     ts << endl << endl;
     ts << "Don Average, Don Weekend Average, AM Average" << endl;
