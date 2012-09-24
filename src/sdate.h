@@ -52,7 +52,11 @@ public:
         return rasOn;
     }
 
-    QString exportOn();
+    QString exportOn() const;
+
+    bool exportOn(const QList<Staff::Ptr> &team,
+                  Staff::Ptr &am,
+                  QList<Staff::Ptr> &dons, QList<Staff::Ptr> &ras) const;
 
     void setAM(const QString &);//set the AM with their id
     void addStaff(const QString &s,bool); // add a staff to be on duty

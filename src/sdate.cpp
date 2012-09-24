@@ -174,7 +174,25 @@ bool SDate::canWork(const QString &id) const
     return true;
 }
 
-QString SDate::exportOn()
+// true if special duty
+bool SDate::exportOn(const QList<Staff::Ptr> &team, Staff::Ptr &am, QList<Staff::Ptr> &dons, QList<Staff::Ptr> &ras) const {
+    am = team[AM];
+
+    dons.clear();
+    ras.clear();
+
+    foreach (QString id, donsOn) {
+        dons += team[id];
+    }
+
+    foreach (QString id, rasOn) {
+        dons += team[id];
+    }
+
+    return spDuty;
+}
+
+QString SDate::exportOn() const
 {
     //returns the list of staff with AM first, then dons, then ras.
    if(spDuty)

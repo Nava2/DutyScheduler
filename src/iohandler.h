@@ -15,7 +15,7 @@ class IOHandler
 {
 public:
     enum _FileExtension { CSV, JSON, UNKWN, BAD };
-    enum _IOType { SCHEDULE, STAFF };
+    enum _IOType { SCHEDULE, STAFF, CSV_EXPORT };
 
     typedef enum _FileExtension FileExtension;
     typedef enum _IOType IOType;
@@ -40,6 +40,8 @@ public:
     QString getCurrentScheduleFile() const;
 
     bool checkFileName(const QString &fileName, FileExtension *ext = NULL);
+
+    bool exportSchedule(const QString &filePath);
 
     QString getSaveFileName(QWidget *parent, const IOType = STAFF);
     QString getOpenFileName(QWidget *parent, const IOType = STAFF);
