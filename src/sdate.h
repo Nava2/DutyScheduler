@@ -6,6 +6,9 @@
 #include <QString>
 #include <QVariantMap>
 
+#include "staff.h"
+#include "stafflist.h"
+
 class SDate : public QDate
 {
 
@@ -54,7 +57,7 @@ public:
 
     QString exportOn() const;
 
-    bool exportOn(const QList<Staff::Ptr> &team,
+    bool exportOn(const StaffList &team,
                   Staff::Ptr &am,
                   QList<Staff::Ptr> &dons, QList<Staff::Ptr> &ras) const;
 

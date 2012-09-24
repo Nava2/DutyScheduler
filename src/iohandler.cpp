@@ -628,11 +628,17 @@ bool IOHandler::saveScheduleJson(QFile &file, QList<SDate> &dateList,
 
 }
 
-bool IOHandler::exportSchedule(const QString &filePath)
+bool IOHandler::exportSchedule(const QString &filePath,
+                               const QList<SDate> &datesList,
+                               const StaffList &theTeam,
+                               const QMap<QString, QList<int > > &tableMap,
+                               const QList<QString > &idList)
 {
     static const int AM = 2;
     static const int DON = 0; // done for simplicity later
     static const int RA = 1;
+
+    static QString BLANK_ENTRY = "\"\"";
 
     if (filePath.right(4) != ".csv")
     {
@@ -649,6 +655,9 @@ bool IOHandler::exportSchedule(const QString &filePath)
 
     QTextStream ts(&file);
 
+    QDate startDate = datesList.first(),
+            endDate = datesList.last();
+
     QList<QList<QStringList > > weekDayLists; // 3D array, three string lists (AM, Dons, RAs)
 
     for (int i = 0; i < 7; i++) {
@@ -662,7 +671,10 @@ bool IOHandler::exportSchedule(const QString &filePath)
 
     QStringList writtenDates;
     writtenDates << "" << "" << "" << "" << "" << "" << "";
-    int maxNeededForWeek[] = { 0, 0 }; // first is dons, then RAs
+    QList<int > maxNeededForWeek;
+    maxNeededForWeek += 0; // first is dons, then RAs
+    maxNeededForWeek += 0;
+
     int dateCounter = 0;
 
     //for(int y = 0; y < datesList->at(0)->getDate().dayOfWeek() - 1; y++)        // if the first day is in the middle of the week we need pre-padding
@@ -674,14 +686,9 @@ bool IOHandler::exportSchedule(const QString &filePath)
         for(int dayOfWeekCounter = datesList[dateCounter].getWeekday()-1; dayOfWeekCounter < 7; dayOfWeekCounter++)
         {
             SDate date = datesList[dateCounter];
-            QList<QStringList > dayList = weekDayLists[dayOfWeekCounter];
+            QList<QStringList > &dayList = weekDayLists[dayOfWeekCounter];
 
-            // clear all lists
-            foreach (QStringList roleList, dayList) {
-                roleList.clear();
-            }
-
-            writtenDates.replace(dayOfWeekCounter, date.toString("\"ddd MMM d"));
+            writtenDates.replace(dayOfWeekCounter, date.toString("\"ddd MMM d\""));
 //            writtenDates.replace(dayOfWeekCounter,"\"" + QDate::shortDayName(date.dayOfWeek()) + " " + QDate::shortMonthName(date.month()) + " " + QString::number(date.day()) + "\"");
 
             QList<Staff::Ptr> dons, ras;
@@ -725,55 +732,127 @@ bool IOHandler::exportSchedule(const QString &filePath)
                 break;
         }
 
-        for (int p = 0; p < 7; p++)                                                 // fill out the days so that they are all the same length
+        // pad the days so that they are all the same length
+        for (int p = 0; p < 7; p++)
         {
-            for (int i = 1; i < 3; i++) {
+            for (int i = 0; i < 2; i++) {
                 int count = maxNeededForWeek[i] - weekDayLists[p][i].count();
                 for(int j = 0; j < count; j++)
-                    weekDayLists[p][i] += "\"\"";
+                    weekDayLists[p][i] += "";
+            }
+            if (weekDayLists[p][AM].count() == 0) {
+                weekDayLists[p][AM] += "";
             }
         }
 
 
         //write the stuff out to the file.
+        ts << BLANK_ENTRY << ","; // left column
         ts << writtenDates.join(",") << endl;
         QString out;
-        for(int x = 0; x < maxNeededForWeek; x++)
-        {
-            for(int y = 0; y < 7; y++)
-            {
-                out += weekDayLists[y][x] + ",";
-            }
-            ts << out << endl;
-            out = "";
+
+        // AMs:
+        out = "\"\",";
+        for (int x = 0; x < 7; x++) {
+            out += "\"" + weekDayLists[x][AM][0] + "\",";
+        }
+        ts << out << endl;
+
+        // put a line between
+        for (int i = 0; i < 8; i++) {
+            ts << BLANK_ENTRY << ",";
         }
         ts << endl;
 
+        for (int y = 0; y < maxNeededForWeek[DON]; y++) {
+            out = BLANK_ENTRY + ",";
+            for (int x = 0; x < 7; x++) {
+                 out += "\"" + weekDayLists[x][DON][y] + "\",";
+            }
+            ts << out << endl;
+        }
+
+        // put a line between
+        for (int i = 0; i < 8; i++) {
+            ts << BLANK_ENTRY << ",";
+        }
+        ts << endl;
+
+        for (int y = 0; y < maxNeededForWeek[RA]; y++) {
+            out = "\"\",";
+            for (int x = 0; x < 7; x++) {
+                 out += "\"" + weekDayLists[x][RA][y] + "\",";
+            }
+            ts << out << endl;
+        }
+
+//        for(int x = 0; x < maxNeededForWeek; x++)
+//        {
+//            for(int y = 0; y < 7; y++)
+//            {
+//                out += weekDayLists[y][x] + ",";
+//            }
+//            ts << out << endl;
+//            out = "";
+//        }
+//        ts << endl;
+
 
         //clean up stuff for the next week.
-        maxNeededForWeek = 0;
+        maxNeededForWeek[0] = maxNeededForWeek[1] = 0;
         writtenDates.clear();
         writtenDates << "" << "" << "" << "" << "" << "" << "";
 
-        for(int x = 0; x < 7; x++)
-            weekDayLists[x].clear();
-
-
+        // clear all lists
+        foreach (QList<QStringList > dayList, weekDayLists)
+            foreach (QStringList roleList, dayList) {
+                roleList.clear();
+            }
     }
 
     ts << endl << endl;
-    ts << "Don Average, Don Weekend Average, AM Average" << endl;
-    ts << donAverageItem->text() << "," << donAverageWeekendItem->text() << "," << amAverageItem->text() << endl << endl;
-    ts << "RA Average,RA Weekend Average" << endl;
-    ts << raAverageItem->text() << "," << raAverageWeekendItem->text() << endl << endl;
+
+//    map["_dAvgs"] = donAvgs;
+//    map["_rAvgs"] = raAvgs;
+
+    // Average tables:
+    QList<int > donAvgs = tableMap["_dAvgs"],
+            raAvgs = tableMap["_rAvgs"];
+
+    ts << "Average:,Total,Weekend,AM Shifts" << endl;
+    ts << "Dons:,";
+    foreach (int val, donAvgs) {
+        ts << QString::number(val) << ",";
+    }
+    ts << endl;
+
+    for (int i = 0; i < 5; i++) {
+        ts << BLANK_ENTRY << ",";
+    }
+    ts << endl;
+
+    ts << "RAs:,";
+    foreach (int val, donAvgs) {
+        ts << QString::number(val) << ",";
+    }
+    ts << BLANK_ENTRY << "," << endl;
+
+    ts << endl << endl;
 
 
-    ts << "Name,Position,Total Shifts,Weekend Shifts,AM Shifts" << endl;
-    for (int x = 0; x < statsTable->rowCount(); x++)
-        ts << statsTable->item(x,0)->text() << "," << statsTable->item(x,1)->text() << "," << statsTable->item(x,2)->text() << "," << statsTable->item(x,3)->text() << "," << statsTable->item(x,4)->text() << endl;
+    ts << "Name,Position,Total,Weekend,AM" << endl;
+    foreach (QString id, idList) {
+        QList<int > vals = tableMap[id];
+        ts << "\"" << theTeam[id]->getFirstName() + " " + theTeam[id]->getLastName()[0] + "\"" << ",";
+        foreach (int val, vals) {
+            ts << val << ",";
+        }
+        ts << endl;
+    }
 
     file.close();
 
+    return true;
 }
 
 bool IOHandler::saveSchedule(const QString &fileName,
@@ -1094,7 +1173,7 @@ QString IOHandler::getOpenFileName(QWidget *parent, const IOType type) {
     case CSV_EXPORT: {
         caption = "Select CSV Export File..";
         filters = "Comma Separated Values (*.csv)";
-        selectedFilteer = filters;
+        selectedFilter = filters;
 
         if (!currentScheduleFile.isEmpty()) {
             dir = QFileInfo(currentScheduleFile).dir().path();
@@ -1113,7 +1192,7 @@ QString IOHandler::getOpenFileName(QWidget *parent, const IOType type) {
     }
 
     QString file = QFileDialog::getOpenFileName(parent, caption, dir, filters, &selectedFilter);
-    if (!file.isEmpty()) {
+    if (!file.isEmpty() && currentMember) {
         *currentMember = file;
     }
 

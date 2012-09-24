@@ -41,7 +41,11 @@ public:
 
     bool checkFileName(const QString &fileName, FileExtension *ext = NULL);
 
-    bool exportSchedule(const QString &filePath);
+    bool exportSchedule(const QString &filePath,
+                        const QList<SDate> &datesList,
+                        const StaffList &theTeam,
+                        const QMap<QString, QList<int > > &tableMap,
+                        const QList<QString > &idList);
 
     QString getSaveFileName(QWidget *parent, const IOType = STAFF);
     QString getOpenFileName(QWidget *parent, const IOType = STAFF);

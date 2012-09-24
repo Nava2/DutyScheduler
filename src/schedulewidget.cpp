@@ -1061,8 +1061,43 @@ void ScheduleWidget::exportSchedule()
 
     QString exportFile = iohandle->getOpenFileName(this, IOHandler::CSV_EXPORT);
 
+    QMap<QString, QList<int > > map;
+
+    QList<int > donAvgs;
+    donAvgs += donAverageItem->text().toFloat();
+    donAvgs += donAverageWeekendItem->text().toFloat();
+    donAvgs += amAverageItem->text().toFloat();
+
+    QList<int > raAvgs;
+    raAvgs += raAverageItem->text().toFloat();
+    raAvgs += raAverageWeekendItem->text().toFloat();
+
+    map["_dAvgs"] = donAvgs;
+    map["_rAvgs"] = raAvgs;
+
+    QList<QString > ids;
+
+    for (int i = 0; i < statsTable->rowCount(); i++) {
+        QTableWidgetItem *item = statsTableItems->at(i);
+
+        QList<int > vals;
+
+        for (int j = 1; j <= 4; j++) {
+            vals += statsTable->item(i, j)->text().toInt();
+        }
+
+        map[item->data(Qt::UserRole).toString()] = vals;
+        ids += item->data(Qt::UserRole).toString();
+    }
+
     if (!exportFile.isEmpty()) {
-        iohandle->exportSchedule(exportFile);
+        bool ok = iohandle->exportSchedule(exportFile, datesList, theTeam, map, ids);
+        if (!ok) {
+            QString title, msg;
+            iohandle->getErrorInfo(title, msg);
+            QMessageBox::warning(this, title, msg);
+            iohandle->clearErrorInfo();
+        }
     }
 }
 

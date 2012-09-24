@@ -6,8 +6,6 @@
 #include <QFileInfo>
 #include <QFile>
 
-#include "json.h"
-
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), currentStaffTeamFile(""), currentScheduleFile(""),
       saveNecessary(false)

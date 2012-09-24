@@ -4,6 +4,9 @@
 #include <QVariantMap>
 #include <QVariantList>
 
+#include "staff.h"
+#include "stafflist.h"
+
 const QString SDate::AM_NOT_SET = "xxx";
 
 SDate::SDate()
@@ -175,8 +178,9 @@ bool SDate::canWork(const QString &id) const
 }
 
 // true if special duty
-bool SDate::exportOn(const QList<Staff::Ptr> &team, Staff::Ptr &am, QList<Staff::Ptr> &dons, QList<Staff::Ptr> &ras) const {
-    am = team[AM];
+bool SDate::exportOn(const StaffList &team, Staff::Ptr &am, QList<Staff::Ptr> &dons, QList<Staff::Ptr> &ras) const {
+    if (AM != AM_NOT_SET)
+        am = team[AM];
 
     dons.clear();
     ras.clear();
@@ -186,7 +190,7 @@ bool SDate::exportOn(const QList<Staff::Ptr> &team, Staff::Ptr &am, QList<Staff:
     }
 
     foreach (QString id, rasOn) {
-        dons += team[id];
+        ras += team[id];
     }
 
     return spDuty;
