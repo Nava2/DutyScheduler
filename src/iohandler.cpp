@@ -586,20 +586,20 @@ bool IOHandler::saveScheduleJson(QFile &file, QList<SDate> &dateList,
 
     out["calendar"] = o_dList;
 
-    // 2D array of night classes with IDs
-    QVariantList o_nListAll;
-    for (int i = 0; i < 7; i++) {
-        QList<QString > *nightList = nightClasses[i];
-        QVariantList o_nListSingle;
+//    // 2D array of night classes with IDs
+//    QVariantList o_nListAll;
+//    for (int i = 0; i < 7; i++) {
+//        QList<QString > *nightList = nightClasses[i];
+//        QVariantList o_nListSingle;
 
-        foreach( QString id, *nightList ) {
-           o_nListSingle.append(id);
-        }
+//        foreach( QString id, *nightList ) {
+//           o_nListSingle.append(id);
+//        }
 
-        o_nListAll.append(QVariant(o_nListSingle));
-    }
+//        o_nListAll.append(QVariant(o_nListSingle));
+//    }
 
-    out["night"] = o_nListAll;
+//    out["night"] = o_nListAll;
 
     // dons and ras needed by default
     QVariantMap o_needed;
@@ -1058,21 +1058,22 @@ bool IOHandler::loadScheduleJson(QFile &file, QList<SDate> &dateList, QList<QLis
     }
 
     // 2D array of night classes with IDs
-    foreach (QList<QString > *_list, nightClasses)
-        delete _list;
-    nightClasses.clear();
+//    foreach (QList<QString > *_list, nightClasses)
+//        delete _list;
+//    nightClasses.clear();
 
-    QVariantList nListAll = v["night"].toList();
-    foreach (QVariant _nListSingle, nListAll) {
-        QVariantList nListSingle = _nListSingle.toList();
+//    QVariantList nListAll = v["night"].toList();
+//    foreach (QVariant _nListSingle, nListAll) {
+//        QVariantList nListSingle = _nListSingle.toList();
 
-        QList<QString > *list = new QList<QString >;
-        foreach( QVariant id, nListSingle ) {
-           list->append(id.toString());
-        }
+//        QList<QString > *list = new QList<QString >;
+//        foreach( QVariant id, nListSingle ) {
+//           list->append(id.toString());
+//        }
 
-        nightClasses.append(list);
-    }
+//        nightClasses.append(list);
+//    }
+    // TODO: NIGHT CLASSES FROM TEAM
 
     // dons and ras needed by default
     donsNeeded.clear();
