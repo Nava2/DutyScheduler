@@ -30,6 +30,8 @@ public:
     int count() const;
     int size() const;
 
+    void nightClasses(QList<QList<QString> > &_nightClasses) const;
+
     void clear();
 
     Staff::Ptr at(const int index) const;

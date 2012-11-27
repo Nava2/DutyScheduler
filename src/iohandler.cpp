@@ -19,6 +19,8 @@
 
 #include "stafflist.h"
 
+QString IOHandler::BLANK_ENTRY = "\"\"";
+
 IOHandler::IOHandler() :
     errorMsg(""), errorTitle("")
 {
@@ -447,7 +449,7 @@ bool IOHandler::saveStaffTeamJson(QFile &file,
                                   const QList<Exam::Ptr> &midtermList) {
 
     QJson::Serializer serializer;
-    serializer.setIndentMode(QJson::IndentFull);
+//    serializer.setIndentMode(QJson::IndentFull);
 
     QVariantMap out;
 
@@ -515,7 +517,7 @@ bool IOHandler::saveStaffTeamJson(QFile &file,
 bool IOHandler::loadSchedule(const QString &fileName,
                              const StaffList &team,
                              QList<SDate> &dateList,
-                             QList<QList<QString > *> &nightClasses,
+                             QList<QList<QString > > &nightClasses,
                              QList<int > &donsNeeded,
                              QList<int > &rasNeeded )
 {
@@ -533,7 +535,7 @@ bool IOHandler::loadSchedule(const QString &fileName,
         // act based on extension
         switch (ext) {
         case JSON: {
-            result = loadScheduleJson(file, dateList, nightClasses, donsNeeded, rasNeeded);
+            result = loadScheduleJson(file, dateList, donsNeeded, rasNeeded);
         } break;
         case CSV: {
             result = loadScheduleFile(file, dateList, nightClasses, donsNeeded, rasNeeded);
@@ -557,6 +559,8 @@ bool IOHandler::loadSchedule(const QString &fileName,
             }
         }
 
+        team.nightClasses(nightClasses);
+
         currentScheduleFile = fileName;
     } else {
         currentScheduleFile = "";
@@ -565,13 +569,13 @@ bool IOHandler::loadSchedule(const QString &fileName,
     return result;
 }
 
-bool IOHandler::saveScheduleJson(QFile &file, QList<SDate> &dateList,
-                                 QList<QList<QString > *> &nightClasses,
-                                 QList<int > &donsNeeded,
-                                 QList<int > &rasNeeded ) {
+bool IOHandler::saveScheduleJson(QFile &file,
+                                 const QList<SDate> &dateList,
+                                 const QList<int > &donsNeeded,
+                                 const QList<int > &rasNeeded ) {
 
     QJson::Serializer serializer;
-    serializer.setIndentMode(QJson::IndentMedium);
+//    serializer.setIndentMode(QJson::IndentMedium);
 
     QVariantMap out;
 
@@ -628,18 +632,77 @@ bool IOHandler::saveScheduleJson(QFile &file, QList<SDate> &dateList,
 
 }
 
+void IOHandler::export_writeWeekArrays(QTextStream &ts,
+                                       const QList<int > &maxNeededForWeek,
+                                       QList<QList<QStringList > > &weekDayLists,
+                                       const QStringList &writtenDates) const {
+    // pad the days so that they are all the same length
+    for (int p = 0; p < 7; p++)
+    {
+        for (int i = 0; i < 2; i++) {
+            int count = maxNeededForWeek[i] - weekDayLists[p][i].count();
+            for(int j = 0; j < count; j++)
+                weekDayLists[p][i] += "";
+        }
+        if (weekDayLists[p][AM].count() == 0) {
+            weekDayLists[p][AM] += "";
+        }
+    }
+
+
+    //write the stuff out to the file.
+    ts << BLANK_ENTRY << ","; // left column
+    ts << writtenDates.join(",") << endl;
+    QString out;
+
+    // AMs:
+    out = "\"\",";
+    for (int x = 0; x < 7; x++) {
+        out += "\"" + weekDayLists[x][AM][0] + "\",";
+    }
+    ts << out << endl;
+
+    // put a line between
+    for (int i = 0; i < 8; i++) {
+        ts << BLANK_ENTRY << ",";
+    }
+    ts << endl;
+
+    for (int y = 0; y < maxNeededForWeek[DON]; y++) {
+        out = BLANK_ENTRY + ",";
+        for (int x = 0; x < 7; x++) {
+             out += "\"" + weekDayLists[x][DON][y] + "\",";
+        }
+        ts << out << endl;
+    }
+
+    // put a line between
+    for (int i = 0; i < 8; i++) {
+        ts << BLANK_ENTRY << ",";
+    }
+    ts << endl;
+
+    for (int y = 0; y < maxNeededForWeek[RA]; y++) {
+        out = "\"\",";
+        for (int x = 0; x < 7; x++) {
+             out += "\"" + weekDayLists[x][RA][y] + "\",";
+        }
+        ts << out << endl;
+    }
+
+    // put a line between
+    for (int i = 0; i < 8; i++) {
+        ts << BLANK_ENTRY << ",";
+    }
+    ts << endl;
+}
+
 bool IOHandler::exportSchedule(const QString &filePath,
                                const QList<SDate> &datesList,
                                const StaffList &theTeam,
                                const QMap<QString, QList<int > > &tableMap,
                                const QList<QString > &idList)
 {
-    static const int AM = 2;
-    static const int DON = 0; // done for simplicity later
-    static const int RA = 1;
-
-    static QString BLANK_ENTRY = "\"\"";
-
     if (filePath.right(4) != ".csv")
     {
         setErrorInfo("Filename must be of type \".csv\"", "Export Schedule");
@@ -675,145 +738,75 @@ bool IOHandler::exportSchedule(const QString &filePath,
     maxNeededForWeek += 0; // first is dons, then RAs
     maxNeededForWeek += 0;
 
-    int dateCounter = 0;
-
     //for(int y = 0; y < datesList->at(0)->getDate().dayOfWeek() - 1; y++)        // if the first day is in the middle of the week we need pre-padding
     //    lists.at(y)->append("\"\",");
 
-    int numWeeks = endDate.weekNumber() - startDate.weekNumber() + 1;         // the number of weeks spanned by our schedule
-    for(int weekCounter = 0; weekCounter < numWeeks; weekCounter++)
-    {
-        for(int dayOfWeekCounter = datesList[dateCounter].getWeekday()-1; dayOfWeekCounter < 7; dayOfWeekCounter++)
-        {
-            SDate date = datesList[dateCounter];
-            QList<QStringList > &dayList = weekDayLists[dayOfWeekCounter];
+    for (int dayCount = 0; dayCount <= startDate.daysTo(endDate); dayCount++) {
+        int weekDayIndex = datesList[dayCount].dayOfWeek() - 1;
 
-            writtenDates.replace(dayOfWeekCounter, date.toString("\"ddd MMM d\""));
+        SDate date = datesList[dayCount];
+        QList<QStringList > &dayList = weekDayLists[weekDayIndex];
+
+        writtenDates.replace(weekDayIndex, date.toString("\"ddd MMM d\""));
 //            writtenDates.replace(dayOfWeekCounter,"\"" + QDate::shortDayName(date.dayOfWeek()) + " " + QDate::shortMonthName(date.month()) + " " + QString::number(date.day()) + "\"");
 
-            QList<Staff::Ptr> dons, ras;
-            Staff::Ptr am;
+        QList<Staff::Ptr> dons, ras;
+        Staff::Ptr am;
 
-            bool sp = date.exportOn(theTeam, am, dons, ras);
+        bool sp = date.exportOn(theTeam, am, dons, ras);
 
-            if(sp)
-            {
-                foreach (QStringList role, dayList)
-                    role += "Special Duty";
-            }
-            else if (!am)
-            {
-                dayList[AM] += "NO AM";
-            }
-            else
-            {
-                dayList[AM] += am->getFirstName() + " " + am->getLastName()[0];
-
-                foreach (Staff::Ptr pstaff, dons ) {
-                    dayList[DON] += pstaff->getFirstName() + " " + pstaff->getLastName()[0];
-                }
-
-                foreach (Staff::Ptr pstaff, ras) {
-                    dayList[RA] += pstaff->getFirstName() + " " + pstaff->getLastName()[0];
-                }
-
-            }
-
-            if (dayList[RA].count() > maxNeededForWeek[RA]) { // keep track for padding sake
-                maxNeededForWeek[RA] = dayList[RA].count();
-            }
-
-            if (dayList[DON].count() > maxNeededForWeek[DON]) {
-                maxNeededForWeek[DON] = dayList[DON].count();
-            }
-
-            dateCounter++;
-            if (dateCounter >= datesList.count())                                  // check this for accuracy
-                break;
-        }
-
-        // pad the days so that they are all the same length
-        for (int p = 0; p < 7; p++)
+        if(sp)
         {
-            for (int i = 0; i < 2; i++) {
-                int count = maxNeededForWeek[i] - weekDayLists[p][i].count();
-                for(int j = 0; j < count; j++)
-                    weekDayLists[p][i] += "";
+            foreach (QStringList role, dayList)
+                role += "Special Duty";
+        }
+        else if (!am)
+        {
+            dayList[AM] += "NO AM";
+        }
+        else
+        {
+            dayList[AM] += am->getFirstName() + " " + am->getLastName()[0];
+
+            foreach (Staff::Ptr pstaff, dons ) {
+                dayList[DON] += pstaff->getFirstName() + " " + pstaff->getLastName()[0];
             }
-            if (weekDayLists[p][AM].count() == 0) {
-                weekDayLists[p][AM] += "";
+
+            foreach (Staff::Ptr pstaff, ras) {
+                dayList[RA] += pstaff->getFirstName() + " " + pstaff->getLastName()[0];
             }
+
         }
 
-
-        //write the stuff out to the file.
-        ts << BLANK_ENTRY << ","; // left column
-        ts << writtenDates.join(",") << endl;
-        QString out;
-
-        // AMs:
-        out = "\"\",";
-        for (int x = 0; x < 7; x++) {
-            out += "\"" + weekDayLists[x][AM][0] + "\",";
+        if (dayList[RA].count() > maxNeededForWeek[RA]) { // keep track for padding sake
+            maxNeededForWeek[RA] = dayList[RA].count();
         }
-        ts << out << endl;
 
-        // put a line between
-        for (int i = 0; i < 8; i++) {
-            ts << BLANK_ENTRY << ",";
+        if (dayList[DON].count() > maxNeededForWeek[DON]) {
+            maxNeededForWeek[DON] = dayList[DON].count();
         }
-        ts << endl;
 
-        for (int y = 0; y < maxNeededForWeek[DON]; y++) {
-            out = BLANK_ENTRY + ",";
-            for (int x = 0; x < 7; x++) {
-                 out += "\"" + weekDayLists[x][DON][y] + "\",";
+        if (weekDayIndex == 6) {
+            // end of the week, so write information:
+
+            export_writeWeekArrays(ts, maxNeededForWeek, weekDayLists, writtenDates);
+
+            //clean up stuff for the next week.
+            maxNeededForWeek[0] = maxNeededForWeek[1] = 0;
+            writtenDates.clear();
+            writtenDates << "" << "" << "" << "" << "" << "" << "";
+
+            // clear all lists
+            for (int i = 0; i < weekDayLists.count(); i++) {
+                for (int j = 0; j < weekDayLists[i].count(); j++) {
+                    weekDayLists[i][j].clear();
+                }
             }
-            ts << out << endl;
+
         }
-
-        // put a line between
-        for (int i = 0; i < 8; i++) {
-            ts << BLANK_ENTRY << ",";
-        }
-        ts << endl;
-
-        for (int y = 0; y < maxNeededForWeek[RA]; y++) {
-            out = "\"\",";
-            for (int x = 0; x < 7; x++) {
-                 out += "\"" + weekDayLists[x][RA][y] + "\",";
-            }
-            ts << out << endl;
-        }
-
-//        for(int x = 0; x < maxNeededForWeek; x++)
-//        {
-//            for(int y = 0; y < 7; y++)
-//            {
-//                out += weekDayLists[y][x] + ",";
-//            }
-//            ts << out << endl;
-//            out = "";
-//        }
-//        ts << endl;
-
-
-        //clean up stuff for the next week.
-        maxNeededForWeek[0] = maxNeededForWeek[1] = 0;
-        writtenDates.clear();
-        writtenDates << "" << "" << "" << "" << "" << "" << "";
-
-        // clear all lists
-        foreach (QList<QStringList > dayList, weekDayLists)
-            foreach (QStringList roleList, dayList) {
-                roleList.clear();
-            }
     }
 
-    ts << endl << endl;
-
-//    map["_dAvgs"] = donAvgs;
-//    map["_rAvgs"] = raAvgs;
+    export_writeWeekArrays(ts, maxNeededForWeek, weekDayLists, writtenDates);
 
     // Average tables:
     QList<int > donAvgs = tableMap["_dAvgs"],
@@ -844,6 +837,7 @@ bool IOHandler::exportSchedule(const QString &filePath,
     foreach (QString id, idList) {
         QList<int > vals = tableMap[id];
         ts << "\"" << theTeam[id]->getFirstName() + " " + theTeam[id]->getLastName()[0] + "\"" << ",";
+        ts << "\"" << (theTeam[id]->getPosition() ? "Don" : "RA") << "\",";
         foreach (int val, vals) {
             ts << val << ",";
         }
@@ -856,10 +850,9 @@ bool IOHandler::exportSchedule(const QString &filePath,
 }
 
 bool IOHandler::saveSchedule(const QString &fileName,
-                             QList<SDate> &dateList,
-                             QList<QList<QString > *> &nightClasses,
-                             QList<int > &donsNeeded,
-                             QList<int > &rasNeeded )
+                             const QList<SDate> &dateList,
+                             const QList<int > &donsNeeded,
+                             const QList<int > &rasNeeded )
 {
     FileExtension ext;
     bool result = IOHandler::checkFileName(fileName, &ext);
@@ -875,9 +868,10 @@ bool IOHandler::saveSchedule(const QString &fileName,
         // act based on extension
         switch (ext) {
         case JSON: {
-            result = saveScheduleJson(file, dateList, nightClasses, donsNeeded, rasNeeded);
+            result = saveScheduleJson(file, dateList, donsNeeded, rasNeeded);
         } break;
         case CSV: {
+            QList<QList<QString > > nightClasses;
             result = saveScheduleFile(file, dateList, nightClasses, donsNeeded, rasNeeded);
         } break;
         case BAD:
@@ -894,7 +888,7 @@ bool IOHandler::saveSchedule(const QString &fileName,
     return result;
 }
 
-bool IOHandler::loadScheduleFile(QFile &file, QList<SDate> &dateList, QList<QList<QString > *> &nightClasses, QList<int > &donsNeeded, QList<int > &rasNeeded ) {
+bool IOHandler::loadScheduleFile(QFile &file, QList<SDate> &dateList, QList<QList<QString > > &nightClasses, QList<int > &donsNeeded, QList<int > &rasNeeded ) {
 
     dateList.clear();
 
@@ -917,12 +911,9 @@ bool IOHandler::loadScheduleFile(QFile &file, QList<SDate> &dateList, QList<QLis
         rasNeeded.append(inp.at(x+7).toInt());
     }
 
-    foreach (QList<QString > *_list, nightClasses)
-        delete _list;
     nightClasses.clear();
-
     for(int q = 0; q<7; q++)                                                //get night classes
-        nightClasses.append(new QList<QString >);
+        nightClasses += QList<QString >();
 
     for(int x = 0; x<7; x++)
     {
@@ -932,9 +923,9 @@ bool IOHandler::loadScheduleFile(QFile &file, QList<SDate> &dateList, QList<QLis
 
         inp = inp.at(1).split(":", QString::SkipEmptyParts);
 
-        QList<QString > *list = nightClasses[x];
+        QList<QString > list = nightClasses[x];
         for (int y = 0; y < inp.count(); y++)
-            list->append(inp.at(y));
+            list += inp.at(y);
 
     }
 
@@ -982,7 +973,11 @@ bool IOHandler::loadScheduleFile(QFile &file, QList<SDate> &dateList, QList<QLis
     return true;
 }
 
-bool IOHandler::saveScheduleFile(QFile &file, QList<SDate> &dateList, QList<QList<QString > *> &nightClasses, QList<int > &donsNeeded, QList<int > &rasNeeded ) {
+bool IOHandler::saveScheduleFile(QFile &file,
+                                 const QList<SDate> &dateList,
+                                 const QList<QList<QString > > &nightClasses,
+                                 const QList<int > &donsNeeded,
+                                 const QList<int > &rasNeeded ) {
     QTextStream ts(&file);
 
     ts << "start:" << (dateList.first()).toString("dd/MM/yyyy") << endl;
@@ -1002,9 +997,9 @@ bool IOHandler::saveScheduleFile(QFile &file, QList<SDate> &dateList, QList<QLis
     for(int n = 0; n<7; n++)
     {
         ts << QString::number(n) << "-";
-        for(int i = 0; i < nightClasses[n]->count(); i++)
+        for(int i = 0; i < nightClasses[n].count(); i++)
         {
-            ts << nightClasses[n]->at(i) << ":";
+            ts << nightClasses[n][i] << ":";
         }
         ts << endl;
     }
@@ -1028,7 +1023,7 @@ bool IOHandler::saveScheduleFile(QFile &file, QList<SDate> &dateList, QList<QLis
     return true;
 }
 
-bool IOHandler::loadScheduleJson(QFile &file, QList<SDate> &dateList, QList<QList<QString > *> &nightClasses, QList<int > &donsNeeded, QList<int > &rasNeeded ) {
+bool IOHandler::loadScheduleJson(QFile &file, QList<SDate> &dateList, QList<int > &donsNeeded, QList<int > &rasNeeded ) {
 
     QJson::Parser parser;
 
@@ -1056,24 +1051,6 @@ bool IOHandler::loadScheduleJson(QFile &file, QList<SDate> &dateList, QList<QLis
         SDate date(dmap);
         dateList.append(date);
     }
-
-    // 2D array of night classes with IDs
-//    foreach (QList<QString > *_list, nightClasses)
-//        delete _list;
-//    nightClasses.clear();
-
-//    QVariantList nListAll = v["night"].toList();
-//    foreach (QVariant _nListSingle, nListAll) {
-//        QVariantList nListSingle = _nListSingle.toList();
-
-//        QList<QString > *list = new QList<QString >;
-//        foreach( QVariant id, nListSingle ) {
-//           list->append(id.toString());
-//        }
-
-//        nightClasses.append(list);
-//    }
-    // TODO: NIGHT CLASSES FROM TEAM
 
     // dons and ras needed by default
     donsNeeded.clear();

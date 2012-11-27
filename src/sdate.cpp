@@ -128,6 +128,18 @@ void SDate::addCantWork(const QList<QString > &input)
     }
 }
 
+QList<QString > SDate::getCantWork() {
+    return cantWork;
+}
+
+QList<QString > SDate::getDons() {
+    return donsOn;
+}
+
+QList<QString > SDate::getRas() {
+    return rasOn;
+}
+
 bool SDate::staffCantWork(const QString &input)
 {
     if (cantWork.contains(input))

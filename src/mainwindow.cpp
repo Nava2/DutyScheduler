@@ -24,6 +24,8 @@ MainWindow::MainWindow(QWidget *parent)
     saveTimer->start();
 
     windowState = STAFF_WIDGET;
+
+    loadSchedule();
 }
 
 MainWindow::~MainWindow()

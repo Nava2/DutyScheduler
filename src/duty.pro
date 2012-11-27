@@ -6,7 +6,7 @@
 
 QT       += core gui
 
-TARGET = duty
+TARGET   = duty
 TEMPLATE = app
 
 
@@ -46,4 +46,6 @@ HEADERS  += \
 
 unix|win32: LIBS += -lqjson
 
-unix: LIBS += -L/usr/local/lib/
+unix: LIBS += -L/usr/local/lib/ \
+              -L/opt/local/lib/
+unix: INCLUDEPATH += /opt/local/include

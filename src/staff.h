@@ -31,7 +31,8 @@ public:
     bool getPosition();
     bool getGender();
     int getNightClass();
-    bool isNightClass(const QDate &date);
+    bool isNightClass(const QDate &date) const;
+    bool isNightClass(const int day) const;
 
     void setFinals(QString, const QList<Exam::Ptr> &examList);
     void setFinals(const QList<Exam::Ptr> &);

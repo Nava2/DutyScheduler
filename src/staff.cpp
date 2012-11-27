@@ -166,9 +166,13 @@ bool Staff::getGender()
 int Staff::getNightClass()
 {   return nightClass;  }
 
-bool Staff::isNightClass(const QDate &date) {
+bool Staff::isNightClass(const QDate &date) const {
     int day = date.dayOfWeek() - 1;
 
+    return isNightClass(day);
+}
+
+bool Staff::isNightClass(const int day) const {
     return ((nightClass & (0x1 << day)) > 0);
 }
 

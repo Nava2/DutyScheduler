@@ -139,7 +139,7 @@ private:
 
     bool examSchedule;
 
-    QList<QList<QString> *> nightClasses; // each list contains the id's of the staff who can't work that night. Mon = 0
+    QList<QList<QString> > nightClasses; // each list contains the id's of the staff who can't work that night. Mon = 0
     QList<QListWidgetItem*> * onDeckItems; // this contains a CONSTANT source of list widget items, one for each staff.
     QList<QListWidgetItem*> * onDutyItems;
     QList<SDate> datesList;

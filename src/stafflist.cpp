@@ -69,6 +69,22 @@ int StaffList::size() const {
     return count();
 }
 
+void StaffList::nightClasses(QList<QList<QString> > &_nightClasses) const {
+    _nightClasses.clear();
+    for (int i = 0; i < 7; i++) {
+        _nightClasses += QList<QString >();
+    }
+
+    foreach (Staff::Ptr pstaff, _list) {
+        QString id = pstaff->uid();
+
+        for (int i = 0; i < 7; i++) {
+            if (pstaff->isNightClass(i))
+                _nightClasses[i] += id;
+        }
+    }
+}
+
 void StaffList::clear() {
     _list.clear();
     _hashList.clear();

@@ -41,19 +41,13 @@ public:
     bool isWeekend() const;
 
     QString getCantWorkStr();
-    QList<QString > getCantWork() {
-        return cantWork;
-    }
+    QList<QString > getCantWork();
 
     QString getDonsStr();
-    QList<QString > getDons() {
-        return donsOn;
-    }
+    QList<QString > getDons();
 
     QString getRasStr();
-    QList<QString > getRas() {
-        return rasOn;
-    }
+    QList<QString > getRas();
 
     QString exportOn() const;
 

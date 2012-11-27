@@ -50,8 +50,9 @@ ScheduleWidget::ScheduleWidget(const QString &staffteamfilename, const ScheduleW
     }
 
     //create the night class lists
+    nightClasses.clear();
     for(int q = 0; q<7; q++)
-        nightClasses.append(new QList<QString >);
+        nightClasses.append(QList<QString >());
 
     //call some other functions
     loadStaffTeamData(staffteamfilename);
@@ -84,7 +85,7 @@ ScheduleWidget::ScheduleWidget(const QString &fileNameSchedule,
 
     //create the night class lists
     for(int q = 0; q<7; q++)
-        nightClasses.append(new QList<QString >);
+        nightClasses.append(QList<QString >());
 
     foreach (SDate _sdate, datesList) {
         bool weekend = _sdate.isWeekend();
@@ -181,11 +182,6 @@ ScheduleWidget::~ScheduleWidget()
         it_i = statsTableItems->erase(it_i);
     }
     delete statsTableItems;
-
-    for(int x = 0; x < 7; x++)
-    {
-        delete nightClasses[x];
-    }
 
     QList<QListWidgetItem*>::iterator it_i2 = onDeckItems->begin();
     for (; it_i2 != onDeckItems->end();)
@@ -540,7 +536,7 @@ void ScheduleWidget::prepInterface()
                 if(nights & mask)
                 {   // add this staff member to the list of who's
                     // unavailable on this night
-                    nightClasses[y]->append(pStaff->uid());
+                    nightClasses[y] += pStaff->uid();
                 }
                 mask <<= 1;
             }
@@ -650,7 +646,7 @@ void ScheduleWidget::dateClicked(QDate dateSelected)
             dutyItem->setHidden(true); //so this person is not onduty.
 
             // check availabilities
-            if (nightClasses[dateSelected.dayOfWeek()-1]->contains(id) || datesList[dateIndex].staffCantWork(id))
+            if (nightClasses[dateSelected.dayOfWeek()-1].contains(id) || datesList[dateIndex].staffCantWork(id))
             {
                 deckItem->setHidden(true);
             } else {
@@ -936,7 +932,7 @@ void ScheduleWidget::setAsAM(const QString &staffId)
     if (!datesList[dateIndex].canWork(staffId))
         return;
 
-    if (nightClasses[calendar->selectedDate().dayOfWeek()-1]->contains(staffId))
+    if (nightClasses[calendar->selectedDate().dayOfWeek()-1].contains(staffId))
         return;
 
     if (!theTeam.at(staffId)->getPosition())
@@ -993,7 +989,7 @@ void ScheduleWidget::addStaff(const QString &staffId)
     if (!datesList[dateIndex].canWork(staffId))
         return;
 
-    if (nightClasses[calendar->selectedDate().dayOfWeek()-1]->contains(staffId))
+    if (nightClasses[calendar->selectedDate().dayOfWeek()-1].contains(staffId))
         return;
 
     if (datesList[dateIndex].isOn(staffId))
@@ -1082,7 +1078,7 @@ void ScheduleWidget::exportSchedule()
 
         QList<int > vals;
 
-        for (int j = 1; j <= 4; j++) {
+        for (int j = 2; j <= 4; j++) {
             vals += statsTable->item(i, j)->text().toInt();
         }
 
@@ -1153,7 +1149,7 @@ void ScheduleWidget::updateStats()
 
 void ScheduleWidget::saveMidSchedule(const QString &fileName)
 {
-    bool ok = iohandle->saveSchedule(fileName, datesList, nightClasses, donsNeeded, rasNeeded);
+    bool ok = iohandle->saveSchedule(fileName, datesList, donsNeeded, rasNeeded);
 
     if (!ok) {
         QString title, msg;
