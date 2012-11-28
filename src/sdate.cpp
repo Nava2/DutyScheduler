@@ -141,14 +141,22 @@ bool SDate::isOn(const QString &id) const
     return (AM == id || donsOn.contains(id) || rasOn.contains(id));
 }
 
-int SDate::getDonsNeeded() const
+int SDate::getDonsLeft() const
 {
     return donsNeeded - donsOn.count();
 }
 
-int SDate::getRasNeeded() const
+int SDate::getRasLeft() const
 {
     return rasNeeded - rasOn.count();
+}
+
+int SDate::getRAsNeeded() const {
+    return rasNeeded;
+}
+
+int SDate::getDonsNeeded() const {
+    return donsNeeded;
 }
 
 void SDate::setRasNeeded(const int ras) {

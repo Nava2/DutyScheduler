@@ -104,6 +104,8 @@ private:
     QLabel *currentDateLabelFIXED;
     QLabel *donsNeededLabel;
     QLabel *rasNeededLabel;
+    QSpinBox *spnDonsNeeded;
+    QSpinBox *spnRAsNeeded;
     QLabel *donsNeededLabelFIXED;
     QLabel *rasNeededLabelFIXED;
 
@@ -153,6 +155,10 @@ private:
 
     QList<QString > *copyList;
     QString copyAM;
+
+private slots:
+    void updateDonsNeededDay(const int count);
+    void updateRAsNeededDay(const int count);
 
 };
 

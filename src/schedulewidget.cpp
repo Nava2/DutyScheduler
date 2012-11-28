@@ -9,6 +9,8 @@
 #include "schedulewizzard.h"
 #include "schedulewidget.h"
 
+#include "stafflist.h"
+
 #include "mainwindow.h"
 
 ScheduleWidget::ScheduleWidget(QWidget *parent)
@@ -215,7 +217,7 @@ void ScheduleWidget::createScheduleGroupBoxs()
     createCalendar();
     createLists();
 
-    QGridLayout *layout = new QGridLayout;
+    QGridLayout *layout = new QGridLayout(this);
     layout->addWidget(scheduleStatsGroupBox,0,0,2,1);
     layout->addWidget(OnDutyGroupBox,0,1,2,1);
     layout->addWidget(OnDeckGroupBox,0,2,3,1);
@@ -247,23 +249,35 @@ void ScheduleWidget::createScheduleControls()
     copyList = new QList<QString >;
     copyAM = SDate::AM_NOT_SET;
 
-    scheduleControls = new QGroupBox("Controls");
+    scheduleControls = new QGroupBox("Controls", this);
 
-    exportButton = new QPushButton("Export Schedule");
-    spDutyFlagButton = new QPushButton("Set date as Special Duty");
-    copyButton = new QPushButton("Copy On Duty");
-    pasteButton = new QPushButton("Paste On Duty");
+    exportButton = new QPushButton("Export Schedule", this);
+    spDutyFlagButton = new QPushButton("Set date as Special Duty", this);
+    copyButton = new QPushButton("Copy On Duty", this);
+    pasteButton = new QPushButton("Paste On Duty", this);
     currentDateLabel = new QLabel(QDate::shortDayName(startDate.dayOfWeek()) + " " + QDate::shortMonthName(startDate.month()) + " " + QString::number(startDate.day()));
-    currentDateLabelFIXED = new QLabel("Current Date:");
-    donsNeededLabelFIXED = new QLabel("Don-ons needed:");
-    rasNeededLabelFIXED = new QLabel("RAs needed :");
-    donsNeededLabel = new QLabel("0");
-    rasNeededLabel = new QLabel("0");
+    currentDateLabel->setParent(this);
+    currentDateLabelFIXED = new QLabel("Current Date:", this);
+    donsNeededLabelFIXED = new QLabel("Don-ons needed:", this);
+    rasNeededLabelFIXED = new QLabel("RAs needed :", this);
+
+    rasNeededLabel  = new QLabel("0", this);
+    donsNeededLabel = new QLabel("0", this);
+
+    spnDonsNeeded = new QSpinBox(this);
+    spnDonsNeeded->setMinimum(0);
+    spnDonsNeeded->setMaximum(std::floor(theTeam.countDon() / 2.0));
+    connect(spnDonsNeeded, SIGNAL(valueChanged(int)), this, SLOT(updateDonsNeededDay(int)));
+
+    spnRAsNeeded = new QSpinBox(this);
+    spnRAsNeeded->setMinimum(1);
+    spnRAsNeeded->setMaximum(std::floor(theTeam.countRA() / 2.0));
+    connect(spnRAsNeeded, SIGNAL(valueChanged(int)), this, SLOT(updateRAsNeededDay(int)));
 
     donsNeededLabelFIXED->setStatusTip("The number of DON-ons still needed for the selected day.");
     rasNeededLabelFIXED->setStatusTip("The number of RAs still needed for the selected day.");
-    donsNeededLabel->setStatusTip("The number of DON-ons still needed for the selected day.");
-    rasNeededLabel->setStatusTip("The number of RAs still needed for the selected day.");
+    spnDonsNeeded->setStatusTip("The number of DON-ons still needed for the selected day.");
+    spnRAsNeeded->setStatusTip("The number of RAs still needed for the selected day.");
 
     exportButton->setStatusTip("Export the schedule as a Comma Separated File (\".csv\")");
     spDutyFlagButton->setStatusTip("Mark the selected date as Special Duty. No staff can be added to this day. Click again to un-mark as special duty.");
@@ -275,31 +289,36 @@ void ScheduleWidget::createScheduleControls()
     connect(copyButton,SIGNAL(clicked()),this,SLOT(copySlot()));
     connect(pasteButton,SIGNAL(clicked()),this,SLOT(pasteSlot()));
 
-    QGridLayout *layout = new QGridLayout;
+    QGridLayout *layout = new QGridLayout(this);
 
-    layout->addWidget(exportButton,0,0,1,2);
-    layout->addWidget(spDutyFlagButton,1,0,1,2);
-    layout->addWidget(copyButton,2,0);
-    layout->addWidget(pasteButton,2,1);
-    layout->addWidget(currentDateLabel, 3,1);
-    layout->addWidget(currentDateLabelFIXED,3,0);
-    layout->addWidget(donsNeededLabelFIXED,4,0);
-    layout->addWidget(rasNeededLabelFIXED,5,0);
-    layout->addWidget(donsNeededLabel,4,1);
-    layout->addWidget(rasNeededLabel,5,1);
+    layout->addWidget(exportButton, 0, 0, 1, 4);
+    layout->addWidget(spDutyFlagButton, 1, 0, 1, 4);
+    layout->addWidget(copyButton, 2, 0, 1, 2);
+    layout->addWidget(pasteButton, 2, 2, 1, 2);
+    layout->addWidget(currentDateLabel, 3, 2, 1, 2);
+    layout->addWidget(currentDateLabelFIXED,3, 0, 1, 2);
+
+    layout->addWidget(donsNeededLabelFIXED, 4, 0, 1, 1);
+    layout->addWidget(rasNeededLabelFIXED, 5, 0, 1, 1);
+
+    layout->addWidget(donsNeededLabel, 4, 1, 1, 1);
+    layout->addWidget(rasNeededLabel, 5, 1, 1, 1);
+
+    layout->addWidget(spnDonsNeeded, 4, 3, 1, 1);
+    layout->addWidget(spnRAsNeeded, 5, 3, 1, 1);
 
     scheduleControls->setLayout(layout);
 }
 
 void ScheduleWidget::createScheduleStats()
 {
-    scheduleStatsGroupBox = new QGroupBox("Stats");
+    scheduleStatsGroupBox = new QGroupBox("Stats", this);
     scheduleStatsGroupBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
     Qt::ItemFlags flags = 0;
     flags |= Qt::ItemIsEnabled;
 
-    averagesTable = new QTableWidget(2,5);
+    averagesTable = new QTableWidget(2, 5, this);
     averagesTable->setStatusTip("This table shows the average number of shifts for various types of shifts for Dona and RAs. (Weekend shifts are included in 'total shifts')");
     averagesTable->setHorizontalHeaderLabels(QString(",Position,Total,Weekend,AM").split(",",QString::KeepEmptyParts));
     averagesTable->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Fixed);
@@ -342,7 +361,7 @@ void ScheduleWidget::createScheduleStats()
     averagesTable->setItem(1,2,raAverageItem);
     averagesTable->setItem(1,3,raAverageWeekendItem);
 
-    statsTable = new QTableWidget(theTeam.count(),5);
+    statsTable = new QTableWidget(theTeam.count(), 5, this);
     statsTable->setStatusTip("This table shows the number of shifts assigned to each staff member. Click a staff member's name to show their individual schedule.");
     connect(statsTable,SIGNAL(itemClicked(QTableWidgetItem*)),this,SLOT(showStaffSchedule(QTableWidgetItem*)));
     statsTable->setHorizontalHeaderLabels(QString("Name,Position,Total Shifts,Weekend Shifts,AM Shifts").split(","));
@@ -362,14 +381,14 @@ void ScheduleWidget::createScheduleStats()
     {
         statsTable->setRowHeight(x,20);
         //name
-        QTableWidgetItem *nameItem = new QTableWidgetItem();
+        QTableWidgetItem *nameItem = new QTableWidgetItem;
         nameItem->setText(theTeam.at(x)->getFirstName() + " " + theTeam.at(x)->getLastName().left(1));
         nameItem->setData(Qt::UserRole,theTeam.at(x)->uid());
         nameItem->setFlags(flags);
         statsTableItems->append(nameItem);
 
         //position
-        QTableWidgetItem *positionItem = new QTableWidgetItem();
+        QTableWidgetItem *positionItem = new QTableWidgetItem;
         if(theTeam.at(x)->getPosition())
             positionItem->setText("Don");
         else
@@ -379,19 +398,19 @@ void ScheduleWidget::createScheduleStats()
 
 
         //total
-        QTableWidgetItem *totalItem = new QTableWidgetItem();
+        QTableWidgetItem *totalItem = new QTableWidgetItem;
         totalItem->setText(QString::number(theTeam.at(x)->getShifts()));
         totalItem->setFlags(flags);
         totalItem->setTextAlignment(Qt::AlignCenter);
 
         //weekend
-        QTableWidgetItem *weekendItem = new QTableWidgetItem();
+        QTableWidgetItem *weekendItem = new QTableWidgetItem;
         weekendItem->setText(QString::number(theTeam.at(x)->getWeekendShifts()));
         weekendItem->setFlags(flags);
         weekendItem->setTextAlignment(Qt::AlignCenter);
 
         //AM
-        QTableWidgetItem *amItem = new QTableWidgetItem();
+        QTableWidgetItem *amItem = new QTableWidgetItem;
         amItem->setText(QString::number(theTeam.at(x)->getAMShifts()));
         amItem->setFlags(flags);
         amItem->setTextAlignment(Qt::AlignCenter);
@@ -406,9 +425,9 @@ void ScheduleWidget::createScheduleStats()
 
     statsTable->setSortingEnabled(true);
 
-    schedViewWidget = new SchedViewer(startDate, endDate);
+    schedViewWidget = new SchedViewer(startDate, endDate, this);
 
-    QGridLayout *layout = new QGridLayout;
+    QGridLayout *layout = new QGridLayout(this);
 
     layout->addWidget(averagesTable, 0, 0, 1, 5);
 
@@ -422,7 +441,7 @@ void ScheduleWidget::createScheduleStats()
 
 void ScheduleWidget::createCalendar()
 {
-    calendar = new QCalendarWidget;
+    calendar = new QCalendarWidget(this);
     calendar->setMinimumDate(startDate);
     calendar->setMaximumDate(endDate);
     calendar->setFirstDayOfWeek(Qt::Monday);
@@ -441,13 +460,13 @@ void ScheduleWidget::createCalendar()
 void ScheduleWidget::createLists()
 {
 
-    OnDeckGroupBox = new QGroupBox("On Deck");
-    OnDutyGroupBox = new QGroupBox("On Duty");
+    OnDeckGroupBox = new QGroupBox("On Deck", this);
+    OnDutyGroupBox = new QGroupBox("On Duty", this);
 
-    QGridLayout *layout = new QGridLayout;
+    QGridLayout *layout = new QGridLayout(this);
 
-    onDeckList = new MyQListWidget();
-    onDutyList = new MyQListWidget();
+    onDeckList = new MyQListWidget(this);
+    onDutyList = new MyQListWidget(this);
 
     onDeckList->setStatusTip("The staff who are able to work on the selected day. Click to add a staff to the duty list. Right click a don to make them AM.");
     onDutyList->setStatusTip("The staff who are on duty for the selected day. Click to remove a staff from being on duty. The AM is bolded.");
@@ -473,7 +492,7 @@ void ScheduleWidget::createLists()
     layout->addWidget(onDutyList,0,0);
     OnDutyGroupBox->setLayout(layout);
 
-    layout = new QGridLayout;
+    layout = new QGridLayout(this);
     layout->addWidget(onDeckList,0,0);
     OnDeckGroupBox->setLayout(layout);
 
@@ -506,7 +525,7 @@ void ScheduleWidget::prepInterface()
 
     foreach (Staff::Ptr pStaff, theTeam) {
         // make the ondeck list
-        QListWidgetItem *item = new QListWidgetItem();
+        QListWidgetItem *item = new QListWidgetItem;
         item->setText(pStaff->getFirstName() + " " + pStaff->getLastName());
         item->setData(Qt::UserRole, pStaff->uid());
 
@@ -516,7 +535,7 @@ void ScheduleWidget::prepInterface()
         onDeckList->insertItem(0, item);
 
         // make the onduty list
-        QListWidgetItem *item2 = new QListWidgetItem();
+        QListWidgetItem *item2 = new QListWidgetItem;
         item2->setText(pStaff->getFirstName() + " " + pStaff->getLastName());
         item2->setData(Qt::UserRole, pStaff->uid());
         onDutyItems->append(item2);
@@ -668,6 +687,14 @@ void ScheduleWidget::dateClicked(QDate dateSelected)
         }
     }
 
+//    QDate tDate = calendar->selectedDate();
+//    int i = dateToIndex(tDate);
+
+//    datesList[i].setDonsNeeded(spnDonsNeeded->value());
+//    datesList[i].setRasNeeded(spnRAsNeeded->value());
+
+    spnDonsNeeded->setValue(datesList[dateIndex].getDonsNeeded());
+    spnRAsNeeded->setValue(datesList[dateIndex].getRAsNeeded());
 
     updateNeeded();
 }
@@ -806,7 +833,7 @@ void ScheduleWidget::setAsAM()
 
 void ScheduleWidget::showMenu(QPoint p)
 {
-    QListWidget *list = (QListWidget*)QObject::sender();
+    QListWidget *list = (QListWidget*)sender();
 
     QListWidgetItem *item = list->itemAt(p);
 
@@ -854,8 +881,9 @@ void ScheduleWidget::updateNeeded()
 {
     int index = dateToIndex(calendar->selectedDate());
     qDebug() << "Date index:" << index;
-    donsNeededLabel->setText(QString::number(datesList[index].getDonsNeeded()));
-    rasNeededLabel->setText(QString::number(datesList[index].getRasNeeded()));
+
+    donsNeededLabel->setText(QString::number(datesList[index].getDonsLeft()));
+    rasNeededLabel->setText(QString::number(datesList[index].getRasLeft()));
 }
 
 void ScheduleWidget::showStaffSchedule(QTableWidgetItem *item)
@@ -1163,4 +1191,31 @@ void ScheduleWidget::saveMidSchedule(const QString &fileName)
     }
 }
 
+//// SLOTS
+/////////////////////////
 
+void ScheduleWidget::updateDonsNeededDay(const int count) {
+    int di = dateToIndex(calendar->selectedDate());
+
+    if (count < datesList[di].getDons().size()) {
+        spnDonsNeeded->setValue(datesList[di].getDons().size());
+        return;
+    }
+
+    datesList[di].setDonsNeeded(count);
+
+    updateNeeded();
+}
+
+void ScheduleWidget::updateRAsNeededDay(const int count) {
+    int di = dateToIndex(calendar->selectedDate());
+
+    if (count < datesList[di].getRas().size()) {
+        spnRAsNeeded->setValue(datesList[di].getRas().size());
+        return;
+    }
+
+    datesList[di].setRasNeeded(count);
+
+    updateNeeded();
+}

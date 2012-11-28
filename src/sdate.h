@@ -30,10 +30,36 @@ public:
 
     QString getAM() const;//return the AM's ID
     int getWeekday() const;
-    int getRasNeeded() const;
+
+    /*!
+     * \brief getRasLeft
+     * \return Number of RAs left to schedule
+     */
+    int getRasLeft() const;
+
+    /*!
+     * \brief getRAsNeeded
+     * \return Get the total RAs needed
+     */
+    int getRAsNeeded() const;
+
+    /*!
+     * \brief setRasNeeded Set the number of RAs for a day
+     */
     void setRasNeeded(const int);
 
+    /*!
+     * \brief getDonsNeeded
+     * \return Number of Dons left to schedule
+     */
+    int getDonsLeft() const;
+
+    /*!
+     * \brief getDonsNeeded
+     * \return Number of Dons needed in total
+     */
     int getDonsNeeded() const;
+
     void setDonsNeeded(const int);
 
     bool isDefaultNeeded() const;
