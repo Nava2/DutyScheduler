@@ -55,7 +55,7 @@ ScheduleWidget::ScheduleWidget(const QString &staffteamfilename, const ScheduleW
 
     //call some other functions
     loadStaffTeamData(staffteamfilename);
-    createScheduleGroupBox();
+    createScheduleGroupBoxs();
     prepInterface();
 
     updateNeeded();
@@ -109,7 +109,7 @@ ScheduleWidget::ScheduleWidget(const QString &fileNameSchedule,
 
     }
 
-    createScheduleGroupBox();
+    createScheduleGroupBoxs();
 
     onDeckItems = new QList<QListWidgetItem*>;
     onDutyItems = new QList<QListWidgetItem*>;
@@ -208,7 +208,7 @@ ScheduleWidget::~ScheduleWidget()
     delete copyList;
 }
 
-void ScheduleWidget::createScheduleGroupBox()
+void ScheduleWidget::createScheduleGroupBoxs()
 {
     createScheduleControls();
     createScheduleStats();

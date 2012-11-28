@@ -73,7 +73,7 @@ private:
     void loadStaffTeamData(QString);
 
     //schedule box
-    void createScheduleGroupBox();
+    void createScheduleGroupBoxs();
     void createScheduleControls();
     void createScheduleStats();
     void createCalendar();

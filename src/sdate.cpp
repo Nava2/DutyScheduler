@@ -219,8 +219,7 @@ QString SDate::exportOn() const
 
 }
 
-QString SDate::getCantWorkStr()
-{
+QString SDate::getCantWorkStr() const {
     QString ret = "";
 
     if (cantWork.isEmpty())
@@ -234,8 +233,7 @@ QString SDate::getCantWorkStr()
     return ret;
 }
 
-QString SDate::getDonsStr()
-{
+QString SDate::getDonsStr() const {
     QString ret = "";
 
     if (donsOn.isEmpty())
@@ -249,8 +247,7 @@ QString SDate::getDonsStr()
     return ret;
 }
 
-QString SDate::getRasStr()
-{
+QString SDate::getRasStr() const {
     QString ret = "";
 
     if (rasOn.isEmpty())
@@ -262,6 +259,18 @@ QString SDate::getRasStr()
     ret.chop(1);
 
     return ret;
+}
+
+QList<QString > SDate::getCantWork() const {
+    return cantWork;
+}
+
+QList<QString > SDate::getDons() const {
+    return donsOn;
+}
+
+QList<QString > SDate::getRas() const {
+    return rasOn;
 }
 
 // JSON
