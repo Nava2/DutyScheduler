@@ -36,11 +36,7 @@ public:
 
     QString getValues();
 
-    bool isExamSchedule() const {
-        if (examCheckBox)
-            return examCheckBox->isChecked();
-        return false;
-    }
+    bool isExamSchedule() const;
 
     void getWeeklyValues(QList<int > &donOut, QList<int > &raOut) const ;
     void getDates(QDate &start, QDate &end) const;

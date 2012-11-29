@@ -25,20 +25,36 @@ public:
     void operator <<(const QVariantMap &);
 
     //getters
-    int getId();
-    QString getFirstName();
-    QString getLastName();
-    bool getPosition();
-    bool getGender();
-    int getNightClass();
+    int getId() const;
+    QString getFirstName() const;
+    QString getLastName() const;
+
+    /*!
+     * \brief getPosition
+     * \return True if Don, false if RA
+     */
+    bool getPosition() const;
+
+    /*!
+     * \brief getGender
+     * \return True if Male
+     */
+    bool getGender() const;
+
+    /*!
+     * \brief getNightClass
+     * \return Integer where the i'th bit is high when night class
+     */
+    int getNightClass() const;
+
     bool isNightClass(const QDate &date) const;
-    bool isNightClass(const int day) const;
 
     void setFinals(QString, const QList<Exam::Ptr> &examList);
     void setFinals(const QList<Exam::Ptr> &);
     void addFinal(const Exam::Ptr e);
-    QList<Exam::Ptr> getFinals();
-    QString getFinalsStr();
+
+    QList<Exam::Ptr> getFinals() const;
+    QString getFinalsStr() const;
 
     void setMidterms(const QList<Exam::Ptr> &);
     void addMidterm(const Exam::Ptr e);
@@ -54,8 +70,18 @@ public:
     void update(QString, QString, bool, bool, int);
     void setId(int);
     void setName(const QString &first, const QString &last);
-    void setPosition(bool);
-    void setGender(bool);
+
+    /*!
+     * \brief setPosition
+     * \param don True if Don
+     */
+    void setPosition(bool don);
+
+    /*!
+     * \brief setGender
+     * \param male True if male
+     */
+    void setGender(bool male);
     void setNightClass(int);
 \
 

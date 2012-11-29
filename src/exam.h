@@ -9,10 +9,14 @@
 class Exam : public QDate
 {
 public:
+    enum Period {
+        MORNING = 0, AFTERNOON = 1, NIGHT = 2
+    };
+
     typedef QSharedPointer<Exam> Ptr;
 
     Exam();
-    Exam(const int, const QDate &, const bool, const bool);
+    Exam(const int, const QDate &, const bool, const Period period);
     Exam(const Exam &);
     Exam(const QVariantMap &);
 
@@ -21,9 +25,9 @@ public:
     bool operator ==(const Exam &ex);
     bool operator !=(const Exam &ex);
 
-    void setNight(bool);
+    void setPeriod(const Period period);
+    Period getPeriod() const;
 
-    bool isNight();
     int getId();
 
     bool isMidterm() const;
@@ -36,7 +40,7 @@ public:
 
 private:
     int id;
-    bool night;
+    Period period;
     bool midterm;
 
     QList<QString > staffIds;

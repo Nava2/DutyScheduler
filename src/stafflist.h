@@ -20,6 +20,7 @@ public:
     explicit StaffList(QObject *parent = 0);
     StaffList(const StaffList &list);
 
+    virtual
     ~StaffList();
 
     StaffList &append(const Staff::Ptr &);
@@ -28,6 +29,9 @@ public:
     StaffList &remove(const Staff::Ptr &);
 
     int count() const;
+    int countRA() const;
+    int countDon() const;
+
     int size() const;
 
     void nightClasses(QList<QList<QString> > &_nightClasses) const;
@@ -58,6 +62,8 @@ public slots:
 private:
     QList<Staff::Ptr> _list;
     QHash<QString, Staff::Ptr> _hashList;
+
+    int _raCount, _donCount;
     
 };
 

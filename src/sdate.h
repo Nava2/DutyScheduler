@@ -14,40 +14,81 @@ class SDate : public QDate
 
 public:
     SDate();
-    SDate(const QDate &, int, int);
+    SDate(const QDate &date, const bool _examDay, const int donsN, const int rasN);
     SDate(const QVariantMap &map);
     ~SDate();
 
-    bool isSpecial(); // is this special duty?
+    bool isSpecial() const; // is this special duty?
     bool isOn(const QString &) const;// is this staff on duty already?
     bool isFull() const;
+    bool isExam() const;
     bool rasFull() const; // do we have enough ras?
     bool donsFull() const;// do we have enough dons? including RA.
     bool canWork(const QString &) const;//can someone work?
 
     void setSpecial(bool);//set the special duty flag
 
+    /*!
+     * \brief dayShiftMember Get the staff member on day duty shift number
+     * \param shiftNo Which shift
+     * \return QString id of the member. Empty string if none scheduled.
+     */
+    QString dayShiftMember(int shiftNo) const;
+
+    /*!
+     * \brief setDayShiftMember Schedule a staff member to be on day duty
+     * \param shiftNo Which shift
+     * \param id The ID of the staff member
+     */
+    void setDayShiftMember(int shiftNo, const QString &id);
+
 
     QString getAM() const;//return the AM's ID
     int getWeekday() const;
-    int getRasNeeded() const;
+
+    /*!
+     * \brief getRasLeft
+     * \return Number of RAs left to schedule
+     */
+    int getRasLeft() const;
+
+    /*!
+     * \brief getRAsNeeded
+     * \return Get the total RAs needed
+     */
+    int getRAsNeeded() const;
+
+    /*!
+     * \brief setRasNeeded Set the number of RAs for a day
+     */
     void setRasNeeded(const int);
 
+    /*!
+     * \brief getDonsNeeded
+     * \return Number of Dons left to schedule
+     */
+    int getDonsLeft() const;
+
+    /*!
+     * \brief getDonsNeeded
+     * \return Number of Dons needed in total
+     */
     int getDonsNeeded() const;
+
     void setDonsNeeded(const int);
 
     bool isDefaultNeeded() const;
 
     bool isWeekend() const;
 
-    QString getCantWorkStr();
-    QList<QString > getCantWork();
+    QString getCantWorkStr() const;
+    QList<QString > getCantWork() const ;
 
-    QString getDonsStr();
-    QList<QString > getDons();
+    QString getDonsStr() const ;
+    QList<QString > getDons() const;
 
-    QString getRasStr();
-    QList<QString > getRas();
+    QString getRasStr() const;
+    QList<QString > getRas() const;
 
     QString exportOn() const;
 
@@ -76,9 +117,12 @@ private:
     QList<QString > rasOn;
     QList<QString > cantWork;
     bool defaultNeededD, defaultNeededR;
+    bool _examDay;
     int rasNeeded;
     int donsNeeded;
     int weekday;
+
+    QString _dayShiftMember[2];
 };
 
 #endif // SDATE_H

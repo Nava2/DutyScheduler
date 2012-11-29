@@ -14,15 +14,20 @@ ExamWidget::ExamWidget(QList<Exam::Ptr> &finals, QList<Exam::Ptr> &midterms, QWi
 {
     MainWidget *mw = dynamic_cast<MainWidget *>(parent);
 
-    tabWidget = new QTabWidget;
+    tabWidget = new QTabWidget(this);
 
     // FINALS
-    finalScheduleGroupBox = new QGroupBox;
-    finalList = new QListWidget;
-    finalDateEdit = new QDateEdit;
-    finalNightCheck = new QCheckBox(tr("Night Exam"));
-    addFinalButton = new QPushButton(tr("ADD EXAM"));
-    removeFinalButton = new QPushButton(tr("REMOVE EXAM"));
+    finalScheduleGroupBox = new QGroupBox(this);
+    finalList = new QListWidget(this);
+    finalDateEdit = new QDateEdit(this);
+    finalPeriodCB = new QComboBox(this);
+
+    finalPeriodCB->addItem("Morning", QVariant(Exam::MORNING));
+    finalPeriodCB->addItem("Afternoon", QVariant(Exam::AFTERNOON));
+    finalPeriodCB->addItem("Night", QVariant(Exam::NIGHT));
+
+    addFinalButton = new QPushButton(tr("ADD EXAM"), this);
+    removeFinalButton = new QPushButton(tr("REMOVE EXAM"), this);
     finalDateEdit->setDate(QDate::currentDate());
     finalDateEdit->setCalendarPopup(true);
 
@@ -41,19 +46,24 @@ ExamWidget::ExamWidget(QList<Exam::Ptr> &finals, QList<Exam::Ptr> &midterms, QWi
     QGridLayout *layout = new QGridLayout;
     layout->addWidget(finalList,0,0,4,1);
     layout->addWidget(finalDateEdit,0,1);
-    layout->addWidget(finalNightCheck,1,1);
+    layout->addWidget(finalPeriodCB,1,1);
     layout->addWidget(addFinalButton,2,1);
     layout->addWidget(removeFinalButton,3,1);
 
     finalScheduleGroupBox->setLayout(layout);
 
     // MIDTERMS
-    midtermScheduleGroupBox = new QGroupBox;
-    midtermList = new QListWidget;
-    midtermDateEdit = new QDateEdit;
-    midtermNightCheck = new QCheckBox(tr("Night Exam"));
-    addMidtermButton = new QPushButton(tr("ADD EXAM"));
-    removeMidtermButton = new QPushButton(tr("REMOVE EXAM"));
+    midtermScheduleGroupBox = new QGroupBox(this);
+    midtermList = new QListWidget(this);
+    midtermDateEdit = new QDateEdit(this);
+    midtermPeriodCB = new QComboBox(this);
+
+    midtermPeriodCB->addItem("Morning", QVariant(Exam::MORNING));
+    midtermPeriodCB->addItem("Afternoon", QVariant(Exam::AFTERNOON));
+    midtermPeriodCB->addItem("Night", QVariant(Exam::NIGHT));
+
+    addMidtermButton = new QPushButton(tr("ADD EXAM"), this);
+    removeMidtermButton = new QPushButton(tr("REMOVE EXAM"), this);
     midtermDateEdit->setDate(QDate::currentDate());
     midtermDateEdit->setCalendarPopup(true);
 
@@ -65,10 +75,10 @@ ExamWidget::ExamWidget(QList<Exam::Ptr> &finals, QList<Exam::Ptr> &midterms, QWi
     connect(removeMidtermButton, SIGNAL(clicked()), this, SLOT(removeMidterm()));
     connect(this, SIGNAL(OnMidtermRemoved(Exam::Ptr)), mw, SLOT(removeMidterm(Exam::Ptr)));
 
-    layout = new QGridLayout;
+    layout = new QGridLayout(this);
     layout->addWidget(midtermList,0,0,4,1);
     layout->addWidget(midtermDateEdit,0,1);
-    layout->addWidget(midtermNightCheck,1,1);
+    layout->addWidget(midtermPeriodCB,1,1);
     layout->addWidget(addMidtermButton,2,1);
     layout->addWidget(removeMidtermButton,3,1);
 
@@ -77,7 +87,7 @@ ExamWidget::ExamWidget(QList<Exam::Ptr> &finals, QList<Exam::Ptr> &midterms, QWi
     tabWidget->addTab(midtermScheduleGroupBox, "Midterms");
     tabWidget->addTab(finalScheduleGroupBox, "Finals");
 
-    QGridLayout *up_layout = new QGridLayout;
+    QGridLayout *up_layout = new QGridLayout(this);
     up_layout->addWidget(tabWidget);
     setLayout(up_layout);
 }
@@ -89,11 +99,11 @@ ExamWidget::~ExamWidget() {
 void ExamWidget::reset() {
     finalList->clear();
     finalDateEdit->setDate(QDate::currentDate());
-    finalNightCheck->setChecked(false);
+    finalPeriodCB->setCurrentIndex(0);
 
     midtermList->clear();
     midtermDateEdit->setDate(QDate::currentDate());
-    midtermNightCheck->setChecked(false);
+    midtermPeriodCB->setCurrentIndex(0);
 }
 
 void ExamWidget::getExams(QList<Exam::Ptr > &fOut, QList<Exam::Ptr> &mOut) {
@@ -111,9 +121,16 @@ void ExamWidget::setExams(const QList<Exam::Ptr> &fIn, const QList<Exam::Ptr> &m
 void ExamWidget::setFinals(const QList<Exam::Ptr> &in) {
     foreach (Exam::Ptr ex, in)
     {
-        QString text = ex->toString("dd/MM/yyyy");
-        if(ex->isNight()) {
-            text += " (night)";
+        QString text = ex->toString("dd/MM/yyyy") + " (%1)";
+        switch(ex->getPeriod()) {
+        case Exam::NIGHT:
+            text = text.arg("Night");
+            break;
+        case Exam::AFTERNOON:
+            text = text.arg("Afternoon");
+            break;
+        case Exam::MORNING:
+            text = text.arg("Morning");
         }
 
         QListWidgetItem *i = new QListWidgetItem(text);
@@ -134,9 +151,16 @@ void ExamWidget::getFinals(QList<Exam::Ptr > &out) {
 
 void ExamWidget::setMidterms(const QList<Exam::Ptr> &in) {
     foreach (Exam::Ptr ex, in) {
-        QString text = ex->toString("dd/MM/yyyy");
-        if(ex->isNight()) {
-            text += " (night)";
+        QString text = ex->toString("dd/MM/yyyy") + " (%1)";
+        switch(ex->getPeriod()) {
+        case Exam::NIGHT:
+            text = text.arg("Night");
+            break;
+        case Exam::AFTERNOON:
+            text = text.arg("Afternoon");
+            break;
+        case Exam::MORNING:
+            text = text.arg("Morning");
         }
 
         QListWidgetItem *i = new QListWidgetItem(text);
@@ -156,14 +180,23 @@ void ExamWidget::getMidterms(QList<Exam::Ptr > &out) {
 }
 
 void ExamWidget::addFinal() {
+    int period = finalPeriodCB->itemData(finalPeriodCB->currentIndex()).toInt();
+
     Exam::Ptr e(new Exam(finals.count(),
                          finalDateEdit->date(),
                          false,
-                         finalNightCheck->isChecked()));
+                         static_cast<Exam::Period>(period)));
 
-    QString text = e->toString("dd/MM/yyyy");
-    if (e->isNight()) {
-        text += " (Night)";
+    QString text = e->toString("dd/MM/yyyy") + " (%1)";
+    switch(e->getPeriod()) {
+    case Exam::NIGHT:
+        text = text.arg("Night");
+        break;
+    case Exam::AFTERNOON:
+        text = text.arg("Afternoon");
+        break;
+    case Exam::MORNING:
+        text = text.arg("Morning");
     }
 
     bool examInList = false;
@@ -180,14 +213,9 @@ void ExamWidget::addFinal() {
         }
     }
 
-    QListWidgetItem *item = new QListWidgetItem();
-
-    if (finalNightCheck->isChecked())
-        item->setText(e->toString("dd/MM/yyyy") + " (night)");
-    else
-        item->setText(e->toString("dd/MM/yyyy"));
-
-    item->setData(Qt::UserRole,e->getId());
+    QListWidgetItem *item = new QListWidgetItem;
+    item->setText(text);
+    item->setData(Qt::UserRole, e->getId());
 
     finalList->insertItem(0,item);//adds the list item to the small exams list
 
@@ -196,14 +224,23 @@ void ExamWidget::addFinal() {
 }
 
 void ExamWidget::addMidterm() {
+    int period = midtermPeriodCB->itemData(midtermPeriodCB->currentIndex()).toInt();
+
     Exam::Ptr e(new Exam(midterms.count(),
                          midtermDateEdit->date(),
                          true,
-                         midtermNightCheck->isChecked()));
+                         static_cast<Exam::Period>(period)));
 
-    QString text = e->toString("dd/MM/yyyy");
-    if (e->isNight()) {
-        text += " (Night)";
+    QString text = e->toString("dd/MM/yyyy") + " (%1)";
+    switch(e->getPeriod()) {
+    case Exam::NIGHT:
+        text = text.arg("Night");
+        break;
+    case Exam::AFTERNOON:
+        text = text.arg("Afternoon");
+        break;
+    case Exam::MORNING:
+        text = text.arg("Morning");
     }
 
     // don't re-add it if already there..

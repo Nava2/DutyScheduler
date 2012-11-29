@@ -95,7 +95,7 @@ void AvailabilityWidget::setToAvail(const QList<AvailableDate> &avail) {
 
     qDebug() << "Rows" << arrayRows.count();
 
-    AvailRangeWidget *row;
+    AvailRangeWidget *row = nullptr;
     AvailableDate date;
     for ( int i = 0; i < single.size(); i++ ) {
         if (i % 2 == 0) {
@@ -111,7 +111,7 @@ void AvailabilityWidget::setToAvail(const QList<AvailableDate> &avail) {
         }
     }
 
-    if (date != AvailableDate()) {
+    if (date != AvailableDate() && row) {
         row->setAvailDate(date);
     }
 

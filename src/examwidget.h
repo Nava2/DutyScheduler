@@ -8,6 +8,7 @@
 #include <QCheckBox>
 #include <QPushButton>
 #include <QTableWidget>
+#include <QComboBox>
 
 #include "exam.h"
 
@@ -48,7 +49,7 @@ private:
     QGroupBox *finalScheduleGroupBox, *midtermScheduleGroupBox;
     QListWidget *finalList, *midtermList;
     QDateEdit *finalDateEdit, *midtermDateEdit;
-    QCheckBox *finalNightCheck, *midtermNightCheck;
+    QComboBox *finalPeriodCB, *midtermPeriodCB;
     QPushButton *addFinalButton, *addMidtermButton;
     QPushButton *removeFinalButton, *removeMidtermButton;
 

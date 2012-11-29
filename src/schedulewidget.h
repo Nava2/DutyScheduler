@@ -6,6 +6,8 @@
 #include <QTableWidget>
 #include <QTableWidgetItem>
 #include <QSignalMapper>
+#include <QComboBox>
+
 #include "staff.h"
 #include "exam.h"
 #include "sdate.h"
@@ -73,7 +75,7 @@ private:
     void loadStaffTeamData(QString);
 
     //schedule box
-    void createScheduleGroupBox();
+    void createScheduleGroupBoxs();
     void createScheduleControls();
     void createScheduleStats();
     void createCalendar();
@@ -104,6 +106,8 @@ private:
     QLabel *currentDateLabelFIXED;
     QLabel *donsNeededLabel;
     QLabel *rasNeededLabel;
+    QSpinBox *spnDonsNeeded;
+    QSpinBox *spnRAsNeeded;
     QLabel *donsNeededLabelFIXED;
     QLabel *rasNeededLabelFIXED;
 
@@ -124,6 +128,8 @@ private:
     QGroupBox *OnDeckGroupBox;
     MyQListWidget *onDeckList;
     MyQListWidget *onDutyList;
+
+    QComboBox *cbDayDuty[2];
 
     StaffList theTeam;
     QList<Exam::Ptr> theFinals, theMidterms;
@@ -153,6 +159,10 @@ private:
 
     QList<QString > *copyList;
     QString copyAM;
+
+private slots:
+    void updateDonsNeededDay(const int count);
+    void updateRAsNeededDay(const int count);
 
 };
 

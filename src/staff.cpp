@@ -46,18 +46,20 @@ Staff::Staff(const QVariantMap &json) :
 }
 
 Staff::Staff(const Staff &old) {
-    this->id = old.id;
-    firstName = old.firstName;
-    lastName = old.lastName;
-    position = old.position;
-    gender = old.gender;
+    if (this != &old) {
+        this->id = old.id;
+        firstName = old.firstName;
+        lastName = old.lastName;
+        position = old.position;
+        gender = old.gender;
 
-    finals = old.finals;
-    numShifts = old.numShifts;
-    numWeekendShifts = old.numWeekendShifts;
-    numAMShifts = old.numAMShifts;
+        finals = old.finals;
+        numShifts = old.numShifts;
+        numWeekendShifts = old.numWeekendShifts;
+        numAMShifts = old.numAMShifts;
 
-    genUID();
+        genUID();
+    }
 }
 
 void Staff::genUID() {
@@ -148,22 +150,22 @@ void Staff::update(QString first, QString last, bool pos, bool gen, int night)
 }
 
 
-int Staff::getId()
+int Staff::getId() const
 {   return id;  }
 
-QString Staff::getFirstName()
+QString Staff::getFirstName() const
 {   return firstName;   }
 
-QString Staff::getLastName()
+QString Staff::getLastName() const
 {    return lastName;   }
 
-bool Staff::getPosition()
+bool Staff::getPosition() const
 {    return position;   }
 
-bool Staff::getGender()
+bool Staff::getGender() const
 {    return gender;     }
 
-int Staff::getNightClass()
+int Staff::getNightClass() const
 {   return nightClass;  }
 
 bool Staff::isNightClass(const QDate &date) const {
@@ -184,11 +186,11 @@ void Staff::setName(const QString &first, const QString &last) {
     lastName = last;
 }
 
-void Staff::setPosition(bool pos)
-{   position = pos;     }
+void Staff::setPosition(bool male)
+{   position = male;     }
 
-void Staff::setGender(bool gen)
-{   gender = gen;       }
+void Staff::setGender(bool male)
+{   gender = male;       }
 
 void Staff::setNightClass(int night)
 {   nightClass = night; }
@@ -251,12 +253,12 @@ void Staff::addFinal(const Exam::Ptr e) {
     }
 }
 
-QList<Exam::Ptr> Staff::getFinals()
+QList<Exam::Ptr> Staff::getFinals() const
 {
     return finals;
 }
 
-QString Staff::getFinalsStr() {
+QString Staff::getFinalsStr() const {
     QString out;
     foreach (Exam::Ptr ex, finals) {
         out += "(" + QString::number(ex->getId()) + "),";
