@@ -711,6 +711,16 @@ void ScheduleWidget::addStaff(QListWidgetItem *item)
     if (datesList[dateIndex].isSpecial())
         return;
 
+    //color the calendar if the date is full
+    if(datesList[dateIndex].isFull())
+    {
+        QTextCharFormat format = calendar->dateTextFormat(calendar->selectedDate());
+        format.setBackground(Qt::green);
+        calendar->setDateTextFormat(calendar->selectedDate(),format);
+
+        return;
+    }
+
     if(pos)// adding a don on
     {
         if (datesList[dateIndex].donsFull())
@@ -727,15 +737,6 @@ void ScheduleWidget::addStaff(QListWidgetItem *item)
     item->setHidden(true);
     onDutyItems->at(itemIndex)->setHidden(false);
     updateNeeded();
-
-    //color the calendar if the date is full
-    if(datesList[dateIndex].isFull())
-    {
-        QTextCharFormat format = calendar->dateTextFormat(calendar->selectedDate());
-        format.setBackground(Qt::green);
-        calendar->setDateTextFormat(calendar->selectedDate(),format);
-    }
-
 
     bool isWeekend = datesList[dateIndex].isWeekend();
 
@@ -880,7 +881,7 @@ void ScheduleWidget::setSpecialDuty()
 void ScheduleWidget::updateNeeded()
 {
     int index = dateToIndex(calendar->selectedDate());
-    qDebug() << "Date index:" << index;
+//    qDebug() << "Date index:" << index;
 
     donsNeededLabel->setText(QString::number(datesList[index].getDonsLeft()));
     rasNeededLabel->setText(QString::number(datesList[index].getRasLeft()));
