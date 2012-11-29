@@ -136,7 +136,7 @@ void SchedViewer::setToStaff(Staff::Ptr pStaff, QList<SDate> &datesList) {
     format.setBackground(Qt::yellow);
     foreach (Exam::Ptr p, pStaff->getMidterms()) {
         Exam ex = *p;
-        if (ex.isNight()) {
+        if (ex.getPeriod() == Exam::NIGHT) {
             calendarStaff->setDateTextFormat(ex, format);
         }
 

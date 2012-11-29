@@ -18,9 +18,10 @@ public:
     SDate(const QVariantMap &map);
     ~SDate();
 
-    bool isSpecial(); // is this special duty?
+    bool isSpecial() const; // is this special duty?
     bool isOn(const QString &) const;// is this staff on duty already?
     bool isFull() const;
+    bool isExam() const;
     bool rasFull() const; // do we have enough ras?
     bool donsFull() const;// do we have enough dons? including RA.
     bool canWork(const QString &) const;//can someone work?
@@ -102,6 +103,7 @@ private:
     QList<QString > rasOn;
     QList<QString > cantWork;
     bool defaultNeededD, defaultNeededR;
+    bool examDay;
     int rasNeeded;
     int donsNeeded;
     int weekday;

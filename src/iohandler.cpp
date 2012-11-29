@@ -261,7 +261,7 @@ bool IOHandler::loadStaffTeamFile(QFile &file, StaffList &staffList, QList<Exam:
     QString exams = "";
 
     //IMPORT EXAMS
-    bool e_night = false;
+    Exam::Period e_time = Exam::MORNING;
 
 
     bool ExamsFlag = false;//this flag tells us where we are in the text file.
@@ -354,11 +354,11 @@ bool IOHandler::loadStaffTeamFile(QFile &file, StaffList &staffList, QList<Exam:
             QDate date = QDate::fromString(current_Line.at(1), "dd/MM/yyyy");
 
             if (current_Line.at(2) == "1")
-                e_night = true;
+                e_time = Exam::NIGHT;
             else
-                e_night = false;
+                e_time = Exam::NIGHT;
 
-            e = Exam::Ptr(new Exam(id, date, false, e_night));
+            e = Exam::Ptr(new Exam(id, date, false, e_time));
 
             examList.append(e);
         }
@@ -435,7 +435,7 @@ bool IOHandler::saveStaffTeamFile(QFile &file,
     {
         ts << QString::number(ex->getId()) << ","
            << ex->toString("dd/MM/yyyy") << ","
-           << (ex->isNight() ? "1" : "0") << endl;
+           << (ex->getPeriod() == Exam::NIGHT ? "1" : "0") << endl;
     }
 
     return true;

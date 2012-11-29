@@ -616,7 +616,7 @@ void ScheduleWidget::prepInterface()
 
             int dateIndex = dateToIndex(exam);
 
-            if(exam.isNight())
+            if (exam.getPeriod() == Exam::NIGHT)
                 datesList[dateIndex].addCantWork(pStaff->uid());
 
             if(dateIndex != 0)
@@ -634,7 +634,7 @@ void ScheduleWidget::prepInterface()
 
                 int dateIndex = dateToIndex(exam);
 
-                if(exam.isNight())
+                if(exam.getPeriod() == Exam::NIGHT)
                     datesList[dateIndex].addCantWork(pStaff->uid());
 
                 if(dateIndex != 0)
@@ -668,6 +668,28 @@ void ScheduleWidget::dateClicked(QDate dateSelected)
         prev = &(datesList[dateIndex-1]);
     }
 
+    cbDayDuty[0]->setEnabled(datesList[dateIndex].isExam());
+    cbDayDuty[1]->setEnabled(datesList[dateIndex].isExam());
+
+    if (datesList[dateIndex].isExam()) {
+        Exam::Ptr ePtr(nullptr);
+
+        foreach (Exam::Ptr ptr, theFinals) {
+            if (QDate(*ptr) == datesList[dateIndex]) {
+                ePtr = ptr;
+                break;
+            }
+        }
+
+        if (ePtr) {
+            // there is an exam on this day
+
+        }
+    } else {
+        cbDayDuty[0]->clear();
+        cbDayDuty[1]->clear();
+    }
+
     for(int x = 0; x<theTeam.count(); x++)
     {
         QListWidgetItem *deckItem = onDeckItems->at(x);
@@ -688,10 +710,6 @@ void ScheduleWidget::dateClicked(QDate dateSelected)
             dutyItem->setHidden(false);
             deckItem->setHidden(true);
         } else {
-            if (prev) {
-
-            }
-
             font.setBold(false);
             dutyItem->setFont(font);
             dutyItem->setHidden(true); //so this person is not onduty.
