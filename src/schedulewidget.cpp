@@ -217,12 +217,41 @@ void ScheduleWidget::createScheduleGroupBoxs()
     createCalendar();
     createLists();
 
+    QWidget *listOuter = new QWidget(this);
+    listOuter->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    QGridLayout *listsLayout = new QGridLayout(listOuter);
+
+    // TODO move to its own method
+    cbDayDuty[0] = new QComboBox(this);
+    cbDayDuty[1] = new QComboBox(this);
+
+    QGroupBox *gbDayDuty = new QGroupBox("Exam Day Duty:", this);
+    gbDayDuty->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
+//    gbDayDuty->setMinimumWidth(cbDayDuty[0]->width() * 2.25);
+
+    QLabel *dayDutyLabel[] = {new QLabel("8:00 AM-1:30 PM", gbDayDuty),
+                              new QLabel("1:30 PM-7:00 PM", gbDayDuty)};
+
+    QGridLayout *layoutDayDuty = new QGridLayout(gbDayDuty);
+    gbDayDuty->setLayout(layoutDayDuty);
+//    layoutDayDuty->setSpacing(5);
+
+    for (int i = 0; i < 2; ++i) {
+        dayDutyLabel[i]->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
+
+        layoutDayDuty->addWidget(dayDutyLabel[i], 0, i, 1, 1, Qt::AlignLeft);
+        layoutDayDuty->addWidget(cbDayDuty[i], 1, i, 1, 1, Qt::AlignLeft);
+    }
+
+    listsLayout->addWidget(OnDutyGroupBox, 0, 0, 1, 1);
+    listsLayout->addWidget(OnDeckGroupBox, 0, 1, 1, 1);
+    listsLayout->addWidget(gbDayDuty, 1, 0, 1, 2);
+
     QGridLayout *layout = new QGridLayout(this);
     layout->addWidget(scheduleStatsGroupBox,0,0,2,1);
-    layout->addWidget(OnDutyGroupBox,0,1,2,1);
-    layout->addWidget(OnDeckGroupBox,0,2,3,1);
-    layout->addWidget(scheduleControls,0,4);
-    layout->addWidget(calendar,1,4);
+    layout->addWidget(listOuter, 0, 1, 2, 1);
+    layout->addWidget(scheduleControls, 0, 3);
+    layout->addWidget(calendar,1,3);
 
     setLayout(layout);
     setWindowTitle("Schedule Tool");
@@ -459,14 +488,13 @@ void ScheduleWidget::createCalendar()
 
 void ScheduleWidget::createLists()
 {
-
     OnDeckGroupBox = new QGroupBox("On Deck", this);
     OnDutyGroupBox = new QGroupBox("On Duty", this);
 
     QGridLayout *layout = new QGridLayout(this);
 
-    onDeckList = new MyQListWidget(this);
-    onDutyList = new MyQListWidget(this);
+    onDeckList = new MyQListWidget(OnDeckGroupBox);
+    onDutyList = new MyQListWidget(OnDutyGroupBox);
 
     onDeckList->setStatusTip("The staff who are able to work on the selected day. Click to add a staff to the duty list. Right click a don to make them AM.");
     onDutyList->setStatusTip("The staff who are on duty for the selected day. Click to remove a staff from being on duty. The AM is bolded.");
@@ -474,8 +502,8 @@ void ScheduleWidget::createLists()
     onDeckList->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
     onDutyList->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
-    onDeckList->setMinimumWidth(100);
-    onDutyList->setMinimumWidth(100);
+    onDeckList->setMinimumWidth(150);
+    onDutyList->setMinimumWidth(150);
 
     setAsAMAction = new QAction("Set as AM", this);
 

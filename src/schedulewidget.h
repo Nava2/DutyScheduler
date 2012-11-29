@@ -6,6 +6,8 @@
 #include <QTableWidget>
 #include <QTableWidgetItem>
 #include <QSignalMapper>
+#include <QComboBox>
+
 #include "staff.h"
 #include "exam.h"
 #include "sdate.h"
@@ -126,6 +128,8 @@ private:
     QGroupBox *OnDeckGroupBox;
     MyQListWidget *onDeckList;
     MyQListWidget *onDutyList;
+
+    QComboBox *cbDayDuty[2];
 
     StaffList theTeam;
     QList<Exam::Ptr> theFinals, theMidterms;
