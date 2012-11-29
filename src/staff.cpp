@@ -46,18 +46,20 @@ Staff::Staff(const QVariantMap &json) :
 }
 
 Staff::Staff(const Staff &old) {
-    this->id = old.id;
-    firstName = old.firstName;
-    lastName = old.lastName;
-    position = old.position;
-    gender = old.gender;
+    if (this != &old) {
+        this->id = old.id;
+        firstName = old.firstName;
+        lastName = old.lastName;
+        position = old.position;
+        gender = old.gender;
 
-    finals = old.finals;
-    numShifts = old.numShifts;
-    numWeekendShifts = old.numWeekendShifts;
-    numAMShifts = old.numAMShifts;
+        finals = old.finals;
+        numShifts = old.numShifts;
+        numWeekendShifts = old.numWeekendShifts;
+        numAMShifts = old.numAMShifts;
 
-    genUID();
+        genUID();
+    }
 }
 
 void Staff::genUID() {

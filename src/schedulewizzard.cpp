@@ -9,17 +9,18 @@ ScheduleWizzard::ScheduleWizzard(QWidget *parent) :
     createDatesGroupBox();
     createStaffNeededGroupBox();
 
-    examCheckBox = new QCheckBox("Exam Period Schedule");
+    examCheckBox = new QCheckBox("Exam Period Schedule", this);
 
     buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok
-                                          | QDialogButtonBox::Cancel);
+                                          | QDialogButtonBox::Cancel,
+                                     Qt::Horizontal, this);
 
     connect(buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
     connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
 
 
-    QVBoxLayout *layout = new QVBoxLayout();
-    QGridLayout *glayout = new QGridLayout();
+    QVBoxLayout *layout = new QVBoxLayout(this);
+    QGridLayout *glayout = new QGridLayout(this);
 
     glayout->addWidget(datesGroupBox,0,0);
     glayout->addWidget(examCheckBox,1,0);
@@ -38,19 +39,19 @@ ScheduleWizzard::~ScheduleWizzard() {
 
 void ScheduleWizzard::createDatesGroupBox()
 {
-    datesGroupBox = new QGroupBox("Dates of Schedule");
+    datesGroupBox = new QGroupBox("Dates of Schedule", this);
 
-    startDateLabel = new QLabel("Start:");
-    endDateLabel = new QLabel("End:");
-    startDateEdit = new QDateEdit;
-    endDateEdit = new QDateEdit;
+    startDateLabel = new QLabel("Start:", datesGroupBox);
+    endDateLabel = new QLabel("End:", datesGroupBox);
+    startDateEdit = new QDateEdit(datesGroupBox);
+    endDateEdit = new QDateEdit(datesGroupBox);
 
     startDateEdit->setDate(QDate::currentDate());
     startDateEdit->setCalendarPopup(true);
     endDateEdit->setDate(startDateEdit->date().addMonths(1));
     endDateEdit->setCalendarPopup(true);
 
-    QGridLayout *layout = new QGridLayout;
+    QGridLayout *layout = new QGridLayout(datesGroupBox);
 
     layout->addWidget(startDateLabel,0,0);
     layout->addWidget(endDateLabel,1,0);
@@ -63,26 +64,26 @@ void ScheduleWizzard::createDatesGroupBox()
 
 void ScheduleWizzard::createStaffNeededGroupBox()
 {
-    staffNeededGroupBox = new QGroupBox("Number of Staff Needed");
+    staffNeededGroupBox = new QGroupBox("Number of Staff Needed", this);
 
 
-    monLabel = new QLabel("Mon");
-    tueLabel = new QLabel("Tue");
-    wedLabel = new QLabel("Wed");
-    thuLabel = new QLabel("Thu");
-    friLabel = new QLabel("FRI");
-    satLabel = new QLabel("SAT");
-    sunLabel = new QLabel("Sun");
-    donLabel = new QLabel("Don-ON:");
-    raAverageLabelFIXED = new QLabel("RA:");
+    monLabel = new QLabel("Mon", staffNeededGroupBox);
+    tueLabel = new QLabel("Tue", staffNeededGroupBox);
+    wedLabel = new QLabel("Wed", staffNeededGroupBox);
+    thuLabel = new QLabel("Thu", staffNeededGroupBox);
+    friLabel = new QLabel("FRI", staffNeededGroupBox);
+    satLabel = new QLabel("SAT", staffNeededGroupBox);
+    sunLabel = new QLabel("Sun", staffNeededGroupBox);
+    donLabel = new QLabel("Don-ON:", staffNeededGroupBox);
+    raAverageLabelFIXED = new QLabel("RA:", staffNeededGroupBox);
 
-    donMonSpinBox = new QSpinBox;
-    donTueSpinBox = new QSpinBox;
-    donWedSpinBox = new QSpinBox;
-    donThuSpinBox = new QSpinBox;
-    donFriSpinBox = new QSpinBox;
-    donSatSpinBox = new QSpinBox;
-    donSunSpinBox = new QSpinBox;
+    donMonSpinBox = new QSpinBox(staffNeededGroupBox);
+    donTueSpinBox = new QSpinBox(staffNeededGroupBox);
+    donWedSpinBox = new QSpinBox(staffNeededGroupBox);
+    donThuSpinBox = new QSpinBox(staffNeededGroupBox);
+    donFriSpinBox = new QSpinBox(staffNeededGroupBox);
+    donSatSpinBox = new QSpinBox(staffNeededGroupBox);
+    donSunSpinBox = new QSpinBox(staffNeededGroupBox);
 
     donSpinBoxs.append(donMonSpinBox);
     donSpinBoxs.append(donTueSpinBox);
@@ -123,7 +124,7 @@ void ScheduleWizzard::createStaffNeededGroupBox()
     raSatSpinBox->setValue(4);
     raSunSpinBox->setValue(3);
 
-    QGridLayout *layout = new QGridLayout;
+    QGridLayout *layout = new QGridLayout(staffNeededGroupBox);
 
     layout->addWidget(monLabel,0,1);
     layout->addWidget(tueLabel,0,2);
@@ -173,6 +174,12 @@ QString ScheduleWizzard::getValues()
     }
 
     return ret;
+}
+
+bool ScheduleWizzard::isExamSchedule() const {
+    if (examCheckBox)
+        return examCheckBox->isChecked();
+    return false;
 }
 
 void ScheduleWizzard::getDates(QDate &start, QDate &end) const {

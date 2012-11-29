@@ -40,9 +40,9 @@ ScheduleWidget::ScheduleWidget(const QString &staffteamfilename, const ScheduleW
     for(int z = 0; z<length; z++)
     {
         if(examSchedule)
-            sDateIterator = new SDate(dateCounter, theTeam.count(), theTeam.count());
+            sDateIterator = new SDate(dateCounter, true, theTeam.count(), theTeam.count());
         else
-            sDateIterator = new SDate(dateCounter, donsNeeded[dateCounter.dayOfWeek()-1], rasNeeded[dateCounter.dayOfWeek()-1]);
+            sDateIterator = new SDate(dateCounter, false, donsNeeded[dateCounter.dayOfWeek()-1], rasNeeded[dateCounter.dayOfWeek()-1]);
 
 
         datesList.append(*sDateIterator);
@@ -75,7 +75,11 @@ ScheduleWidget::ScheduleWidget(const QString &fileNameSchedule,
 {    
     iohandle = new IOHandler;
 
-    iohandle->loadSchedule(fileNameSchedule, team, datesList, nightClasses, donsNeeded, rasNeeded);
+    bool valid = iohandle->loadSchedule(fileNameSchedule, team, datesList, nightClasses, donsNeeded, rasNeeded);
+
+    if (!valid) {
+        return;
+    }
 
     theTeam = team;
     theFinals = finals;
@@ -208,6 +212,8 @@ ScheduleWidget::~ScheduleWidget()
     delete setAsAMAction;
 
     delete copyList;
+
+    delete iohandle;
 }
 
 void ScheduleWidget::createScheduleGroupBoxs()
@@ -221,9 +227,6 @@ void ScheduleWidget::createScheduleGroupBoxs()
     listOuter->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     QGridLayout *listsLayout = new QGridLayout(listOuter);
 
-    // TODO move to its own method
-    cbDayDuty[0] = new QComboBox(this);
-    cbDayDuty[1] = new QComboBox(this);
 
     QGroupBox *gbDayDuty = new QGroupBox("Exam Day Duty:", this);
     gbDayDuty->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
@@ -237,7 +240,10 @@ void ScheduleWidget::createScheduleGroupBoxs()
 //    layoutDayDuty->setSpacing(5);
 
     for (int i = 0; i < 2; ++i) {
+        cbDayDuty[i] = new QComboBox(this);
+
         dayDutyLabel[i]->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
+        cbDayDuty[i]->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 
         layoutDayDuty->addWidget(dayDutyLabel[i], 0, i, 1, 1, Qt::AlignLeft);
         layoutDayDuty->addWidget(cbDayDuty[i], 1, i, 1, 1, Qt::AlignLeft);
@@ -671,23 +677,27 @@ void ScheduleWidget::dateClicked(QDate dateSelected)
     cbDayDuty[0]->setEnabled(datesList[dateIndex].isExam());
     cbDayDuty[1]->setEnabled(datesList[dateIndex].isExam());
 
+    QList<Exam::Ptr> curEPtrs, nextEPtrs;
     if (datesList[dateIndex].isExam()) {
-        Exam::Ptr ePtr(nullptr);
-
         foreach (Exam::Ptr ptr, theFinals) {
-            if (QDate(*ptr) == datesList[dateIndex]) {
-                ePtr = ptr;
-                break;
+            QDate d = *ptr;
+            if (d == datesList[dateIndex]) {
+                curEPtrs += ptr;
+            } else if (d == datesList[dateIndex+1]) {
+                nextEPtrs += ptr;
             }
-        }
-
-        if (ePtr) {
-            // there is an exam on this day
-
         }
     } else {
         cbDayDuty[0]->clear();
         cbDayDuty[1]->clear();
+    }
+
+    QMap<QString, QString> dayDutyIDs[2]; // uid, name
+
+    foreach (Staff::Ptr p, theTeam) {
+        QString name = p->getFirstName() + " " + p->getLastName();
+        dayDutyIDs[0][p->uid()] = name;
+        dayDutyIDs[1][p->uid()] = name;
     }
 
     for(int x = 0; x<theTeam.count(); x++)
@@ -709,29 +719,119 @@ void ScheduleWidget::dateClicked(QDate dateSelected)
 
             dutyItem->setHidden(false);
             deckItem->setHidden(true);
-        } else {
-            font.setBold(false);
-            dutyItem->setFont(font);
-            dutyItem->setHidden(true); //so this person is not onduty.
 
-            // check availabilities
-            if (nightClasses[dateSelected.dayOfWeek()-1]->contains(id) || datesList[dateIndex].staffCantWork(id))
-            {
-                deckItem->setHidden(true);
-            } else {
-                deckItem->setHidden(false);
+            if (datesList[dateIndex].isExam()) {
+                dayDutyIDs[0].remove(id);
+                dayDutyIDs[1].remove(id);
             }
 
-            if (prev && prev->isOn(id)) {
-                deckItem->setBackgroundColor(Qt::yellow);
-            } else if (theTeam[id]->getPosition()) {
-                // don
-                deckItem->setBackgroundColor(defaultDonBack);
-            } else {
-                deckItem->setBackgroundColor(defaultRABack);
+            continue;
+        }
+
+        // check for exams:
+        if (datesList[dateIndex].isExam()) {
+            cbDayDuty[0]->setEnabled(true);
+            cbDayDuty[1]->setEnabled(true);
+
+            // already scheduled for day duty..
+            bool canWorkNight = id != datesList[dateIndex].dayShiftMember(0) && id != datesList[dateIndex].dayShiftMember(1);
+
+            // check all exams on current day
+            foreach (Exam::Ptr p, curEPtrs) {
+                QList<QString> staff = p->getStaff();
+                if (staff.contains(id)) {
+                    // staff member has this exam
+                    switch (p->getPeriod()) {
+                    case Exam::MORNING:
+                        dayDutyIDs[0].remove(id);
+                        break; // don't care about the current day
+                    case Exam::NIGHT:
+                        canWorkNight = false;
+                        // intentional fall through
+
+                    case Exam::AFTERNOON:
+                        dayDutyIDs[0].remove(id);
+                        dayDutyIDs[1].remove(id);
+                        break;
+                    }
+                }
+            }
+
+            foreach (Exam::Ptr p, nextEPtrs) {
+                QList<QString> staff = p->getStaff();
+                if (staff.contains(id)) {
+                    // staff member has this exam
+                    canWorkNight = false;
+
+                    // since its the next day, give 24h
+                    switch (p->getPeriod()) {
+                    case Exam::MORNING:
+                        // no day duty day before
+                        dayDutyIDs[0].remove(id);
+                        dayDutyIDs[1].remove(id);
+                        break;
+                    case Exam::AFTERNOON:
+                        dayDutyIDs[1].remove(id);
+                        break;
+                    case Exam::NIGHT:
+                        // night exam next night, so no night duty night before
+                        // but day duty is possible
+                        break;
+                    }
+                }
+            }
+
+            if (!canWorkNight) {
+                // can't work this night, aren't on duty
+                deckItem->setHidden(true);
+                dutyItem->setHidden(true);
+                continue;
             }
         }
+
+
+
+        // know a staff member can work today
+        // they are not on duty
+        font.setBold(false);
+        dutyItem->setFont(font);
+        dutyItem->setHidden(true); //so this person is not onduty.
+
+        // check availabilities
+        if (nightClasses[dateSelected.dayOfWeek()-1]->contains(id) || datesList[dateIndex].staffCantWork(id))
+        {
+            deckItem->setHidden(true);
+        } else {
+            deckItem->setHidden(false);
+        }
+
+        if (prev && prev->isOn(id)) {
+            deckItem->setBackgroundColor(Qt::yellow);
+        } else if (theTeam[id]->getPosition()) {
+            // don
+            deckItem->setBackgroundColor(defaultDonBack);
+        } else {
+            deckItem->setBackgroundColor(defaultRABack);
+        }
     }
+
+    // fill combo-boxes with available day duty staff
+    // also set the current index to be the on duty member
+    for (int i = 0; i < 2; ++i) {
+        cbDayDuty[i]->clear();
+
+        cbDayDuty[i]->addItem("");
+        foreach (QString key, dayDutyIDs[i].keys()) {
+            cbDayDuty[i]->addItem(dayDutyIDs[i][key], key);
+        }
+
+        QString dutyID = datesList[dateIndex].dayShiftMember(i);
+        if (!dutyID.isEmpty()) {
+            int index = cbDayDuty[i]->findData(dutyID, Qt::UserRole);
+            cbDayDuty[i]->setCurrentIndex(index);
+        }
+    }
+
 
 //    QDate tDate = calendar->selectedDate();
 //    int i = dateToIndex(tDate);

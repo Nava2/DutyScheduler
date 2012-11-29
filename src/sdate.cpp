@@ -12,21 +12,21 @@ const QString SDate::AM_NOT_SET = "xxx";
 SDate::SDate()
     : QDate(), spDuty(false), AM(AM_NOT_SET),
       defaultNeededD(true), defaultNeededR(true),
-      examDay(false),
+      _examDay(false),
       rasNeeded(0), donsNeeded(0), weekday(0) {
 }
 
-SDate::SDate(const QDate &d, int donsN, int rasN)
-    : QDate(d.year(), d.month(), d.day()), spDuty(false),
+SDate::SDate(const QDate &date, const bool examDay, const int donsN, const int rasN)
+    : QDate(date.year(), date.month(), date.day()), spDuty(false),
       AM(AM_NOT_SET), defaultNeededD(true), defaultNeededR(true),
-      examDay(false),
-      rasNeeded(rasN), donsNeeded(donsN), weekday(d.dayOfWeek())
+      _examDay(examDay),
+      rasNeeded(rasN), donsNeeded(donsN), weekday(date.dayOfWeek())
 {
 }
 
 SDate::SDate(const QVariantMap &map) :
     QDate(), AM(AM_NOT_SET),
-    defaultNeededD(true), defaultNeededR(true), examDay(false)
+    defaultNeededD(true), defaultNeededR(true), _examDay(false)
 {
     *this << map;
 }
@@ -41,7 +41,7 @@ bool SDate::isSpecial() const
 }
 
 bool SDate::isExam() const {
-    return examDay;
+    return _examDay;
 }
 
 void SDate::setSpecial(bool s)
@@ -50,6 +50,14 @@ void SDate::setSpecial(bool s)
     donsOn.clear();
     rasOn.clear();
     AM = AM_NOT_SET;
+}
+
+QString SDate::dayShiftMember(int shiftNo) const {
+    return _dayShiftMember[shiftNo];
+}
+
+void SDate::setDayShiftMember(int shiftNo, const QString &id) {
+    _dayShiftMember[shiftNo] = id;
 }
 
 void SDate::setAM(const QString &ami) // set the AM

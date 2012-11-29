@@ -14,7 +14,7 @@ class SDate : public QDate
 
 public:
     SDate();
-    SDate(const QDate &, int, int);
+    SDate(const QDate &date, const bool _examDay, const int donsN, const int rasN);
     SDate(const QVariantMap &map);
     ~SDate();
 
@@ -27,6 +27,20 @@ public:
     bool canWork(const QString &) const;//can someone work?
 
     void setSpecial(bool);//set the special duty flag
+
+    /*!
+     * \brief dayShiftMember Get the staff member on day duty shift number
+     * \param shiftNo Which shift
+     * \return QString id of the member. Empty string if none scheduled.
+     */
+    QString dayShiftMember(int shiftNo) const;
+
+    /*!
+     * \brief setDayShiftMember Schedule a staff member to be on day duty
+     * \param shiftNo Which shift
+     * \param id The ID of the staff member
+     */
+    void setDayShiftMember(int shiftNo, const QString &id);
 
 
     QString getAM() const;//return the AM's ID
@@ -103,10 +117,12 @@ private:
     QList<QString > rasOn;
     QList<QString > cantWork;
     bool defaultNeededD, defaultNeededR;
-    bool examDay;
+    bool _examDay;
     int rasNeeded;
     int donsNeeded;
     int weekday;
+
+    QString _dayShiftMember[2];
 };
 
 #endif // SDATE_H

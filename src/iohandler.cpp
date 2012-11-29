@@ -944,7 +944,7 @@ bool IOHandler::loadScheduleFile(QFile &file, QList<SDate> &dateList, QList<QLis
     // load all the dates
     for(int z = 0; z<length; z++)
     {
-        SDate sDate(dateCounter, donsNeeded[dateCounter.dayOfWeek()-1], rasNeeded[dateCounter.dayOfWeek()-1]);
+        SDate sDate(dateCounter, false, donsNeeded[dateCounter.dayOfWeek()-1], rasNeeded[dateCounter.dayOfWeek()-1]);
         dateList.append(sDate);
         dateCounter = dateCounter.addDays(1);
     }
