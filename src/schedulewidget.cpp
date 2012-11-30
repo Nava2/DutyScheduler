@@ -670,9 +670,12 @@ void ScheduleWidget::dateClicked(QDate dateSelected)
                               QString::number(dateSelected.day()));
 
     int dateIndex = dateToIndex(dateSelected); // get the index of the date in "datesList"
-    SDate *prev = NULL;
+    SDate *prev = nullptr, *next = nullptr;
     if (dateIndex > 0) {
         prev = &(datesList[dateIndex-1]);
+    }
+    if (dateIndex < (datesList.size() - 1)) {
+        next = &(datesList[dateIndex + 1]);
     }
 
     cbDayDuty[0]->setEnabled(datesList[dateIndex].isExam());
@@ -684,7 +687,7 @@ void ScheduleWidget::dateClicked(QDate dateSelected)
             QDate d = *ptr;
             if (d == datesList[dateIndex]) {
                 curEPtrs += ptr;
-            } else if (d == datesList[dateIndex+1]) {
+            } else if (next && d == *next) {
                 nextEPtrs += ptr;
             }
         }
@@ -701,7 +704,7 @@ void ScheduleWidget::dateClicked(QDate dateSelected)
         dayDutyIDs[1][p->uid()] = name;
     }
 
-    for(int x = 0; x<theTeam.count(); x++)
+    for(int x = 0; x < theTeam.count(); x++)
     {
         QListWidgetItem *deckItem = onDeckItems->at(x);
         QListWidgetItem *dutyItem = onDutyItems->at(x);
@@ -731,9 +734,6 @@ void ScheduleWidget::dateClicked(QDate dateSelected)
 
         // check for exams:
         if (datesList[dateIndex].isExam()) {
-            cbDayDuty[0]->setEnabled(true);
-            cbDayDuty[1]->setEnabled(true);
-
             // already scheduled for day duty..
             bool canWorkNight = id != datesList[dateIndex].dayShiftMember(0) && id != datesList[dateIndex].dayShiftMember(1);
 
@@ -787,6 +787,9 @@ void ScheduleWidget::dateClicked(QDate dateSelected)
                 deckItem->setHidden(true);
                 dutyItem->setHidden(true);
                 continue;
+            } else {
+                deckItem->setHidden(false);
+                dutyItem->setHidden(true);
             }
         }
 
@@ -1009,7 +1012,8 @@ void ScheduleWidget::showMenu(QPoint p)
     rightClickMenu->addAction(showScheduleActions[theTeam[staffId]->getId()]);
 
     //QPoint point = p + list->pos();
-    rightClickMenu->exec(mapToGlobal(p + list->parentWidget()->pos() + list->pos()));
+    rightClickMenu->exec(list->mapToGlobal(p));
+//    rightClickMenu->exec(mapToGlobal(p + list->parentWidget()->pos() + list->pos()));
 }
 
 void ScheduleWidget::setSpecialDuty()

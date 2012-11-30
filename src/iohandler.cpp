@@ -825,7 +825,7 @@ bool IOHandler::exportSchedule(const QString &filePath,
     ts << endl;
 
     ts << "RAs:,";
-    foreach (int val, donAvgs) {
+    foreach (int val, raAvgs) {
         ts << QString::number(val) << ",";
     }
     ts << BLANK_ENTRY << "," << endl;
