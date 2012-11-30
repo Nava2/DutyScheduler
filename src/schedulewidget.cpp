@@ -790,20 +790,21 @@ void ScheduleWidget::dateClicked(QDate dateSelected)
             }
         }
 
-
-
         // know a staff member can work today
         // they are not on duty
         font.setBold(false);
         dutyItem->setFont(font);
         dutyItem->setHidden(true); //so this person is not onduty.
 
-        // check availabilities
-        if (nightClasses[dateSelected.dayOfWeek()-1].contains(id) || datesList[dateIndex].staffCantWork(id))
-        {
-            deckItem->setHidden(true);
-        } else {
-            deckItem->setHidden(false);
+        if (!datesList[dateIndex].isExam()){
+            // not an exam day
+            // check availabilities
+            if (nightClasses[dateSelected.dayOfWeek()-1].contains(id) || datesList[dateIndex].staffCantWork(id))
+            {
+                deckItem->setHidden(true);
+            } else {
+                deckItem->setHidden(false);
+            }
         }
 
         if (prev && prev->isOn(id)) {
@@ -815,7 +816,6 @@ void ScheduleWidget::dateClicked(QDate dateSelected)
             deckItem->setBackgroundColor(defaultRABack);
         }
     }
-
     // fill combo-boxes with available day duty staff
     // also set the current index to be the on duty member
     for (int i = 0; i < 2; ++i) {
