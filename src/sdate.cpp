@@ -142,15 +142,15 @@ void SDate::addCantWork(const QList<QString > &input)
     }
 }
 
-QList<QString > SDate::getCantWork() {
+QList<QString > SDate::getCantWork() const {
     return cantWork;
 }
 
-QList<QString > SDate::getDons() {
+QList<QString > SDate::getDons() const {
     return donsOn;
 }
 
-QList<QString > SDate::getRas() {
+QList<QString > SDate::getRas() const {
     return rasOn;
 }
 
@@ -295,24 +295,13 @@ QString SDate::getRasStr() const {
     return ret;
 }
 
-QList<QString > SDate::getCantWork() const {
-    return cantWork;
-}
-
-QList<QString > SDate::getDons() const {
-    return donsOn;
-}
-
-QList<QString > SDate::getRas() const {
-    return rasOn;
-}
-
 // JSON
 // out
 void SDate::operator >>(QVariantMap &map) {
     map["date"] = *dynamic_cast<QDate *>(this);
 
     map["special"] = spDuty;
+    map["exam"] = _examDay;
 
     QVariantMap needed;
     needed["dons"] = donsNeeded;
@@ -353,8 +342,10 @@ void SDate::operator <<(const QVariantMap &map) {
     QDate d = map["date"].toDate();
     setYMD(d.year(), d.month(), d.day());
 
+
     // load the object
     spDuty = map["special"].toBool();
+    _examDay = map["exam"].toBool();
 
     QVariantList cantWorkVar = map["cantwork"].toList();
     foreach (QVariant id, cantWorkVar) {

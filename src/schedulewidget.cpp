@@ -4,6 +4,10 @@
 #include <QList>
 #include <QString>
 #include <QSignalMapper>
+#include <QListWidget>
+#include <QListWidgetItem>
+
+#include <math.h>
 
 
 #include "schedulewizzard.h"
@@ -237,6 +241,7 @@ void ScheduleWidget::createScheduleGroupBoxs()
 
     for (int i = 0; i < 2; ++i) {
         cbDayDuty[i] = new QComboBox(this);
+        connect(cbDayDuty[i], SIGNAL(currentIndexChanged(int)), this, SLOT(changeDayDutyIndex(int)));
 
         dayDutyLabel[i]->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
         cbDayDuty[i]->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
@@ -297,12 +302,12 @@ void ScheduleWidget::createScheduleControls()
 
     spnDonsNeeded = new QSpinBox(this);
     spnDonsNeeded->setMinimum(0);
-    spnDonsNeeded->setMaximum(std::floor(theTeam.countDon() / 2.0));
+    spnDonsNeeded->setMaximum(floor(theTeam.countDon() / 2.0));
     connect(spnDonsNeeded, SIGNAL(valueChanged(int)), this, SLOT(updateDonsNeededDay(int)));
 
     spnRAsNeeded = new QSpinBox(this);
     spnRAsNeeded->setMinimum(1);
-    spnRAsNeeded->setMaximum(std::floor(theTeam.countRA() / 2.0));
+    spnRAsNeeded->setMaximum(floor(theTeam.countRA() / 2.0));
     connect(spnRAsNeeded, SIGNAL(valueChanged(int)), this, SLOT(updateRAsNeededDay(int)));
 
     donsNeededLabelFIXED->setStatusTip("The number of DON-ons still needed for the selected day.");
@@ -794,7 +799,7 @@ void ScheduleWidget::dateClicked(QDate dateSelected)
         dutyItem->setHidden(true); //so this person is not onduty.
 
         // check availabilities
-        if (nightClasses[dateSelected.dayOfWeek()-1]->contains(id) || datesList[dateIndex].staffCantWork(id))
+        if (nightClasses[dateSelected.dayOfWeek()-1].contains(id) || datesList[dateIndex].staffCantWork(id))
         {
             deckItem->setHidden(true);
         } else {
@@ -921,6 +926,14 @@ void ScheduleWidget::removeStaff(QListWidgetItem *item)
 
     theTeam.at(staffId)->removeShift(isWeekend, isAM);
 
+    if (datesList[dateIndex].isExam()) {
+        // fix the day duty lists
+        for (int i = 0; i < 2; ++i) {
+            cbDayDuty[i]->addItem(theTeam[staffId]->getFirstName() + " " + theTeam[staffId]->getLastName(), staffId);
+        }
+    }
+
+
     emit updateSaveState();
 
     updateStats();
@@ -1045,6 +1058,40 @@ void ScheduleWidget::showSchedule(const QString &id) {
         qDebug() << "Trying to set schedule to bad uid [" << id << "]";
 }
 
+void ScheduleWidget::changeDayDutyIndex(const int newIndex) {
+    QComboBox *cmb = dynamic_cast<QComboBox *>(sender());
+
+    // read the currently stored values
+    QString sid;
+    for (int i = 0; i < 2; ++i) {
+        if (cmb == cbDayDuty[i] && !dayDutyPrevIDs[i].isEmpty()) {
+            sid = dayDutyPrevIDs[i];
+            break;
+        }
+    }
+
+    // search setting the new staff member off-deck, and old one on-deck
+    QString id = cmb->itemData(newIndex, Qt::UserRole).toString();
+    bool f[] = {false, false};
+    for (int i = 0; i < theTeam.size()  && (!f[0] || !f[1]); ++i) {
+        QListWidgetItem *ptr = onDeckItems->at(i);
+        if (theTeam[i]->uid() == id) {
+            ptr->setHidden(true);
+            f[0] = true;
+        }
+
+        if (theTeam[i]->uid() == sid) {
+            ptr->setHidden(false);
+            f[1] = true;
+        }
+    }
+
+    // save the values of both comboboxes.
+    for (int i = 0; i < 2; ++i) {
+        dayDutyPrevIDs[i] = cbDayDuty[i]->itemData(cbDayDuty[i]->currentIndex(), Qt::UserRole).toString();
+    }
+}
+
 void ScheduleWidget::copySlot()
 {
     copyAM = datesList[dateToIndex(calendar->selectedDate())].getAM();
@@ -1149,6 +1196,16 @@ void ScheduleWidget::setAsAM(const QString &staffId)
 
     pstaff->addShift(isWeekend, true);
 
+    if (datesList[dateIndex].isExam()) {
+        // fix the day duty lists
+        for (int i = 0; i < 2; ++i) {
+            int index = cbDayDuty[i]->findData(staffId, Qt::UserRole);
+            if (index > 0) {
+                cbDayDuty[i]->removeItem(index);
+            }
+        }
+    }
+
     emit updateSaveState();
 
     updateStats();
@@ -1204,6 +1261,16 @@ void ScheduleWidget::addStaff(const QString &staffId)
     bool isWeekend = datesList[dateIndex].isWeekend();
 
     pstaff->addShift(isWeekend, false);
+
+    if (datesList[dateIndex].isExam()) {
+        // fix the day duty lists
+        for (int i = 0; i < 2; ++i) {
+            int index = cbDayDuty[i]->findData(pstaff->uid(), Qt::UserRole);
+            if (index > 0) {
+                cbDayDuty[i]->removeItem(index);
+            }
+        }
+    }
 
     emit updateSaveState();
 

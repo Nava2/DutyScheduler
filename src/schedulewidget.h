@@ -66,6 +66,12 @@ private slots:
 
     void showSchedule(const QString &id);
 
+    /*!
+     * \brief changeDayDutyIndex Day duty was changed
+     * \param newIndex
+     */
+    void changeDayDutyIndex(const int newIndex);
+
 signals:
     void updateSaveState();
 
@@ -130,6 +136,7 @@ private:
     MyQListWidget *onDutyList;
 
     QComboBox *cbDayDuty[2];
+    QString dayDutyPrevIDs[2];
 
     StaffList theTeam;
     QList<Exam::Ptr> theFinals, theMidterms;

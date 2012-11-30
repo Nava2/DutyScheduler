@@ -13,14 +13,14 @@
 AvailabilityWidget::AvailabilityWidget(QWidget *parent) :
     QGroupBox(tr("Dates Unavailable"), parent), rowNum(0), dayCount(0)
 {
-    topLayout = new QGridLayout;
+    topLayout = new QGridLayout(this);
 
-    scrollArea = new QScrollArea;
+    scrollArea = new QScrollArea(this);
     scrollArea->setStatusTip("These are the dates that the selected staff member is unavailable. ex. A wedding, academic commitment, etc.");
 //    scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     scrollArea->setWidgetResizable(true);
 
-    scrollFrame = new QGroupBox;
+    scrollFrame = new QGroupBox(this);
     scrollFrame->setFlat(true);
 
     internalLayout = new QVBoxLayout(scrollFrame);

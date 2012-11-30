@@ -25,7 +25,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     windowState = STAFF_WIDGET;
 
-    loadSchedule();
+//    loadSchedule();
 }
 
 MainWindow::~MainWindow()
