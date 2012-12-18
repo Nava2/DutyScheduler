@@ -1100,6 +1100,20 @@ QString IOHandler::getSaveFileName(QWidget *parent, const IOType type) {
 
         currentMember = &currentScheduleFile;
     } break;
+
+    case CSV_EXPORT: {
+        caption = "Select CSV Export File..";
+        filters = "Comma Separated Values (*.csv)";
+        selectedFilter = filters;
+
+        if (!currentScheduleFile.isEmpty()) {
+            dir = QFileInfo(currentScheduleFile).dir().path();
+        } else if (!currentStaffFile.isEmpty()) {
+            dir = QFileInfo(currentStaffFile).dir().path();
+        }
+
+        currentMember = nullptr;
+    }
     default: {
         // baad
     } break;
@@ -1111,7 +1125,7 @@ QString IOHandler::getSaveFileName(QWidget *parent, const IOType type) {
     }
 
     QString file = QFileDialog::getSaveFileName(parent, caption, dir, filters, &selectedFilter);
-    if (!file.isEmpty()) {
+    if (!file.isEmpty() && currentMember) {
         *currentMember = file;
     }
 
@@ -1148,17 +1162,6 @@ QString IOHandler::getOpenFileName(QWidget *parent, const IOType type) {
 
         currentMember = &currentScheduleFile;
     } break;
-    case CSV_EXPORT: {
-        caption = "Select CSV Export File..";
-        filters = "Comma Separated Values (*.csv)";
-        selectedFilter = filters;
-
-        if (!currentScheduleFile.isEmpty()) {
-            dir = QFileInfo(currentScheduleFile).dir().path();
-        } else if (!currentStaffFile.isEmpty()) {
-            dir = QFileInfo(currentStaffFile).dir().path();
-        }
-    }
     default: {
         // baad
     } break;

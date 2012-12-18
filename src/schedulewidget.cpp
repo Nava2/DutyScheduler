@@ -1301,7 +1301,7 @@ void ScheduleWidget::exportSchedule()
         }
     }
 
-    QString exportFile = iohandle->getOpenFileName(this, IOHandler::CSV_EXPORT);
+    QString exportFile = iohandle->getSaveFileName(this, IOHandler::CSV_EXPORT);
 
     QMap<QString, QList<int > > map;
 
