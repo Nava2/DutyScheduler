@@ -26,7 +26,8 @@ HEADERS += obj/availabledate.h \
            ui/myqlistwidget.h \
            ui/schedulewidget.h \
            ui/schedulewizzard.h \
-           ui/schedviewer.h
+           ui/schedviewer.h \
+    ui/dsgn/teamwidget.h
 SOURCES += main.cpp \
            obj/availabledate.cpp \
            obj/exam.cpp \
@@ -42,4 +43,8 @@ SOURCES += main.cpp \
            ui/myqlistwidget.cpp \
            ui/schedulewidget.cpp \
            ui/schedulewizzard.cpp \
-           ui/schedviewer.cpp
+           ui/schedviewer.cpp \
+    ui/dsgn/teamwidget.cpp
+
+FORMS += \
+    ui/dsgn/teamwidget.ui
