@@ -33,6 +33,7 @@ private:
     QLabel *nightClassLabel;
     QLabel *midtermLabel;
     QLabel *nameLabel;
+    QLabel *finalLabel;
     QVBoxLayout *externLayout;
     QGridLayout *internLayout, *labelLayout;
 

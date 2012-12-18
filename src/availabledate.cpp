@@ -41,7 +41,7 @@ QList<QDate > AvailableDate::getDates() const {
     // it's a range:
     QDate counter = dateVal,
             endVal = endDateVal.addDays(1);
-    while (counter != endVal) {
+    while (counter < endVal) {
         out.append(counter);
         counter = counter.addDays(1);
     }
