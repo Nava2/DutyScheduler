@@ -22,12 +22,12 @@ SOURCES += main.cpp \
     exam.cpp \
     myqlistwidget.cpp \
     iohandler.cpp \
-    availabilitywidget.cpp \
     availabledate.cpp \
     schedviewer.cpp \
     stafflist.cpp \
-    availrangewidget.cpp \
-    examwidget.cpp
+    examwidget.cpp \
+    ui/availabilitywidget.cpp \
+    ui/availrangewidget.cpp
 
 HEADERS  += \
     staff.h \
