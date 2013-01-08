@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QEvent>
 #include <QCalendarWidget>
+#include <QTableView>
 
 class MultiSelectCalendarFilter : public QObject {
     Q_OBJECT
@@ -13,19 +14,23 @@ public:
 
 
 signals:
-    void selectCoord(QPoint pt);
+    void selectCoord(const int row, const int col);
 
 protected:
     enum STATE {
         INITIAL = 0,
-        MOUSE_DOWN,
-        MOUSE_MOVED
+        STARTED
     };
 
     bool eventFilter(QObject *obj, QEvent *event);
 
 private:
     QCalendarWidget *_target;
+    QTableView *_tbl;
+
+    QModelIndex startIdx, endIdx;
+
+    STATE _state;
 };
 
 class MultiSelectCalendarWidget : public QObject
@@ -42,7 +47,7 @@ public:
 signals:
     
 public slots:
-    void onSelectCoord(const QPoint &pt);
+    void onSelectCoord(const int row, const int col);
     
 
 private:
