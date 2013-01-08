@@ -2,6 +2,7 @@
 build*/*
 *.pro.user
 duty*/
+*.autosave
 
 # Compiled Object files
 *.slo
