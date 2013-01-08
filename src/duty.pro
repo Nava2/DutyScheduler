@@ -22,13 +22,14 @@ HEADERS += obj/availabledate.h \
            ui/examwidget.h \
            ui/iohandler.h \
            ui/mainwidget.h \
-           ui/mainwindow.h \
+#           ui/mainwindow.h \
            ui/myqlistwidget.h \
            ui/schedulewidget.h \
            ui/schedulewizzard.h \
-           ui/schedviewer.h
-#    ui/dsgn/teamwidget.h \
-#    ui/dsgn/mainwindow.h
+           ui/schedviewer.h \
+    ui/dsgn/teamwidget.h \
+    ui/dsgn/mainwindow.h \
+    ui/multiselectcalendarwidget.h
 SOURCES += main.cpp \
            obj/availabledate.cpp \
            obj/exam.cpp \
@@ -40,14 +41,15 @@ SOURCES += main.cpp \
            ui/examwidget.cpp \
            ui/iohandler.cpp \
            ui/mainwidget.cpp \
-           ui/mainwindow.cpp \
+#           ui/mainwindow.cpp \
            ui/myqlistwidget.cpp \
            ui/schedulewidget.cpp \
            ui/schedulewizzard.cpp \
-           ui/schedviewer.cpp
-#    ui/dsgn/teamwidget.cpp \
-#    ui/dsgn/mainwindow.cpp
+           ui/schedviewer.cpp \
+    ui/dsgn/teamwidget.cpp \
+    ui/dsgn/mainwindow.cpp \
+    ui/multiselectcalendarwidget.cpp
 
-#FORMS += \
-#    ui/dsgn/teamwidget.ui \
-#    ui/dsgn/mainwindow.ui
+FORMS += \
+    ui/dsgn/teamwidget.ui \
+    ui/dsgn/mainwindow.ui

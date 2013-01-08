@@ -16,6 +16,12 @@ public:
     ~TeamWidget();
     
 private:
+    /*!
+     * \brief initPersonal Initializes the personal box.
+     */
+    void initPersonal();
+
+
     Ui::TeamWidget *ui;
 };
 
