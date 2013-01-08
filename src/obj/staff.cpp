@@ -89,8 +89,8 @@ void Staff::operator << (const QVariantMap &json) {
     firstName = name["f"].toString();
     lastName = name["l"].toString();
 
-    position = json["pos"].toBool();
-    gender = json["gndr"].toBool();
+    position = static_cast<bool>(json["pos"].toInt());
+    gender = static_cast<bool>(json["gndr"].toInt());
     nightClass = json["night"].toInt();
 
     foreach (QVariant qv, json["avail"].toList()) {
@@ -118,8 +118,8 @@ void Staff::operator >>(QVariantMap &json) {
     name["l"] = lastName;
     json["name"] = name;
 
-    json["pos"] = position;
-    json["gndr"] = gender;
+    json["pos"] = static_cast<int>(position);
+    json["gndr"] = static_cast<int>(gender);
     json["night"] = nightClass;
 
     QVariantList list;

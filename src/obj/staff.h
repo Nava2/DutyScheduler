@@ -15,6 +15,16 @@ class Staff
 public:
     typedef QSharedPointer<Staff> Ptr;
 
+    enum POSITION {
+        DON = 1,
+        RA = 0
+    };
+
+    enum GENDER {
+        MALE = 1,
+        FEMALE = 0
+    };
+
     Staff();
     Staff(int, QString, QString, bool, bool, int);
     Staff(const QVariantMap &);

@@ -449,7 +449,7 @@ bool IOHandler::saveStaffTeamJson(QFile &file,
                                   const QList<Exam::Ptr> &midtermList) {
 
     QJson::Serializer serializer;
-//    serializer.setIndentMode(QJson::IndentFull);
+    serializer.setIndentMode(QJson::IndentFull);
 
     QVariantMap out;
 
@@ -1125,7 +1125,7 @@ QString IOHandler::getSaveFileName(QWidget *parent, const IOType type) {
     }
 
     QString file = QFileDialog::getSaveFileName(parent, caption, dir, filters, &selectedFilter);
-    if (!file.isEmpty() && currentMember) {
+    if (currentMember && !file.isEmpty()) {
         *currentMember = file;
     }
 
