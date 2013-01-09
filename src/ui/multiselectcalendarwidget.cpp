@@ -186,11 +186,3 @@ QColor MultiSelectCalendarWidget::selectedColour() const {
 void MultiSelectCalendarWidget::selectedColour(const QColor &newColour) {
     _selectedColour = newColour;
 }
-
-QColor MultiSelectCalendarWidget::unselectedColour() const {
-    return _unselectedColour;
-}
-
-void MultiSelectCalendarWidget::unselectedColour(const QColor &newColour) {
-    _unselectedColour = newColour;
-}
