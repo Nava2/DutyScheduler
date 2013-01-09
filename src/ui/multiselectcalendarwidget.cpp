@@ -213,7 +213,7 @@ void MultiSelectCalendarWidget::resetCalendar() {
 void MultiSelectCalendarWidget::setDayOfWeekActive(const Qt::DayOfWeek dw, const bool available) {
     QTextCharFormat wfmt = _cal->weekdayTextFormat(dw);
 
-    weekDayReoccur[dw] = !available;
+    weekDayReoccur[dw] = available;
     if (available) {
         wfmt.setBackground(_selectedColour);
         _cal->setWeekdayTextFormat(dw, wfmt);

@@ -6,16 +6,14 @@
 #include <QRegExpValidator>
 #include <QSignalMapper>
 
+#include <QDebug>
+
 
 TeamWidget::TeamWidget(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::TeamWidget), _calTimeOff(nullptr), _countTimeOff(0)
 {
     ui->setupUi(this);
-
-
-    initPersonal();
-    initTimeOff();
 
     mapShortDayToDOW["sun"] = Qt::Sunday;
     mapShortDayToDOW["mon"] = Qt::Monday;
@@ -24,6 +22,10 @@ TeamWidget::TeamWidget(QWidget *parent) :
     mapShortDayToDOW["thurs"] = Qt::Thursday;
     mapShortDayToDOW["fri"] = Qt::Friday;
     mapShortDayToDOW["sat"] = Qt::Saturday;
+
+
+    initPersonal();
+    initTimeOff();
 }
 
 TeamWidget::~TeamWidget()
@@ -57,6 +59,7 @@ void TeamWidget::initTimeOff() {
     QSignalMapper *cbMapper = new QSignalMapper(this);
     foreach (QAbstractButton *cb, cbs) {
         connect(cb, SIGNAL(clicked()), cbMapper, SLOT(map()));
+        qDebug() << cb->text().toLower() << "->" << mapShortDayToDOW[cb->text().toLower()];
         cbMapper->setMapping(cb, static_cast<int>(mapShortDayToDOW[cb->text().toLower()]));
     }
     connect(cbMapper, SIGNAL(mapped(int)), this, SLOT(toggleWeekday(int)));
@@ -80,7 +83,8 @@ void TeamWidget::updateTimeOffCount(const QDate &date, bool selected) {
 void TeamWidget::toggleWeekday(const int dayOfWeek) {
     Qt::DayOfWeek dw = static_cast<Qt::DayOfWeek>(dayOfWeek);
 
-    QList<QAbstractButton *> cbs = ui->btnGrpReoccur->buttons();
+    QSignalMapper *mapper = dynamic_cast<QSignalMapper *>(sender());
+    QAbstractButton *cb = dynamic_cast<QAbstractButton *>(mapper->mapping(dayOfWeek));
 
-    _calTimeOff->setDayOfWeekActive(dw, cbs[dayOfWeek]->isChecked());
+    _calTimeOff->setDayOfWeekActive(dw, cb->isChecked());
 }
