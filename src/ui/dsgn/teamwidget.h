@@ -3,6 +3,8 @@
 
 #include <QWidget>
 
+#include "ui/multiselectcalendarwidget.h"
+
 namespace Ui {
 class TeamWidget;
 }
@@ -21,8 +23,14 @@ private:
      */
     void initPersonal();
 
+    /*!
+     * \brief initTimeOff Initializes the time off request calendar
+     */
+    void initTimeOff();
+
 
     Ui::TeamWidget *ui;
+    MultiSelectCalendarWidget *_calTimeOff;
 };
 
 #endif // TEAMWIDGET_H
