@@ -38,8 +38,6 @@ bool MultiSelectCalendarFilter::eventFilter(QObject *obj, QEvent *event) {
         getFirstLastIndex(first, last);
 
         int iidx = idx.row() * _tbl->model()->columnCount() + idx.column();
-        qDebug() << "iidx:" << iidx << "f:" << first << "l:" << last;
-
 
         if (mev->type() == QEvent::MouseButtonPress) {
             // starting
@@ -102,6 +100,7 @@ bool MultiSelectCalendarFilter::eventFilter(QObject *obj, QEvent *event) {
                     emit selectCoord(row, col);
             }
 
+            _state = INITIAL;
             return true;
         }
     }
@@ -154,10 +153,15 @@ void MultiSelectCalendarWidget::onSelectCoord(const int row, const int col) {
     QAbstractItemModel *mdl = tbl->model();
 
     QModelIndex idx = mdl->index(row, col);
-//    qDebug() << "Clicked Date (" << row << ", " << col << "):" << clkInx << "1st index:" << rowColIdx;
 
     QDate date(_cal->yearShown(), _cal->monthShown(), mdl->data(idx).toInt());
-    qDebug() << "Toggling: " << date;
+
+    if (weekDayReoccur[static_cast<Qt::DayOfWeek>(date.dayOfWeek())]) {
+        // weekday can't be worked
+        // nothing to do then
+
+        return;
+    }
 
     if (idx.row() != 0) {
         // not the headers
@@ -185,4 +189,36 @@ QColor MultiSelectCalendarWidget::selectedColour() const {
 
 void MultiSelectCalendarWidget::selectedColour(const QColor &newColour) {
     _selectedColour = newColour;
+}
+
+void MultiSelectCalendarWidget::resetCalendar() {
+    for (QDate dIter = _cal->minimumDate(); dIter <= _cal->maximumDate(); dIter = dIter.addDays(1)) {
+        QTextCharFormat fmt = _cal->dateTextFormat(dIter);
+        QTextCharFormat wfmt = _cal->weekdayTextFormat(static_cast<Qt::DayOfWeek>(dIter.dayOfWeek()));
+        if (fmt != wfmt) {
+            _cal->setDateTextFormat(dIter, wfmt);
+
+            emit ToggleSelected(dIter, false);
+        }
+    }
+
+    // reset the day of the week fmts to default
+    foreach (Qt::DayOfWeek dw, defFmtMap.keys()) {
+        _cal->setWeekdayTextFormat(dw, defFmtMap[dw]);
+
+        weekDayReoccur[dw] = false;
+    }
+}
+
+void MultiSelectCalendarWidget::setDayOfWeekActive(const Qt::DayOfWeek dw, const bool available) {
+    QTextCharFormat wfmt = _cal->weekdayTextFormat(dw);
+
+    weekDayReoccur[dw] = !available;
+    if (available) {
+        wfmt.setBackground(_selectedColour);
+        _cal->setWeekdayTextFormat(dw, wfmt);
+    } else {
+        // reset
+        _cal->setWeekdayTextFormat(dw, defFmtMap[dw]);
+    }
 }

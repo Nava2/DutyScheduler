@@ -16,7 +16,16 @@ class TeamWidget : public QWidget
 public:
     explicit TeamWidget(QWidget *parent = 0);
     ~TeamWidget();
-    
+
+public slots:
+    void updateTimeOffCount(const QDate &date, bool selected);
+
+    /*!
+     * \brief toggleWeekday Called when the QCheckBox is toggled for a week
+     * \param dayOfWeek
+     */
+    void toggleWeekday(const int dayOfWeek);
+
 private:
     /*!
      * \brief initPersonal Initializes the personal box.
@@ -31,6 +40,10 @@ private:
 
     Ui::TeamWidget *ui;
     MultiSelectCalendarWidget *_calTimeOff;
+
+    int _countTimeOff; //!< Total time off requests
+
+    QMap<QString, Qt::DayOfWeek> mapShortDayToDOW;
 };
 
 #endif // TEAMWIDGET_H

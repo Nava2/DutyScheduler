@@ -55,6 +55,14 @@ public:
     QColor selectedColour() const;
     void selectedColour(const QColor &newColour);
 
+    void setDayOfWeekActive(const Qt::DayOfWeek dw, const bool available);
+
+    /*!
+     * \brief resetCalendar Resets all state. Emits signals on changing, up to
+     *        connected objects to decide to use or not.
+     */
+    void resetCalendar();
+
 signals:
     /*!
      * \brief ToggleSelected emitted when a date's selection is toggled
@@ -76,6 +84,10 @@ private:
     QCalendarWidget *_cal;
 
     QColor _selectedColour;
+
+    QMap<Qt::DayOfWeek, bool> weekDayReoccur;
+
+    QMap<Qt::DayOfWeek, QTextCharFormat> defFmtMap;
 };
 
 #endif // MULTISELECTCALENDARWIDGET_H
