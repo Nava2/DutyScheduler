@@ -31,7 +31,7 @@ public:
     int getId();
 
     bool isMidterm() const;
-    void setMidterm(const bool);
+    void setMidterm(const bool mterm);
 
     void addStaff(const QString &id);
     void removeStaff(const QString &id);
@@ -40,8 +40,8 @@ public:
 
 private:
     int id;
-    Period period;
-    bool midterm;
+    Period _period;
+    bool _isMidterm;
 
     QList<QString > staffIds;
 };

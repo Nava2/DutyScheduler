@@ -29,7 +29,8 @@ HEADERS += obj/availabledate.h \
            ui/schedviewer.h \
     ui/dsgn/teamwidget.h \
     ui/dsgn/mainwindow.h \
-    ui/multiselectcalendarwidget.h
+    ui/multiselectcalendarwidget.h \
+    ui/ctrl/examcalendar.h
 SOURCES += main.cpp \
            obj/availabledate.cpp \
            obj/exam.cpp \
@@ -48,7 +49,8 @@ SOURCES += main.cpp \
            ui/schedviewer.cpp \
     ui/dsgn/teamwidget.cpp \
     ui/dsgn/mainwindow.cpp \
-    ui/multiselectcalendarwidget.cpp
+    ui/multiselectcalendarwidget.cpp \
+    ui/ctrl/examcalendar.cpp
 
 FORMS += \
     ui/dsgn/teamwidget.ui \
