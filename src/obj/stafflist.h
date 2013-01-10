@@ -19,6 +19,7 @@ public:
 
     explicit StaffList(QObject *parent = 0);
     StaffList(const StaffList &list);
+    StaffList &operator =(const StaffList &list);
 
     virtual
     ~StaffList();
@@ -48,8 +49,6 @@ public:
     
     StaffList &operator <<(const QVariantMap &json);
     StaffList &operator >>(QVariantMap &json);
-
-    StaffList &operator =(const StaffList &list);
 
     const_iterator begin() const;
     const_iterator end() const;

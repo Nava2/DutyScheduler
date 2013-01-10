@@ -4,6 +4,7 @@
 #include <QWidget>
 
 #include "ui/multiselectcalendarwidget.h"
+#include "ctrl/examcalendar.h"
 
 namespace Ui {
 class TeamWidget;
@@ -37,9 +38,16 @@ private:
      */
     void initTimeOff();
 
+    /*!
+     * \brief initExams Initializes exam controllers
+     */
+    void initExams();
+
 
     Ui::TeamWidget *ui;
     MultiSelectCalendarWidget *_calTimeOff;
+
+    ctrl::ExamCalendar *ctrlExamCalMid, *ctrlExamCalFin;
 
     int _countTimeOff; //!< Total time off requests
 

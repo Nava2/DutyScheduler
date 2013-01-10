@@ -65,6 +65,12 @@ void TeamWidget::initTimeOff() {
     connect(cbMapper, SIGNAL(mapped(int)), this, SLOT(toggleWeekday(int)));
 }
 
+void TeamWidget::initExams() {
+    ExamListModel *midtermModel = new ExamListModel(exams, this);
+
+    ctrlExamCalMid = new ctrl::ExamCalendar(AAAA, true, ui->cwMidterms, BBBB, this);
+}
+
 /////////// SLOTS
 /////////////////////////////////////
 

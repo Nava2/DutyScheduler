@@ -30,7 +30,9 @@ HEADERS += obj/availabledate.h \
     ui/dsgn/teamwidget.h \
     ui/dsgn/mainwindow.h \
     ui/multiselectcalendarwidget.h \
-    ui/ctrl/examcalendar.h
+    ui/ctrl/examcalendar.h \
+    ui/ctrl/maincontroller.h \
+    obj/examlist.h
 SOURCES += main.cpp \
            obj/availabledate.cpp \
            obj/exam.cpp \
@@ -50,7 +52,9 @@ SOURCES += main.cpp \
     ui/dsgn/teamwidget.cpp \
     ui/dsgn/mainwindow.cpp \
     ui/multiselectcalendarwidget.cpp \
-    ui/ctrl/examcalendar.cpp
+    ui/ctrl/examcalendar.cpp \
+    ui/ctrl/maincontroller.cpp \
+    obj/examlist.cpp
 
 FORMS += \
     ui/dsgn/teamwidget.ui \

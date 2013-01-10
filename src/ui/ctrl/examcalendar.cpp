@@ -1,13 +1,17 @@
 #include "examcalendar.h"
 
+#include <QTextCharFormat>
+
 using namespace ctrl;
 
-ExamCalendar::ExamCalendar(const ExamContainer &exams, const bool isMidterm,
+ExamCalendar::ExamCalendar(const ExamListModel &exams, const bool isMidterm,
                            QCalendarWidget * const calendar,
                            const QList<QCheckBox *> &cbs,
                            QObject *parent) :
     QObject(parent), _isMidterm(isMidterm), _cal(calendar), _checkboxes(cbs), _exams(exams)
 {
+
+    connect(_cal, SIGNAL(clicked(QDate)), this, SLOT(onCalendarDateClicked(QDate)));
 }
 
 ExamCalendar::~ExamCalendar() {
@@ -62,3 +66,4 @@ void ExamCalendar::onCalendarDateClicked(const QDate &date) {
         }
     }
 }
+
