@@ -10,6 +10,8 @@
 
 #include "staff.h"
 #include "exam.h"
+#include "examlist.h"
+#include "stafflist.h"
 #include "sdate.h"
 #include "myqlistwidget.h"
 #include "schedviewer.h"
@@ -43,7 +45,6 @@ class ScheduleWidget : public QWidget
     Q_OBJECT
 
 public:
-    ScheduleWidget(QWidget *parent);
     ScheduleWidget(const QString &fileNameStaff, const ScheduleWizzard &swiz, QWidget *parent);
     void saveMidSchedule(const QString &);
     ScheduleWidget(const QString &fileNameSchedule, StaffList &team, QList<Exam::Ptr> &finals, QList<Exam::Ptr> &midterms, QWidget *parent);
@@ -139,7 +140,7 @@ private:
     QString dayDutyPrevIDs[2];
 
     StaffList theTeam;
-    QList<Exam::Ptr> theFinals, theMidterms;
+    ExamList theFinals, theMidterms;
 
     QDate startDate;
     QDate endDate;

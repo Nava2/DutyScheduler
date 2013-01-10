@@ -1,5 +1,10 @@
 #include "examlist.h"
 
+ExamList::ExamList(QObject *parent)
+    : QObject(parent) {
+    ; // pass
+}
+
 ExamList::ExamList(const QList<Exam::Ptr> &exams, QObject *parent)
     : QObject(parent) {
 
@@ -26,7 +31,7 @@ ExamList &ExamList::operator =(const ExamList &other) {
     return *this;
 }
 
-Exam::Ptr ExamList::getExam(const QDate &date, const Exam::Period p) {
+Exam::Ptr ExamList::getExam(const QDate &date, const Exam::Period p) const {
     QList<Exam::Ptr> tlist = _map.values(date);
     foreach (Exam::Ptr ptr, tlist) {
         if (ptr->getPeriod() == p) {
@@ -37,7 +42,7 @@ Exam::Ptr ExamList::getExam(const QDate &date, const Exam::Period p) {
     return Exam::Ptr();
 }
 
-QList<Exam::Ptr> ExamList::getExams(const QDate &date) {
+QList<Exam::Ptr> ExamList::getExams(const QDate &date) const {
     QList<Exam::Ptr> tList = _map.values(date);
 
     QList<Exam::Ptr> out;
@@ -62,7 +67,7 @@ QList<Exam::Ptr> ExamList::getExams(const QDate &date) {
     return out;
 }
 
-void ExamList::addExam(const Exam::Ptr &newExam) {
+void ExamList::add(const Exam::Ptr &newExam) {
     QList<Exam::Ptr> old = _map.values(*newExam);
 
     foreach (Exam::Ptr p, old) {
@@ -74,6 +79,24 @@ void ExamList::addExam(const Exam::Ptr &newExam) {
     }
 
     _map.insert(*newExam, newExam);
+}
+
+void ExamList::remove(const Exam::Ptr &exam) {
+    _map.remove(*exam, exam);
+}
+
+ExamList &ExamList::operator +=(const Exam::Ptr &newExam) {
+    add(newExam);
+
+    return *this;
+}
+
+void ExamList::clear() {
+    _map.clear();
+}
+
+QList<Exam::Ptr> ExamList::all() const {
+    return _map.values();
 }
 
 // IO:
@@ -92,15 +115,17 @@ ExamList &ExamList::operator <<(const QVariantMap &json) {
             _map.insert(d, p);
         }
     }
+
+    return *this;
 }
 
-ExamList &ExamList::operator >>(QVariantMap &json) {
+void ExamList::operator >>(QVariantMap &json) const {
     foreach (QDate key, _map.keys()) {
         QList<Exam::Ptr> exams = _map.values(key);
 
         QVariantList vlist;
         foreach (Exam::Ptr p, exams) {
-            QVariant v;
+            QVariantMap v;
             *p >> v;
             vlist += v;
         }

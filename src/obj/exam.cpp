@@ -7,8 +7,8 @@ Exam::Exam()
 {
 }
 
-Exam::Exam(const int i, const QDate &date, const bool midterm, const Exam::Period period)
-    : QDate(date), _period(period), _isMidterm(midterm)
+Exam::Exam(const int i, const QDate &date, const Exam::Period period)
+    : QDate(date), _period(period)
 {
     this->id = i;
 }
@@ -23,7 +23,6 @@ Exam::Exam(const Exam &old)
     if (this != &old) {
         this->id = old.id;
         _period = old._period;
-        _isMidterm = old._isMidterm;
     }
 }
 void Exam::setPeriod(const Exam::Period period) {
@@ -32,14 +31,6 @@ void Exam::setPeriod(const Exam::Period period) {
 
 Exam::Period Exam::getPeriod() const {
     return _period;
-}
-
-bool Exam::isMidterm() const {
-    return _isMidterm;
-}
-
-void Exam::setMidterm(const bool midterm) {
-    this->_isMidterm = midterm;
 }
 
 int Exam::getId()
@@ -78,8 +69,6 @@ void Exam::operator <<(const QVariantMap &json) {
         _period = static_cast<Period>(it->toInt());
     }
 
-    _isMidterm = json["mid"].toBool();
-
     QVariantList list = json["ids"].toList();
     staffIds.clear();
     foreach (QVariant uid, list) {
@@ -92,7 +81,6 @@ void Exam::operator >>(QVariantMap &json) {
     json["id"] = id;
     json["date"] = *(dynamic_cast<QDate*>(this));
     json["period"] = static_cast<int>(_period);
-    json["mid"] = _isMidterm;
 
     QVariantList t_idList;
     foreach (QString uid, staffIds) {
@@ -103,8 +91,7 @@ void Exam::operator >>(QVariantMap &json) {
 
 bool Exam::operator ==(const Exam &ex) {
     return ((QDate)(*this) == (QDate)(ex))
-            && _period == ex._period
-            && _isMidterm == ex._isMidterm;
+            && _period == ex._period;
 }
 
 bool Exam::operator !=(const Exam &ex) {

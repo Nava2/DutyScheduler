@@ -16,7 +16,7 @@ public:
     typedef QSharedPointer<Exam> Ptr;
 
     Exam();
-    Exam(const int, const QDate &, const bool, const Period period);
+    Exam(const int, const QDate &, const Period period);
     Exam(const Exam &);
     Exam(const QVariantMap &);
 
@@ -30,7 +30,6 @@ public:
 
     int getId();
 
-    bool isMidterm() const;
     void setMidterm(const bool mterm);
 
     void addStaff(const QString &id);
@@ -41,7 +40,6 @@ public:
 private:
     int id;
     Period _period;
-    bool _isMidterm;
 
     QList<QString > staffIds;
 };

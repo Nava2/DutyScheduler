@@ -21,8 +21,8 @@
 
 QString IOHandler::BLANK_ENTRY = "\"\"";
 
-IOHandler::IOHandler() :
-    errorMsg(""), errorTitle("")
+IOHandler::IOHandler(QObject *parent)
+    : QObject(parent), errorMsg(""), errorTitle("")
 {
 }
 
@@ -113,11 +113,6 @@ bool IOHandler::checkFileName(const QString &fileName, FileExtension *ext) {
     if (period_pos == 0) {
         *ext = UNKWN;
         result = false;
-    } else if(fileName.mid(period_pos, 3) == "txt") {
-        result = true;
-        if (ext) {
-            *ext = CSV;
-        }
     } else if (fileName.mid(period_pos, 4) == "json") {
         result = true;
 
@@ -132,7 +127,7 @@ bool IOHandler::checkFileName(const QString &fileName, FileExtension *ext) {
     return result;
 }
 
-bool IOHandler::loadStaffTeam(QString filePath, StaffList &staffList, QList<Exam::Ptr> &finalList, QList<Exam::Ptr> &midtermList)
+bool IOHandler::loadStaffTeam(QString filePath, StaffList &staffList, ExamList &finalList, ExamList &midtermList)
 {
 
     FileExtension ext;
@@ -165,16 +160,12 @@ bool IOHandler::loadStaffTeam(QString filePath, StaffList &staffList, QList<Exam
             result = loadStaffTeamJson(file, staffList, finalList, midtermList);
 
             // remap IDs
-            foreach (Exam::Ptr e, midtermList) {
+            foreach (Exam::Ptr e, midtermList.all()) {
                 foreach (QString id, e->getStaff()) {
                     if (staffList[id])
                         staffList[id]->addMidterm(e);
                 }
             }
-        } break;
-        case CSV: {
-            result = loadStaffTeamFile(file, staffList, finalList);
-            qDebug() << "CSV is outdated.";
         } break;
         case BAD:
         default: {
@@ -182,7 +173,7 @@ bool IOHandler::loadStaffTeam(QString filePath, StaffList &staffList, QList<Exam
         } break;
         }
 
-        foreach (Exam::Ptr e, finalList) {
+        foreach (Exam::Ptr e, finalList.all()) {
             foreach (QString id, e->getStaff()) {
                 if (staffList[id])
                     staffList[id]->addFinal(e);
@@ -198,7 +189,7 @@ bool IOHandler::loadStaffTeam(QString filePath, StaffList &staffList, QList<Exam
 }
 
 
-bool IOHandler::loadStaffTeamJson(QFile &file, StaffList &staffList, QList<Exam::Ptr> &finals, QList<Exam::Ptr> &midterms) {
+bool IOHandler::loadStaffTeamJson(QFile &file, StaffList &staffList, ExamList &finals, ExamList &midterms) {
 
     QJson::Parser parser; // define parser
 
@@ -231,150 +222,22 @@ bool IOHandler::loadStaffTeamJson(QFile &file, StaffList &staffList, QList<Exam:
     QVariantList v_finals = examMap["finals"].toList();
     foreach (QVariant qv, v_finals) {
         Exam::Ptr pexam (new Exam(qv.toMap()));
-        finals.append(pexam);
+        finals += pexam;
     }
 
     QVariantList v_midterms = examMap["mid"].toList();
     foreach (QVariant qv, v_midterms) {
         Exam::Ptr pexam (new Exam(qv.toMap()));
-        midterms.append(pexam);
+        midterms += pexam;
     }
-
-    return true;
-}
-
-//FILE HANDLERS
-bool IOHandler::loadStaffTeamFile(QFile &file, StaffList &staffList, QList<Exam::Ptr> &examList)
-{
-    QTextStream ts(&file);
-
-    QString currentLine = "";
-    QStringList current_Line;
-
-
-    //IMPORT STAFF MEMBERS
-    int id = 999;
-    QString first = "";
-    QString last = "";
-    bool pos = false;
-    bool gen = false;
-    int night = 0;
-    QString avail = "";
-    QString exams = "";
-
-    //IMPORT EXAMS
-    Exam::Period e_time = Exam::MORNING;
-
-
-    bool ExamsFlag = false;//this flag tells us where we are in the text file.
-
-    while(!ts.atEnd())
-    {
-        currentLine = ts.readLine();
-
-        if (ts.atEnd())
-            break;
-
-        if (currentLine == "[STAFF]")
-            continue;
-
-        if (currentLine == "[EXAMS]")
-        {
-            ExamsFlag = true;
-            continue;
-        }
-
-        //split the input line into an array of strings
-        current_Line = currentLine.split(",", QString::SkipEmptyParts);
-
-        Staff::Ptr s;
-        Exam::Ptr e;
-
-        if(!ExamsFlag)//looking at staff data
-        {
-            avail = "";
-            exams = "";
-
-            if(current_Line.count() < 6)
-            {
-                setErrorInfo("ERROR", "ERROR: BAD INPUT FILE. PLEASE RESTART THE PROGRAM.");
-                return false;
-            }
-            id = current_Line.at(0).toInt();
-            first = current_Line.at(1);
-            last = current_Line.at(2);
-
-            if (current_Line.at(3) == "D")
-                pos = true;
-            else
-                pos = false;
-
-            if (current_Line.at(4) == "M")
-                gen = true;
-            else
-                gen = false;
-
-            night = current_Line.at(5).toInt();
-
-            int y = 6;
-            bool flag = true;
-
-            while(flag)
-            {
-
-                if (y >= current_Line.size())
-                {
-                    flag = false;
-                }
-                else if(current_Line.at(y).startsWith("("))
-                {
-                    exams += current_Line.at(y) + ",";
-                }
-                else
-                {
-                    avail += current_Line.at(y) + ",";
-                }
-
-                y++;
-            }
-
-            s = Staff::Ptr(new Staff(id, first, last,
-                                     pos, gen, night));
-            s->setAvailability(avail);
-            s->setFinals(exams, examList);
-
-            staffList.append(s);
-        }
-        else // we are now looking at exam data
-        {
-            if(current_Line.count() != 3)
-            {
-                setErrorInfo("ERROR", "ERROR: BAD INPUT FILE. PLEASE RESTART THE PROGRAM.");
-                return false;
-            }
-            id = current_Line.at(0).toInt();
-            QDate date = QDate::fromString(current_Line.at(1), "dd/MM/yyyy");
-
-            if (current_Line.at(2) == "1")
-                e_time = Exam::NIGHT;
-            else
-                e_time = Exam::NIGHT;
-
-            e = Exam::Ptr(new Exam(id, date, false, e_time));
-
-            examList.append(e);
-        }
-    }
-
-    currentStaffFile = file.fileName();
 
     return true;
 }
 
 bool IOHandler::saveStaffTeam(const QString &fileName,
                               const StaffList &staffList,
-                              const QList<Exam::Ptr> &finals,
-                              const QList<Exam::Ptr> &midterms) {
+                              const ExamList &finals,
+                              const ExamList &midterms) {
 
     FileExtension ext;
     bool result = IOHandler::checkFileName(fileName, &ext);
@@ -392,10 +255,6 @@ bool IOHandler::saveStaffTeam(const QString &fileName,
         case JSON: {
             result = saveStaffTeamJson(file, staffList, finals, midterms);
         } break;
-        case CSV: {
-            result = saveStaffTeamFile(file, staffList, finals);
-            qWarning() << "WARNING: CSV DEPRECIATED.";
-        } break;
         case BAD:
         default: {
             return false;
@@ -410,46 +269,13 @@ bool IOHandler::saveStaffTeam(const QString &fileName,
     return result;
 }
 
-bool IOHandler::saveStaffTeamFile(QFile &file,
-                                  const StaffList &staffList,
-                                  const QList<Exam::Ptr> &examList)
-{
-    QTextStream ts(&file);
-
-    ts << "[STAFF]" << endl;
-    for (int x = 0; x < staffList.size(); x++)
-    {
-        Staff::Ptr t_staff = staffList[x];
-
-        ts << QString::number(x) << ","
-           << t_staff->getFirstName() << ","
-           << t_staff->getLastName() << ","
-           << QString(t_staff->getPosition()?"D":"R") << ","
-           << QString(t_staff->getGender()?"M":"F") << ","
-           << QString::number(t_staff->getNightClass()) << ","
-           << t_staff->getAvailabilityStr()
-           << t_staff->getFinalsStr() << endl;
-    }
-
-    ts << "[EXAMS]" << endl;
-
-    foreach (Exam::Ptr ex, examList)
-    {
-        ts << QString::number(ex->getId()) << ","
-           << ex->toString("dd/MM/yyyy") << ","
-           << (ex->getPeriod() == Exam::NIGHT ? "1" : "0") << endl;
-    }
-
-    return true;
-}
-
 bool IOHandler::saveStaffTeamJson(QFile &file,
                                   const StaffList &sList,
-                                  const QList<Exam::Ptr> &finalList,
-                                  const QList<Exam::Ptr> &midtermList) {
+                                  const ExamList &finalList,
+                                  const ExamList &midtermList) {
 
     QJson::Serializer serializer;
-    serializer.setIndentMode(QJson::IndentFull);
+    serializer.setIndentMode(QJson::IndentMedium);
 
     QVariantMap out;
 
@@ -465,37 +291,12 @@ bool IOHandler::saveStaffTeamJson(QFile &file,
     out["team"] = o_sList;
 
     QVariantMap o_ExamMap;
+    QVariantMap o_eMids, o_eFinals;
+    midtermList >> o_eMids;
+    finalList >> o_eFinals;
 
-    QVariantList o_fExams;
-    int id = 0;
-    foreach (Exam::Ptr pExam, finalList) {
-        if (pExam->getStaff().size() == 0)
-            continue;
-
-        QVariantMap eMap;
-        *pExam >> eMap;
-
-        eMap["id"] = id++;
-
-        o_fExams.append(eMap);
-    }
-
-    QVariantList o_mExams;
-    id = 0;
-    foreach (Exam::Ptr pExam, midtermList) {
-        if (pExam->getStaff().size() == 0)
-            continue;
-
-        QVariantMap eMap;
-        *pExam >> eMap;
-
-        eMap["id"] = id++;
-
-        o_mExams.append(eMap);
-    }
-
-    o_ExamMap["finals"] = o_fExams;
-    o_ExamMap["mid"] = o_mExams;
+    o_ExamMap["mid"] = o_eMids;
+    o_ExamMap["finals"] = o_eFinals;
 
     out["exams"] = o_ExamMap;
 
@@ -536,10 +337,6 @@ bool IOHandler::loadSchedule(const QString &fileName,
         switch (ext) {
         case JSON: {
             result = loadScheduleJson(file, dateList, donsNeeded, rasNeeded);
-        } break;
-        case CSV: {
-            result = loadScheduleFile(file, dateList, nightClasses, donsNeeded, rasNeeded);
-            qWarning() << "WARNING: DO NOT USE CSV.";
         } break;
         case BAD:
         default: {

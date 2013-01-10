@@ -66,9 +66,9 @@ void TeamWidget::initTimeOff() {
 }
 
 void TeamWidget::initExams() {
-    ExamListModel *midtermModel = new ExamListModel(exams, this);
+//    ExamListModel *midtermModel = new ExamListModel(exams, this);
 
-    ctrlExamCalMid = new ctrl::ExamCalendar(AAAA, true, ui->cwMidterms, BBBB, this);
+//    ctrlExamCalMid = new ctrl::ExamCalendar(AAAA, true, ui->cwMidterms, BBBB, this);
 }
 
 /////////// SLOTS

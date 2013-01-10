@@ -17,13 +17,6 @@
 
 #include "mainwindow.h"
 
-ScheduleWidget::ScheduleWidget(QWidget *parent)
-    : QWidget(parent)
-{
-    MainWindow *w = dynamic_cast<MainWindow *>(parent);
-    connect(this, SIGNAL(updateSaveState()), w, SLOT(onUpdateSaveState()));
-}
-
 ScheduleWidget::ScheduleWidget(const QString &staffteamfilename, const ScheduleWizzard &swiz, QWidget *parent)
     : QWidget(parent)
 {
@@ -683,7 +676,7 @@ void ScheduleWidget::dateClicked(QDate dateSelected)
 
     QList<Exam::Ptr> curEPtrs, nextEPtrs;
     if (datesList[dateIndex].isExam()) {
-        foreach (Exam::Ptr ptr, theFinals) {
+        foreach (Exam::Ptr ptr, theFinals.all()) {
             QDate d = *ptr;
             if (d == datesList[dateIndex]) {
                 curEPtrs += ptr;
