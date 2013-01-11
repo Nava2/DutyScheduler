@@ -449,7 +449,7 @@ bool IOHandler::saveStaffTeamJson(QFile &file,
                                   const QList<Exam::Ptr> &midtermList) {
 
     QJson::Serializer serializer;
-//    serializer.setIndentMode(QJson::IndentFull);
+    serializer.setIndentMode(QJson::IndentMedium);
 
     QVariantMap out;
 
