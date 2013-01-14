@@ -18,6 +18,9 @@ public:
     explicit TeamWidget(QWidget *parent = 0);
     ~TeamWidget();
 
+    QCalendarWidget *calendar(const bool isMidterm) const;
+    QList<QCheckBox *> checkboxes(const bool isMidterm) const;
+
 public slots:
     void updateTimeOffCount(const QDate &date, bool selected);
 
@@ -46,8 +49,6 @@ private:
 
     Ui::TeamWidget *ui;
     MultiSelectCalendarWidget *_calTimeOff;
-
-    ctrl::ExamCalendar *ctrlExamCalMid, *ctrlExamCalFin;
 
     int _countTimeOff; //!< Total time off requests
 

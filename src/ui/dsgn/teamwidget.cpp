@@ -71,6 +71,29 @@ void TeamWidget::initExams() {
 //    ctrlExamCalMid = new ctrl::ExamCalendar(AAAA, true, ui->cwMidterms, BBBB, this);
 }
 
+/////////// ACCESSORS:
+/////////////////////////////////////
+
+QCalendarWidget *TeamWidget::calendar(const bool isMidterm) const {
+    return (isMidterm ? ui->cwMidterms : ui->cwFinal);
+}
+
+
+QList<QCheckBox *> TeamWidget::checkboxes(const bool isMidterm) const {
+    QList<QCheckBox *> out;
+    if (isMidterm) {
+        out += ui->cbMidMorn;
+        out += ui->cbMidAft;
+        out += ui->cbMidEve;
+    } else {
+        out += ui->cbFinMorn;
+        out += ui->cbFinAft;
+        out += ui->cbFinEve;
+    }
+
+    return out;
+}
+
 /////////// SLOTS
 /////////////////////////////////////
 

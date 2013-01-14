@@ -3,7 +3,7 @@
 #include <QDate>
 
 Exam::Exam()
-    : QDate(), id(9999), _period(AFTERNOON), _isMidterm(false)
+    : QDate(), id(9999), _period(AFTERNOON)
 {
 }
 
@@ -14,7 +14,7 @@ Exam::Exam(const int i, const QDate &date, const Exam::Period period)
 }
 
 Exam::Exam(const QVariantMap &json)
-    : QDate(), id(0), _period(AFTERNOON), _isMidterm(false) {
+    : QDate(), id(0), _period(AFTERNOON) {
     *this << json;
 }
 

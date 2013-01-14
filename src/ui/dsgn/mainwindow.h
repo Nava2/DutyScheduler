@@ -18,12 +18,14 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+    TeamWidget *teamWidget() const;
+
     void setToStaffMember(const Staff::Ptr &ptr);
     Staff::Ptr getStaffMember();
     
 private:
     Ui::MainWindow *ui;
-    TeamWidget *tw;
+    TeamWidget *_tw;
 };
 
 #endif // MAINWINDOW_H

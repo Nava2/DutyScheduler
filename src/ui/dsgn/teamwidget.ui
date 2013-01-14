@@ -298,7 +298,7 @@
          <enum>QTabWidget::Rounded</enum>
         </property>
         <property name="currentIndex">
-         <number>1</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="tbMidterms">
          <attribute name="title">
@@ -342,6 +342,9 @@
             <property name="text">
              <string>Morning</string>
             </property>
+            <attribute name="buttonGroup">
+             <string notr="true">btnGrpExMid</string>
+            </attribute>
            </widget>
           </item>
           <item row="1" column="1">
@@ -355,6 +358,9 @@
             <property name="text">
              <string>Afternoon</string>
             </property>
+            <attribute name="buttonGroup">
+             <string notr="true">btnGrpExMid</string>
+            </attribute>
            </widget>
           </item>
           <item row="1" column="2">
@@ -368,6 +374,9 @@
             <property name="text">
              <string>Evening</string>
             </property>
+            <attribute name="buttonGroup">
+             <string notr="true">btnGrpExMid</string>
+            </attribute>
            </widget>
           </item>
          </layout>
@@ -414,6 +423,9 @@
             <property name="text">
              <string>Morning</string>
             </property>
+            <attribute name="buttonGroup">
+             <string notr="true">btnGrpExFin</string>
+            </attribute>
            </widget>
           </item>
           <item row="1" column="1">
@@ -427,6 +439,9 @@
             <property name="text">
              <string>Afternoon</string>
             </property>
+            <attribute name="buttonGroup">
+             <string notr="true">btnGrpExFin</string>
+            </attribute>
            </widget>
           </item>
           <item row="1" column="2">
@@ -440,6 +455,9 @@
             <property name="text">
              <string>Evening</string>
             </property>
+            <attribute name="buttonGroup">
+             <string notr="true">btnGrpExFin</string>
+            </attribute>
            </widget>
           </item>
          </layout>
@@ -473,6 +491,16 @@
    </property>
   </buttongroup>
   <buttongroup name="btnGrpReoccur">
+   <property name="exclusive">
+    <bool>false</bool>
+   </property>
+  </buttongroup>
+  <buttongroup name="btnGrpExFin">
+   <property name="exclusive">
+    <bool>false</bool>
+   </property>
+  </buttongroup>
+  <buttongroup name="btnGrpExMid">
    <property name="exclusive">
     <bool>false</bool>
    </property>

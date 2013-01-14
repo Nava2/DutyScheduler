@@ -184,7 +184,6 @@ void ExamWidget::addFinal() {
 
     Exam::Ptr e(new Exam(finals.count(),
                          finalDateEdit->date(),
-                         false,
                          static_cast<Exam::Period>(period)));
 
     QString text = e->toString("dd/MM/yyyy") + " (%1)";
@@ -228,7 +227,6 @@ void ExamWidget::addMidterm() {
 
     Exam::Ptr e(new Exam(midterms.count(),
                          midtermDateEdit->date(),
-                         true,
                          static_cast<Exam::Period>(period)));
 
     QString text = e->toString("dd/MM/yyyy") + " (%1)";

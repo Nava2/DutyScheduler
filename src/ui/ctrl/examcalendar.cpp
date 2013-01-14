@@ -75,7 +75,7 @@ void ExamCalendar::reset() {
 ////////////////////////////
 
 void ExamCalendar::onCalendarDateClicked(const QDate &date) {
-    _curExams = _exams.getExams(date);
+    _curExams = _exams->getExams(date);
 
     foreach (Exam::Ptr p, _curExams) {
         if (p) {
@@ -87,17 +87,22 @@ void ExamCalendar::onCalendarDateClicked(const QDate &date) {
 }
 
 void ExamCalendar::onCheckBoxCheck(const int time) {
+    if (!_curStaff) {
+        // there's not staff member set..
+        return ;
+    }
+
     Exam::Ptr eptr = _curExams[time];
 
     if (!eptr) {
         eptr = Exam::Ptr(new Exam(-1, _curDate, static_cast<Exam::Period>(time)));
 
-        eptr->addStaff(_curStaff->getId());
+        eptr->addStaff(_curStaff->uid());
 
         _exams->add(eptr);
         _curExams = _exams->getExams(_curDate);
     } else {
-        eptr->addStaff(_curStaff->getId());
+        eptr->addStaff(_curStaff->uid());
     }
 }
 
