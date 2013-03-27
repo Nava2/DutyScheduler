@@ -65,6 +65,8 @@ public:
     int getShifts();
     int getWeekendShifts();
     int getAMShifts();
+    
+    void setShifts(int total, int weekend, int am);
 
 
     //setters
@@ -94,8 +96,10 @@ public:
     void appendAvail(const AvailableDate &dt);
     void removeAvail(const AvailableDate &dt);
 
-    void addShift(bool, bool = false);
-    void removeShift(bool, bool);
+    void addShift(bool weekend, bool isAM = false);
+    void removeShift(bool weekend, bool isAM);
+    
+    
 
     bool isUIDSet() const;
     QString uid() const;

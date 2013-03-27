@@ -3,7 +3,7 @@
 
 #include "mainwidget.h"
 #include "mainwindow.h"
-#include "stafflist.h"
+#include "obj/stafflist.h"
 
 MainWidget::MainWidget(QWidget *parent)
     : QWidget(parent)
@@ -202,7 +202,8 @@ void MainWidget::addFinal(const Exam::Ptr e) {
 
 void MainWidget::removeFinal(const Exam::Ptr e)
 {
-    // nothing to do yet?
+    Q_UNUSED(e);
+    // TODO: nothing to do yet?
 }
 
 void MainWidget::addMidterm(const Exam::Ptr e) {
@@ -211,7 +212,8 @@ void MainWidget::addMidterm(const Exam::Ptr e) {
 
 void MainWidget::removeMidterm(const Exam::Ptr e)
 {
-    // nothing to do yet?
+    Q_UNUSED(e);
+    // TODO: nothing to do yet?
 }
 
 // GUI STUFF

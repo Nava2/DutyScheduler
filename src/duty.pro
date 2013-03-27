@@ -9,7 +9,8 @@ INCLUDEPATH += . ui obj
 
 QMAKE_CXXFLAGS += -std=c++11
 
-LIBS += -lqjson
+LIBS += -lqjson -L/usr/local/lib
+unix:INCLUDEPATH += /usr/local/include
 
 # Input
 HEADERS += obj/availabledate.h \

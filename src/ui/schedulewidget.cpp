@@ -6,6 +6,7 @@
 #include <QSignalMapper>
 #include <QListWidget>
 #include <QListWidgetItem>
+#include <QDebug>
 
 #include <math.h>
 
@@ -13,7 +14,7 @@
 #include "schedulewizzard.h"
 #include "schedulewidget.h"
 
-#include "stafflist.h"
+#include "obj/stafflist.h"
 
 #include "mainwindow.h"
 
@@ -1392,6 +1393,45 @@ void ScheduleWidget::updateStats()
 
     schedViewWidget->setToStaff(Staff::Ptr(), datesList);
 }
+
+void ScheduleWidget::refreshStats()
+{
+    // reset all shifts
+    foreach (Staff::Ptr ptr, theTeam) {
+        ptr->setShifts(0, 0, 0);
+    }
+    
+    foreach(SDate sdate, datesList)
+    {
+        if (sdate.isSpecial()) {
+//             qDebug() << "Special:" << (QDate)sdate;
+            // don't count
+            continue;
+        }
+        
+        Qt::DayOfWeek dow = static_cast<Qt::DayOfWeek>(sdate.dayOfWeek());
+//         qDebug() << "Date of week:" << dow;
+        bool wkd = dow == Qt::Friday || dow == Qt::Saturday;
+        
+        QString am = sdate.getAM();
+        QList<QString> dons = sdate.getDons();
+        QList<QString> ras = sdate.getRas();
+        
+        if (am != SDate::AM_NOT_SET)
+            theTeam[am]->addShift(wkd, true);
+        
+        foreach (QString id, dons) {
+            theTeam[id]->addShift(wkd, false);
+        }
+        
+        foreach (QString id, ras) {
+            theTeam[id]->addShift(wkd, false);
+        }
+    }
+    
+    updateStats();
+}
+
 
 void ScheduleWidget::saveMidSchedule(const QString &fileName)
 {

@@ -350,6 +350,12 @@ void Staff::removeShift(bool weekend, bool isAM)
     numShifts--;
 }
 
+void Staff::setShifts(int total, int weekend, int AM) {
+    numShifts = total;
+    numWeekendShifts = weekend;
+    numAMShifts = AM;
+}
+
 bool Staff::isUIDSet() const {
     return UIDSet;
 }

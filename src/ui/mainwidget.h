@@ -4,9 +4,9 @@
 #include <QWidget>
 #include <QtGui>
 
-#include "staff.h"
+#include "obj/staff.h"
 #include "availabilitywidget.h"
-#include "stafflist.h"
+#include "obj/stafflist.h"
 #include "examwidget.h"
 
 QT_BEGIN_NAMESPACE

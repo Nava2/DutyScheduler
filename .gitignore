@@ -1,3 +1,7 @@
+# kdev stuff:
+*.kdev4
+*~
+
 # Qt stuff
 build*/*
 *.pro.user

@@ -1,8 +1,9 @@
 #include "iohandler.h"
 
-#include "staff.h"
-#include "exam.h"
-#include "sdate.h"
+#include "obj/staff.h"
+#include "obj/exam.h"
+#include "obj/sdate.h"
+#include "obj/stafflist.h"
 
 #include <QString>
 #include <QMessageBox>
@@ -13,21 +14,34 @@
 #include <QList>
 #include <QDebug>
 #include <QFileDialog>
+#include <QSettings>
 
 #include <qjson/parser.h>
 #include <qjson/serializer.h>
 
-#include "stafflist.h"
+
 
 QString IOHandler::BLANK_ENTRY = "\"\"";
+
+QString IOHandler::SETTINGS_CURRENT_STAFF_FILE = "io/curstaff";
+QString IOHandler::SETTINGS_CURRENT_SCHEDULE_FILE = "io/cursched";
 
 IOHandler::IOHandler() :
     errorMsg(""), errorTitle("")
 {
+    currentStaffFile = _settings.value(SETTINGS_CURRENT_STAFF_FILE,
+                                       QDir::homePath()
+                                   ).toString();
+    currentScheduleFile = _settings.value(SETTINGS_CURRENT_SCHEDULE_FILE,
+                                          QDir::homePath()
+                                   ).toString();
 }
 
 IOHandler::~IOHandler() {
     cleanUpAutoSave();
+
+    _settings.setValue(SETTINGS_CURRENT_SCHEDULE_FILE, currentScheduleFile);
+    _settings.setValue(SETTINGS_CURRENT_STAFF_FILE, currentStaffFile);
 }
 
 void IOHandler::getErrorInfo(QString &title, QString &msg) {
@@ -113,12 +127,12 @@ bool IOHandler::checkFileName(const QString &fileName, FileExtension *ext) {
     if (period_pos == 0) {
         *ext = UNKWN;
         result = false;
-    } else if(fileName.mid(period_pos, 3) == "txt") {
+    } /*else if(fileName.mid(period_pos, 3) == "txt") {
         result = true;
         if (ext) {
             *ext = CSV;
         }
-    } else if (fileName.mid(period_pos, 4) == "json") {
+    } */else if (fileName.mid(period_pos, 4) == "json") {
         result = true;
 
         if (ext) {
@@ -1078,7 +1092,7 @@ QString IOHandler::getSaveFileName(QWidget *parent, const IOType type) {
     switch (type) {
     case STAFF: {
         caption = "Save Staff File..";
-        filters = "Text files (*.txt);;Json Files (*.json)";
+        filters = "Json Files (*.json)";
         selectedFilter = "Json Files (*.json)";
 
         if (!currentStaffFile.isEmpty()) {
@@ -1089,7 +1103,7 @@ QString IOHandler::getSaveFileName(QWidget *parent, const IOType type) {
     } break;
     case SCHEDULE: {
         caption = "Save Schedule File..";
-        filters = "Text files (*.txt);;Json Files (*.json)";
+        filters = "Json Files (*.json)";
         selectedFilter = "Json Files (*.json)";
 
         if (!currentScheduleFile.isEmpty()) {
@@ -1140,7 +1154,7 @@ QString IOHandler::getOpenFileName(QWidget *parent, const IOType type) {
     switch (type) {
     case STAFF: {
         caption = "Open Staff File..";
-        filters = "Text files (*.txt);;Json Files (*.json)";
+        filters = "Json Files (*.json)";
         selectedFilter = "Json Files (*.json)";
 
         if (!currentStaffFile.isEmpty()) {
@@ -1151,7 +1165,7 @@ QString IOHandler::getOpenFileName(QWidget *parent, const IOType type) {
     } break;
     case SCHEDULE: {
         caption = "Open Schedule File..";
-        filters = "Text files (*.txt);;Json Files (*.json)";
+        filters = "Json Files (*.json)";
         selectedFilter = "Json Files (*.json)";
 
         if (!currentScheduleFile.isEmpty()) {

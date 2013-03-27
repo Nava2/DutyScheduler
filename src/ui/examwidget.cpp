@@ -6,7 +6,7 @@
 #include <QCheckBox>
 #include <QPushButton>
 
-#include "exam.h"
+#include "obj/exam.h"
 #include "mainwidget.h"
 
 ExamWidget::ExamWidget(QList<Exam::Ptr> &finals, QList<Exam::Ptr> &midterms, QWidget *parent) :

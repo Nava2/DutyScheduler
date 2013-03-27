@@ -7,10 +7,11 @@
 #include <QTableWidgetItem>
 #include <QSignalMapper>
 #include <QComboBox>
+#include <QAction>
 
-#include "staff.h"
-#include "exam.h"
-#include "sdate.h"
+#include "obj/staff.h"
+#include "obj/exam.h"
+#include "obj/sdate.h"
 #include "myqlistwidget.h"
 #include "schedviewer.h"
 
@@ -50,6 +51,9 @@ public:
 
     virtual
     ~ScheduleWidget();
+    
+public slots:
+    void refreshStats();
 
 private slots:
     void dateClicked(QDate);
@@ -59,6 +63,7 @@ private slots:
     void showStaffSchedule(QTableWidgetItem*);
     void setAsAM();
     void setSpecialDuty();
+    
     void updateStats();
     void copySlot();
     void pasteSlot();

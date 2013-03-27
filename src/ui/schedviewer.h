@@ -11,8 +11,8 @@
 #include <QDate>
 #include <QGroupBox>
 
-#include "sdate.h"
-#include "staff.h"
+#include "obj/sdate.h"
+#include "obj/staff.h"
 
 class SchedViewer : public QWidget
 {

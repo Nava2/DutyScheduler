@@ -8,7 +8,7 @@
 #include <QGridLayout>
 
 #include "availabilitywidget.h"
-#include "availabledate.h"
+#include "obj/availabledate.h"
 
 class AvailRangeWidget : public QGroupBox
 {
