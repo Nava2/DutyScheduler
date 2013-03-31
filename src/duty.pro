@@ -4,7 +4,7 @@
 
 TEMPLATE = app
 TARGET = 
-DEPENDPATH += . . obj ui
+DEPENDPATH += . obj ui
 INCLUDEPATH += . ui obj
 
 QMAKE_CXXFLAGS += -std=c++11

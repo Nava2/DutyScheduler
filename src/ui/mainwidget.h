@@ -68,6 +68,8 @@ signals:
 
 
 private:
+    Staff::Ptr currentStaff() const;
+
     //DATA
     QList<Exam::Ptr> finalExams, midtermExams;
     StaffList theTeam;

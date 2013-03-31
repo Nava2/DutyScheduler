@@ -242,6 +242,7 @@ void ScheduleWidget::createScheduleGroupBoxs()
 
     for (int i = 0; i < 2; ++i) {
         cbDayDuty[i] = new QComboBox(this);
+        cbDayDuty[i]->setInsertPolicy(QComboBox::InsertAlphabetically);
         connect(cbDayDuty[i], SIGNAL(currentIndexChanged(int)), this, SLOT(changeDayDutyIndex(int)));
 
         dayDutyLabel[i]->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
@@ -419,8 +420,8 @@ void ScheduleWidget::createScheduleStats()
         statsTable->setRowHeight(x,20);
         //name
         QTableWidgetItem *nameItem = new QTableWidgetItem;
-        nameItem->setText(theTeam.at(x)->getFirstName() + " " + theTeam.at(x)->getLastName().left(1));
-        nameItem->setData(Qt::UserRole,theTeam.at(x)->uid());
+        nameItem->setText(theTeam[x]->getFirstName() + " " + theTeam[x]->getLastName().left(1));
+        nameItem->setData(Qt::UserRole,theTeam[x]->uid());
         nameItem->setFlags(flags);
         statsTableItems->append(nameItem);
 
@@ -684,9 +685,10 @@ void ScheduleWidget::dateClicked(QDate dateSelected)
 
     QList<Exam::Ptr> curEPtrs, nextEPtrs;
     if (datesList[dateIndex].isExam()) {
+        QDate cDate = datesList[dateIndex];
         foreach (Exam::Ptr ptr, theFinals) {
             QDate d = *ptr;
-            if (d == datesList[dateIndex]) {
+            if (d == cDate) {
                 curEPtrs += ptr;
             } else if (next && d == *next) {
                 nextEPtrs += ptr;
@@ -826,8 +828,18 @@ void ScheduleWidget::dateClicked(QDate dateSelected)
         cbDayDuty[i]->clear();
 
         cbDayDuty[i]->addItem("");
-        foreach (QString key, dayDutyIDs[i].keys()) {
-            cbDayDuty[i]->addItem(dayDutyIDs[i][key], key);
+
+        QMap<QString, QString> tMap;
+        foreach (QString k, dayDutyIDs[i].keys()) {
+            QString v = dayDutyIDs[i][k];
+            tMap.insert(v, k);
+        }
+
+        QList<QString> keys = tMap.keys();
+        qSort(keys.begin(), keys.end());
+
+        foreach (QString key, keys) {
+            cbDayDuty[i]->addItem(key, tMap[key]);
         }
 
         QString dutyID = datesList[dateIndex].dayShiftMember(i);
@@ -1078,7 +1090,7 @@ void ScheduleWidget::changeDayDutyIndex(const int newIndex) {
     // search setting the new staff member off-deck, and old one on-deck
     QString id = cmb->itemData(newIndex, Qt::UserRole).toString();
     bool f[] = {false, false};
-    for (int i = 0; i < theTeam.size()  && (!f[0] || !f[1]); ++i) {
+    for (int i = 0; i < theTeam.size()  && !(f[0] && f[1]); ++i) {
         QListWidgetItem *ptr = onDeckItems->at(i);
         if (theTeam[i]->uid() == id) {
             ptr->setHidden(true);
@@ -1091,9 +1103,13 @@ void ScheduleWidget::changeDayDutyIndex(const int newIndex) {
         }
     }
 
-    // save the values of both comboboxes.
+    // save the values of both comboboxes, and to the day
+    SDate d = datesList[dateToIndex(calendar->selectedDate())];
+
     for (int i = 0; i < 2; ++i) {
-        dayDutyPrevIDs[i] = cbDayDuty[i]->itemData(cbDayDuty[i]->currentIndex(), Qt::UserRole).toString();
+        QString uid = cbDayDuty[i]->itemData(cbDayDuty[i]->currentIndex(), Qt::UserRole).toString();
+        dayDutyPrevIDs[i] = uid;
+        d.setDayShiftMember(i, uid);
     }
 }
 

@@ -1,5 +1,6 @@
 #include "sdate.h"
 
+#include <QStringList>
 #include <QVariant>
 #include <QVariantMap>
 #include <QVariantList>
@@ -14,6 +15,7 @@ SDate::SDate()
       defaultNeededD(true), defaultNeededR(true),
       _examDay(false),
       rasNeeded(0), donsNeeded(0), weekday(0) {
+    _dayShiftMember[0] = _dayShiftMember[1] = "";
 }
 
 SDate::SDate(const QDate &date, const bool examDay, const int donsN, const int rasN)
@@ -22,6 +24,7 @@ SDate::SDate(const QDate &date, const bool examDay, const int donsN, const int r
       _examDay(examDay),
       rasNeeded(rasN), donsNeeded(donsN), weekday(date.dayOfWeek())
 {
+    _dayShiftMember[0] = _dayShiftMember[1] = "";
 }
 
 SDate::SDate(const QVariantMap &map) :
@@ -126,7 +129,11 @@ bool SDate::isFull() const
     if (AM == AM_NOT_SET)
         return false;
 
-    return (rasFull() && donsFull());
+    bool out = rasFull() && donsFull();
+    if (isExam())
+        out = out && !_dayShiftMember[0].isEmpty() && !_dayShiftMember[1].isEmpty();
+
+    return out;
 }
 
 void SDate::addCantWork(const QString &input)
@@ -330,6 +337,13 @@ void SDate::operator >>(QVariantMap &map) {
         rasVar.append(id);
     }
     map["ras"] = rasVar;
+
+    if (_examDay) {
+        QStringList dayDuty;
+        dayDuty.append(_dayShiftMember[0]);
+        dayDuty.append(_dayShiftMember[1]);
+        map["dayduty"] = dayDuty;
+    }
 }
 
 // in
@@ -369,5 +383,11 @@ void SDate::operator <<(const QVariantMap &map) {
     QVariantList rasVar = map["ras"].toList();
     foreach (QVariant id, rasVar) {
         rasOn.append(id.toString());
+    }
+
+    if (_examDay) {
+        QVariantList list = map["dayduty"].toList();
+        _dayShiftMember[0] = list[0].toString();
+        _dayShiftMember[1] = list[1].toString();
     }
 }
