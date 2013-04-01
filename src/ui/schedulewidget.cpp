@@ -23,11 +23,14 @@ ScheduleWidget::ScheduleWidget(QWidget *parent)
 {
     MainWindow *w = dynamic_cast<MainWindow *>(parent);
     connect(this, SIGNAL(updateSaveState()), w, SLOT(onUpdateSaveState()));
+    _adjustCBDayDuty = false;
 }
 
 ScheduleWidget::ScheduleWidget(const QString &staffteamfilename, const ScheduleWizzard &swiz, QWidget *parent)
     : QWidget(parent)
 {
+    _adjustCBDayDuty = false;
+
     // read from the wizzard
     examSchedule = swiz.isExamSchedule();
     swiz.getDates(startDate, endDate);
@@ -79,6 +82,7 @@ ScheduleWidget::ScheduleWidget(const QString &fileNameSchedule,
                                QWidget *parent) // this constructor is used by LoadSchedule
     : QWidget(parent)
 {    
+    _adjustCBDayDuty = false;
     iohandle = new IOHandler;
 
     bool valid = iohandle->loadSchedule(fileNameSchedule, team, datesList, nightClasses, donsNeeded, rasNeeded);
@@ -695,8 +699,10 @@ void ScheduleWidget::dateClicked(QDate dateSelected)
             }
         }
     } else {
+        _adjustCBDayDuty = true;
         cbDayDuty[0]->clear();
         cbDayDuty[1]->clear();
+        _adjustCBDayDuty = false;
     }
 
     QMap<QString, QString> dayDutyIDs[2]; // uid, name
@@ -738,7 +744,8 @@ void ScheduleWidget::dateClicked(QDate dateSelected)
         // check for exams:
         if (datesList[dateIndex].isExam()) {
             // already scheduled for day duty..
-            bool canWorkNight = id != datesList[dateIndex].dayShiftMember(0) && id != datesList[dateIndex].dayShiftMember(1);
+            bool canWorkNight = id != datesList[dateIndex].dayShiftMember(0) &&
+                    id != datesList[dateIndex].dayShiftMember(1);
 
             // check all exams on current day
             foreach (Exam::Ptr p, curEPtrs) {
@@ -822,8 +829,10 @@ void ScheduleWidget::dateClicked(QDate dateSelected)
             deckItem->setBackgroundColor(defaultRABack);
         }
     }
+
     // fill combo-boxes with available day duty staff
     // also set the current index to be the on duty member
+    _adjustCBDayDuty = true;
     for (int i = 0; i < 2; ++i) {
         cbDayDuty[i]->clear();
 
@@ -848,6 +857,7 @@ void ScheduleWidget::dateClicked(QDate dateSelected)
             cbDayDuty[i]->setCurrentIndex(index);
         }
     }
+    _adjustCBDayDuty = false;
 
 
 //    QDate tDate = calendar->selectedDate();
@@ -1076,41 +1086,53 @@ void ScheduleWidget::showSchedule(const QString &id) {
 }
 
 void ScheduleWidget::changeDayDutyIndex(const int newIndex) {
+    if (_adjustCBDayDuty || newIndex == -1)
+        return ;
+
     QComboBox *cmb = dynamic_cast<QComboBox *>(sender());
 
     // read the currently stored values
-    QString sid;
+    QString sid; // the previously stored ID
     for (int i = 0; i < 2; ++i) {
         if (cmb == cbDayDuty[i] && !dayDutyPrevIDs[i].isEmpty()) {
             sid = dayDutyPrevIDs[i];
+            //TODO Store day duty
             break;
         }
     }
 
     // search setting the new staff member off-deck, and old one on-deck
+    // reset to be ondeck
     QString id = cmb->itemData(newIndex, Qt::UserRole).toString();
     bool f[] = {false, false};
     for (int i = 0; i < theTeam.size()  && !(f[0] && f[1]); ++i) {
         QListWidgetItem *ptr = onDeckItems->at(i);
-        if (theTeam[i]->uid() == id) {
+        Staff::Ptr sptr = theTeam[i];
+        if (sptr->uid() == id) {
+            sptr->addShift(false);
             ptr->setHidden(true);
             f[0] = true;
         }
 
-        if (theTeam[i]->uid() == sid) {
+        if (sptr->uid() == sid) {
             ptr->setHidden(false);
+            sptr->removeShift(false);
             f[1] = true;
         }
     }
 
     // save the values of both comboboxes, and to the day
-    SDate d = datesList[dateToIndex(calendar->selectedDate())];
+    SDate &d = datesList[dateToIndex(calendar->selectedDate())];
 
     for (int i = 0; i < 2; ++i) {
         QString uid = cbDayDuty[i]->itemData(cbDayDuty[i]->currentIndex(), Qt::UserRole).toString();
         dayDutyPrevIDs[i] = uid;
         d.setDayShiftMember(i, uid);
     }
+
+    emit updateSaveState();
+
+    updateStats();
 }
 
 void ScheduleWidget::copySlot()

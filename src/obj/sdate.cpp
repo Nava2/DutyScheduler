@@ -171,7 +171,13 @@ bool SDate::staffCantWork(const QString &input)
 
 bool SDate::isOn(const QString &id) const
 {
-    return (AM == id || donsOn.contains(id) || rasOn.contains(id));
+    bool result = (AM == id || donsOn.contains(id) || rasOn.contains(id));
+
+    if (_examDay) {
+        result = result || id == _dayShiftMember[0] || id == _dayShiftMember[1];
+    }
+
+    return result;
 }
 
 int SDate::getDonsLeft() const

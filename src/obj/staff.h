@@ -97,7 +97,7 @@ public:
     void removeAvail(const AvailableDate &dt);
 
     void addShift(bool weekend, bool isAM = false);
-    void removeShift(bool weekend, bool isAM);
+    void removeShift(bool weekend, bool isAM = false);
     
     
 

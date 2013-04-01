@@ -255,6 +255,10 @@ void MainWindow::saveAsStaffTeam() {
 
 void MainWindow::saveStaffTeamName(const QString &fileName)
 {
+    if (fileName.isEmpty())
+        return ;
+
+
     StaffList _sList = m->getStaff();
     QList<Exam::Ptr> _fList, _mList;
     m->getExams(_fList, _mList);

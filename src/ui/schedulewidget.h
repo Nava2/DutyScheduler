@@ -140,6 +140,7 @@ private:
     MyQListWidget *onDeckList;
     MyQListWidget *onDutyList;
 
+    bool _adjustCBDayDuty;
     QComboBox *cbDayDuty[2];
     QString dayDutyPrevIDs[2];
 
