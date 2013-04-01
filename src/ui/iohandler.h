@@ -22,7 +22,7 @@ public:
     enum _FileExtension { CSV, JSON, UNKWN, BAD };
     enum _IOType { SCHEDULE, STAFF, CSV_EXPORT };
 
-    enum _Position { AM = 2, DON = 0, RA = 1 };
+    enum _Position { AM = 2, DON = 0, RA = 1, DAY = 3 };
 
     static QString BLANK_ENTRY;
 

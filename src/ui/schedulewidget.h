@@ -125,8 +125,6 @@ private:
 
     //tableWidget stuff
     QTableWidget * statsTable;
-    QList<QTableWidgetItem*> * statsTableItems;
-    //
 
     QTableWidget * averagesTable;
     QTableWidgetItem * raAverageItem;

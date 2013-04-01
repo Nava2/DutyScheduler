@@ -196,32 +196,6 @@ ScheduleWidget::ScheduleWidget(const QString &fileNameSchedule,
 
 ScheduleWidget::~ScheduleWidget()
 {
-
-    QList<QTableWidgetItem*>::iterator it_i = statsTableItems->begin();
-
-    for (; it_i != statsTableItems->end();)
-    {
-        delete *it_i;
-        it_i = statsTableItems->erase(it_i);
-    }
-    delete statsTableItems;
-
-    QList<QListWidgetItem*>::iterator it_i2 = onDeckItems->begin();
-    for (; it_i2 != onDeckItems->end();)
-    {
-        delete *it_i2;
-        it_i2 = onDeckItems->erase(it_i2);
-    }
-    delete onDeckItems;
-
-    QList<QListWidgetItem*>::iterator it_i3 = onDutyItems->begin();
-    for (; it_i3 != onDutyItems->end();)
-    {
-        delete *it_i3;
-        it_i3 = onDutyItems->erase(it_i3);
-    }
-    delete onDutyItems;
-
     delete setAsAMAction;
 
     delete copyList;
@@ -427,9 +401,6 @@ void ScheduleWidget::createScheduleStats()
     statsTable->setColumnWidth(4, 70);
     statsTable->setColumnWidth(5, 70);
 
-
-    statsTableItems = new QList<QTableWidgetItem*>;
-
     for (int x = 0; x < theTeam.count(); x++)
     {
         statsTable->setRowHeight(x,20);
@@ -438,7 +409,6 @@ void ScheduleWidget::createScheduleStats()
         nameItem->setText(theTeam[x]->getFirstName() + " " + theTeam[x]->getLastName().left(1));
         nameItem->setData(Qt::UserRole, theTeam[x]->uid());
         nameItem->setFlags(flags);
-        statsTableItems->append(nameItem);
 
         //position
         QTableWidgetItem *positionItem = new QTableWidgetItem;
@@ -1357,10 +1327,12 @@ void ScheduleWidget::exportSchedule()
     QList<int > donAvgs;
     donAvgs += donAverageItem->text().toFloat();
     donAvgs += donAverageWeekendItem->text().toFloat();
+    donAvgs += dayDonAverageItem->text().toFloat();
     donAvgs += amAverageItem->text().toFloat();
 
     QList<int > raAvgs;
     raAvgs += raAverageItem->text().toFloat();
+    raAvgs += raAverageWeekendItem->text().toFloat();
     raAvgs += raAverageWeekendItem->text().toFloat();
 
     map["_dAvgs"] = donAvgs;
@@ -1369,11 +1341,11 @@ void ScheduleWidget::exportSchedule()
     QList<QString > ids;
 
     for (int i = 0; i < statsTable->rowCount(); i++) {
-        QTableWidgetItem *item = statsTableItems->at(i);
+        QTableWidgetItem *item = statsTable->item(i, 0);
 
         QList<int > vals;
 
-        for (int j = 2; j <= 4; j++) {
+        for (int j = 2; j < statsTable->columnCount(); j++) {
             vals += statsTable->item(i, j)->text().toInt();
         }
 
@@ -1406,16 +1378,16 @@ void ScheduleWidget::updateStats()
     int dCount = 0;
 
 
-    for(int x = 0; x < statsTableItems->count(); x++)
+    for(int x = 0; x < statsTable->rowCount(); x++)
     {
-        QString staffId = statsTableItems->at(x)->data(Qt::UserRole).toString();
+        QTableWidgetItem *item = statsTable->item(x, 0);
+        QString staffId = item->data(Qt::UserRole).toString();
         Staff::Ptr pstaff = theTeam[staffId];
-        int row = statsTableItems->at(x)->row();
 
-        statsTable->item(row, 2)->setText(QString::number(pstaff->getShifts(Staff::TOTAL)));
-        statsTable->item(row, 3)->setText(QString::number(pstaff->getShifts(Staff::WEEKEND)));
-        statsTable->item(row, 4)->setText(QString::number(pstaff->getShifts(Staff::DAY)));
-        statsTable->item(row, 5)->setText(QString::number(pstaff->getShifts(Staff::AM)));
+        statsTable->item(x, 2)->setText(QString::number(pstaff->getShifts(Staff::TOTAL)));
+        statsTable->item(x, 3)->setText(QString::number(pstaff->getShifts(Staff::WEEKEND)));
+        statsTable->item(x, 4)->setText(QString::number(pstaff->getShifts(Staff::DAY)));
+        statsTable->item(x, 5)->setText(QString::number(pstaff->getShifts(Staff::AM)));
 
         if (pstaff->getPosition()) {
             dAverage += pstaff->getShifts();
@@ -1432,11 +1404,11 @@ void ScheduleWidget::updateStats()
 
     }
 
-    rAverage = rAverage / rCount;
-    dAverage = dAverage / dCount;
-    rWAverage = rWAverage / rCount;
-    dWAverage = dWAverage / dCount;
-    amAverage = amAverage / dCount;
+    rAverage /= rCount;
+    dAverage /= dCount;
+    rWAverage /= rCount;
+    dWAverage /= dCount;
+    amAverage /= dCount;
     rDAverage /= rCount;
     dDAverage /= dCount;
 
