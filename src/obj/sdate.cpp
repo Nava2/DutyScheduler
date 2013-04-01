@@ -63,6 +63,10 @@ void SDate::setDayShiftMember(int shiftNo, const QString &id) {
     _dayShiftMember[shiftNo] = id;
 }
 
+bool SDate::isOnDayDuty(const QString &id) const {
+    return _examDay && (id == _dayShiftMember[0] || id == _dayShiftMember[1]);
+}
+
 void SDate::setAM(const QString &ami) // set the AM
 {
     AM = ami;
@@ -169,12 +173,12 @@ bool SDate::staffCantWork(const QString &input)
     return false;
 }
 
-bool SDate::isOn(const QString &id) const
+bool SDate::isOn(const QString &uid, const bool checkDay) const
 {
-    bool result = (AM == id || donsOn.contains(id) || rasOn.contains(id));
+    bool result = (AM == uid || donsOn.contains(uid) || rasOn.contains(uid));
 
-    if (_examDay) {
-        result = result || id == _dayShiftMember[0] || id == _dayShiftMember[1];
+    if (checkDay) {
+        result = result || isOnDayDuty(uid);
     }
 
     return result;

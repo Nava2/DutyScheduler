@@ -721,7 +721,7 @@ void ScheduleWidget::dateClicked(QDate dateSelected)
         QString id = deckItem->data(Qt::UserRole).toString();
         QFont font = dutyItem->font();
         //check who's on duty already
-        if (datesList[dateIndex].isOn(id))
+        if (datesList[dateIndex].isOn(id, false))
         {
             if (datesList[dateIndex].getAM() == id)
                 font.setBold(true);
@@ -820,7 +820,7 @@ void ScheduleWidget::dateClicked(QDate dateSelected)
             }
         }
 
-        if (prev && prev->isOn(id)) {
+        if (prev && prev->isOn(id, true)) {
             deckItem->setBackgroundColor(Qt::yellow);
         } else if (theTeam[id]->getPosition()) {
             // don
@@ -878,7 +878,7 @@ void ScheduleWidget::addStaff(QListWidgetItem *item)
     int dateIndex = dateToIndex(calendar->selectedDate());
     bool pos = theTeam.at(staffId)->getPosition();
 
-    if (datesList[dateIndex].isOn(staffId))
+    if (datesList[dateIndex].isOn(staffId, true))
         return;
 
     if (datesList[dateIndex].isSpecial())
@@ -973,7 +973,7 @@ void ScheduleWidget::setAsAM()
     if (!theTeam.at(staffId)->getPosition())
         return;
 
-    if (datesList[dateIndex].isOn(staffId))
+    if (datesList[dateIndex].isOn(staffId, true))
         return;
 
     if (datesList[dateIndex].getAM() != SDate::AM_NOT_SET)
@@ -1203,7 +1203,7 @@ void ScheduleWidget::setAsAM(const QString &staffId)
     if (!theTeam.at(staffId)->getPosition())
         return;
 
-    if (datesList[dateIndex].isOn(staffId))
+    if (datesList[dateIndex].isOn(staffId, true))
         return;
 
     if (datesList[dateIndex].getAM() != SDate::AM_NOT_SET)
@@ -1267,7 +1267,7 @@ void ScheduleWidget::addStaff(const QString &staffId)
     if (nightClasses[calendar->selectedDate().dayOfWeek()-1].contains(staffId))
         return;
 
-    if (datesList[dateIndex].isOn(staffId))
+    if (datesList[dateIndex].isOn(staffId, true))
         return;
 
     if (datesList[dateIndex].isSpecial())
