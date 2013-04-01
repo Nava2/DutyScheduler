@@ -13,6 +13,13 @@ class Staff
 {
 
 public:
+    enum ShiftType {
+        NONE = 0x00,
+        AM = 0x01, TOTAL = 0x83,
+        DAY = 0x80, NIGHT = 0x02, WEEKEND = 0x06
+    };
+    Q_DECLARE_FLAGS(ShiftTypes, ShiftType)
+
     typedef QSharedPointer<Staff> Ptr;
 
     Staff();
@@ -62,11 +69,11 @@ public:
     QList<Exam::Ptr> getMidterms();
     QString getMidtermsStr();
 
-    int getShifts();
+    int getShifts(ShiftTypes type = TOTAL);
     int getWeekendShifts();
     int getAMShifts();
     
-    void setShifts(int total, int weekend, int am);
+    void setShifts(int total, int weekend, int day, int am);
 
 
     //setters
@@ -96,8 +103,8 @@ public:
     void appendAvail(const AvailableDate &dt);
     void removeAvail(const AvailableDate &dt);
 
-    void addShift(bool weekend, bool isAM = false);
-    void removeShift(bool weekend, bool isAM = false);
+    void addShift(ShiftTypes type);
+    void removeShift(ShiftTypes type);
     
     
 
@@ -117,6 +124,7 @@ private:
 //     QString availability;// "dd/MM/yyyy,dd/MM/yyyy," etc
     QList<AvailableDate > availList;
     int numShifts;
+    int numDayDuty;
     int numWeekendShifts;
     int numAMShifts;
 
@@ -125,5 +133,7 @@ private:
     bool examListContains(const Exam::Ptr e, const QList<Exam::Ptr> &list);
 
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(Staff::ShiftTypes)
 
 #endif // STAFF_H

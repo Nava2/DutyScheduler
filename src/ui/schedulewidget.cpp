@@ -103,12 +103,12 @@ ScheduleWidget::ScheduleWidget(const QString &fileNameSchedule,
         nightClasses.append(QList<QString >());
 
     foreach (SDate _sdate, datesList) {
-        bool weekend = _sdate.isWeekend();
+        Staff::ShiftTypes weekend = _sdate.isWeekend() ? Staff::NIGHT | Staff::WEEKEND : Staff::NIGHT;
 
         QString amID = _sdate.getAM();
         if (amID != SDate::AM_NOT_SET) {
             if (theTeam[amID]->getId() < theTeam.count())
-                theTeam[amID]->addShift(weekend, true);    //add the shift count to the staff object
+                theTeam[amID]->addShift( weekend | Staff::AM);    //add the shift count to the staff object
         }
 
         foreach (QString id, _sdate.getDons()) {
@@ -126,7 +126,7 @@ ScheduleWidget::ScheduleWidget(const QString &fileNameSchedule,
         // adjust for day duty
         foreach (Staff::Ptr p, theTeam) {
             if (_sdate.isOnDayDuty(p->uid())) {
-                p->addShift(false, false);
+                p->addShift(Staff::DAY);
             }
         }
 
@@ -921,9 +921,8 @@ void ScheduleWidget::addStaff(QListWidgetItem *item)
     onDutyItems->at(itemIndex)->setHidden(false);
     updateNeeded();
 
-    bool isWeekend = datesList[dateIndex].isWeekend();
-
-    theTeam.at(staffId)->addShift(isWeekend, false);
+    Staff::ShiftTypes shft = datesList[dateIndex].isWeekend() ? Staff::WEEKEND : Staff::NONE;
+    theTeam[staffId]->addShift(shft | Staff::NIGHT);
 
     emit updateSaveState();
 
@@ -958,9 +957,11 @@ void ScheduleWidget::removeStaff(QListWidgetItem *item)
 
     //update the stats counters
 
-    bool isWeekend = datesList[dateIndex].isWeekend();
+    Staff::ShiftTypes shft = datesList[dateIndex].isWeekend() ? Staff::WEEKEND : Staff::NONE;
+    if (isAM)
+        shft = shft | Staff::AM;
 
-    theTeam.at(staffId)->removeShift(isWeekend, isAM);
+    theTeam[staffId]->removeShift(shft | Staff::NIGHT);
 
     if (datesList[dateIndex].isExam()) {
         // fix the day duty lists
@@ -1014,9 +1015,8 @@ void ScheduleWidget::setAsAM()
 
     //update the stats counters
 
-    bool isWeekend = datesList[dateIndex].isWeekend();
-
-    theTeam.at(staffId)->addShift(isWeekend, true);
+    Staff::ShiftTypes shft = datesList[dateIndex].isWeekend() ? Staff::WEEKEND : Staff::NONE;
+    theTeam[staffId]->addShift(shft | Staff::AM);
 
     emit updateSaveState();
 
@@ -1119,14 +1119,14 @@ void ScheduleWidget::changeDayDutyIndex(const int newIndex) {
         QListWidgetItem *ptr = onDeckItems->at(i);
         Staff::Ptr sptr = theTeam[i];
         if (sptr->uid() == id) {
-            sptr->addShift(false);
+            sptr->addShift(Staff::DAY);
             ptr->setHidden(true);
             f[0] = true;
         }
 
         if (sptr->uid() == sid) {
             ptr->setHidden(false);
-            sptr->removeShift(false);
+            sptr->removeShift(Staff::DAY);
             f[1] = true;
         }
     }
@@ -1245,9 +1245,9 @@ void ScheduleWidget::setAsAM(const QString &staffId)
 
     //update the stats counters
 
-    bool isWeekend = datesList[dateIndex].isWeekend();
+    Staff::ShiftTypes isWeekend = datesList[dateIndex].isWeekend() ? Staff::WEEKEND : Staff::NONE;
 
-    pstaff->addShift(isWeekend, true);
+    pstaff->addShift(isWeekend | Staff::AM);
 
     if (datesList[dateIndex].isExam()) {
         // fix the day duty lists
@@ -1311,9 +1311,9 @@ void ScheduleWidget::addStaff(const QString &staffId)
 
     //update the stats counters
 
-    bool isWeekend = datesList[dateIndex].isWeekend();
+    Staff::ShiftTypes isWeekend = datesList[dateIndex].isWeekend() ? Staff::WEEKEND : Staff::NONE;
 
-    pstaff->addShift(isWeekend, false);
+    pstaff->addShift(isWeekend);
 
     if (datesList[dateIndex].isExam()) {
         // fix the day duty lists
@@ -1446,7 +1446,7 @@ void ScheduleWidget::refreshStats()
 {
     // reset all shifts
     foreach (Staff::Ptr ptr, theTeam) {
-        ptr->setShifts(0, 0, 0);
+        ptr->setShifts(0, 0, 0, 0);
     }
     
     foreach(SDate sdate, datesList)
@@ -1460,20 +1460,28 @@ void ScheduleWidget::refreshStats()
         Qt::DayOfWeek dow = static_cast<Qt::DayOfWeek>(sdate.dayOfWeek());
 //         qDebug() << "Date of week:" << dow;
         bool wkd = dow == Qt::Friday || dow == Qt::Saturday;
-        
+        Staff::ShiftTypes wkdShift = wkd ? Staff::WEEKEND : Staff::NONE;
+
         QString am = sdate.getAM();
         QList<QString> dons = sdate.getDons();
         QList<QString> ras = sdate.getRas();
         
         if (am != SDate::AM_NOT_SET)
-            theTeam[am]->addShift(wkd, true);
+            theTeam[am]->addShift(wkdShift | Staff::AM);
         
         foreach (QString id, dons) {
-            theTeam[id]->addShift(wkd, false);
+            theTeam[id]->addShift(wkdShift);
         }
         
         foreach (QString id, ras) {
-            theTeam[id]->addShift(wkd, false);
+            theTeam[id]->addShift(wkdShift);
+        }
+
+        for (int i = 0; i < 2; ++i) {
+            QString uid = sdate.dayShiftMember(i);
+            if (!uid.isEmpty()) {
+                theTeam[uid]->addShift(Staff::DAY);
+            }
         }
     }
     

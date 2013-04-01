@@ -328,32 +328,39 @@ QString Staff::getAvailabilityStr() {
     return out;
 }
 
-void Staff::addShift(bool weekend, bool isAM)
+void Staff::addShift(ShiftTypes type)
 {
-    if (isAM)
+    if (type & AM)
         numAMShifts++;
 
-    if (weekend)
+    if (type & WEEKEND)
         numWeekendShifts++;
+
+    if (type & DAY)
+        numDayDuty++;
 
     numShifts++;
 }
 
-void Staff::removeShift(bool weekend, bool isAM)
+void Staff::removeShift(ShiftTypes type)
 {
-    if (isAM)
+    if (type & AM)
         numAMShifts--;
 
-    if (weekend)
+    if (type & WEEKEND)
         numWeekendShifts--;
+
+    if (type & DAY)
+        numDayDuty--;
 
     numShifts--;
 }
 
-void Staff::setShifts(int total, int weekend, int AM) {
+void Staff::setShifts(int total, int weekend, int day, int AM) {
     numShifts = total;
     numWeekendShifts = weekend;
     numAMShifts = AM;
+    numDayDuty = day;
 }
 
 bool Staff::isUIDSet() const {
@@ -363,18 +370,27 @@ QString Staff::uid() const {
     return _uid;
 }
 
-int Staff::getShifts()
+int Staff::getShifts(ShiftTypes type)
 {
-    return numShifts;
+    if (type & TOTAL)
+        return numShifts;
+    else if ((type & DAY) == DAY)
+        return numDayDuty;
+    else if ((type & AM) == AM)
+        return numAMShifts;
+    else if (type & NIGHT)
+        return numShifts - numDayDuty;
+
+    return -1;
 }
 
 int Staff::getWeekendShifts()
 {
-    return numWeekendShifts;
+    return getShifts(WEEKEND);
 }
 
 int Staff::getAMShifts()
 {
-    return numAMShifts;
+    return getShifts(AM);
 }
 
