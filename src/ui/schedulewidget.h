@@ -134,6 +134,8 @@ private:
     QTableWidgetItem * donAverageItem;
     QTableWidgetItem * donAverageWeekendItem;
     QTableWidgetItem * amAverageItem;
+    QTableWidgetItem *dayDonAverageItem;
+    QTableWidgetItem *dayRAAverageItem;
 
     QGroupBox *OnDutyGroupBox;
     QGroupBox *OnDeckGroupBox;

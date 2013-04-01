@@ -5,6 +5,7 @@
 #include <QVariant>
 #include <QDate>
 #include <QSharedPointer>
+#include <QFlags>
 
 #include "exam.h"
 #include "availabledate.h"
@@ -70,9 +71,6 @@ public:
     QString getMidtermsStr();
 
     int getShifts(ShiftTypes type = TOTAL);
-    int getWeekendShifts();
-    int getAMShifts();
-    
     void setShifts(int total, int weekend, int day, int am);
 
 

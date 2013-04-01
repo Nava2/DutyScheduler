@@ -19,6 +19,7 @@ Staff::Staff()
     numShifts = 0;
     numWeekendShifts = 0;
     numAMShifts = 0;
+    numDayDuty = 0;
 
     _uid = "xxx";
     UIDSet = false;
@@ -35,12 +36,13 @@ Staff::Staff(int i, QString first, QString last, bool pos, bool gen, int night)
     numShifts = 0;
     numWeekendShifts = 0;
     numAMShifts = 0;
+    numDayDuty = 0;
 
     genUID();
 }
 
 Staff::Staff(const QVariantMap &json) :
-    numShifts(0), numWeekendShifts(0), numAMShifts(0)
+    numShifts(0), numDayDuty(0), numWeekendShifts(0), numAMShifts(0)
 {
     *this << json;
 }
@@ -330,13 +332,13 @@ QString Staff::getAvailabilityStr() {
 
 void Staff::addShift(ShiftTypes type)
 {
-    if (type & AM)
+    if ((type & AM) == AM)
         numAMShifts++;
 
-    if (type & WEEKEND)
+    if ((type & WEEKEND) == WEEKEND)
         numWeekendShifts++;
 
-    if (type & DAY)
+    if ((type & DAY) == DAY)
         numDayDuty++;
 
     numShifts++;
@@ -344,13 +346,13 @@ void Staff::addShift(ShiftTypes type)
 
 void Staff::removeShift(ShiftTypes type)
 {
-    if (type & AM)
+    if ((type & AM) == AM)
         numAMShifts--;
 
-    if (type & WEEKEND)
+    if ((type & WEEKEND) == WEEKEND)
         numWeekendShifts--;
 
-    if (type & DAY)
+    if ((type & DAY) == DAY)
         numDayDuty--;
 
     numShifts--;
@@ -372,25 +374,15 @@ QString Staff::uid() const {
 
 int Staff::getShifts(ShiftTypes type)
 {
-    if (type & TOTAL)
+    if ((type & TOTAL) == TOTAL)
         return numShifts;
     else if ((type & DAY) == DAY)
         return numDayDuty;
     else if ((type & AM) == AM)
         return numAMShifts;
-    else if (type & NIGHT)
+    else if ((type & NIGHT) == NIGHT)
         return numShifts - numDayDuty;
 
     return -1;
-}
-
-int Staff::getWeekendShifts()
-{
-    return getShifts(WEEKEND);
-}
-
-int Staff::getAMShifts()
-{
-    return getShifts(AM);
 }
 

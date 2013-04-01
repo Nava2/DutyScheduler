@@ -181,7 +181,7 @@ ScheduleWidget::ScheduleWidget(const QString &fileNameSchedule,
 
     dateClicked(startDate);
 
-    QTableWidgetItem *row = averagesTable->item(0, 0);
+    QTableWidgetItem *row = statsTable->item(0, 0);
     QString id = row->data(Qt::UserRole).toString();
 
     schedViewWidget->setToStaff(theTeam[id], datesList);
@@ -274,6 +274,14 @@ void ScheduleWidget::createScheduleGroupBoxs()
     layout->addWidget(scheduleControls, 0, 3);
     layout->addWidget(calendar,1,3);
 
+    QSizePolicy schedStatsPolicy = scheduleStatsGroupBox->sizePolicy();
+    schedStatsPolicy.setHorizontalStretch(2);
+    scheduleStatsGroupBox->setSizePolicy(schedStatsPolicy);
+
+    QSizePolicy listPolicy = listOuter->sizePolicy();
+    listPolicy.setHorizontalStretch(1);
+    listOuter->setSizePolicy(schedStatsPolicy);
+
     setLayout(layout);
     setWindowTitle("Schedule Tool");
 
@@ -363,66 +371,61 @@ void ScheduleWidget::createScheduleControls()
 void ScheduleWidget::createScheduleStats()
 {
     scheduleStatsGroupBox = new QGroupBox("Stats", this);
-    scheduleStatsGroupBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+    scheduleStatsGroupBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-    Qt::ItemFlags flags = 0;
-    flags |= Qt::ItemIsEnabled;
+    Qt::ItemFlags flags = Qt::ItemIsEnabled;
 
-    averagesTable = new QTableWidget(2, 5, this);
+    averagesTable = new QTableWidget(2, 6, this);
     averagesTable->setStatusTip("This table shows the average number of shifts for various types of shifts for Dona and RAs. (Weekend shifts are included in 'total shifts')");
-    averagesTable->setHorizontalHeaderLabels(QString(",Position,Total,Weekend,AM").split(",",QString::KeepEmptyParts));
+    averagesTable->setHorizontalHeaderLabels(QString(",Position,Total,Weekend,Day,AM").split(",",QString::KeepEmptyParts));
     averagesTable->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Fixed);
     averagesTable->setMaximumHeight(80);
     averagesTable->setMinimumWidth(450);
-    averagesTable->setRowHeight(0,25);
-    averagesTable->setRowHeight(1,25);
+    averagesTable->setRowHeight(0, 25);
+    averagesTable->setRowHeight(1, 25);
     averagesTable->setSelectionMode(QAbstractItemView::NoSelection);
-    averagesTable->setColumnWidth(0,120);
-    averagesTable->setColumnWidth(1,50);
-    averagesTable->setColumnWidth(2,90);
-    averagesTable->setColumnWidth(3,90);
-    averagesTable->setColumnWidth(4,70);
+    averagesTable->setColumnWidth(0, 120);
+    averagesTable->setColumnWidth(1, 50);
+    averagesTable->setColumnWidth(2, 90);
+    averagesTable->setColumnWidth(3, 90);
+    averagesTable->setColumnWidth(4, 70);
+    averagesTable->setColumnWidth(5, 70);
 
-    raAverageItem = new QTableWidgetItem("0");
-    donAverageItem = new QTableWidgetItem("0");
-    raAverageWeekendItem = new QTableWidgetItem("0");
-    donAverageWeekendItem = new QTableWidgetItem("0");
-    amAverageItem = new QTableWidgetItem("0");
+#define DECL_AVG_ITEM(item, x, y, flags) { \
+        item = new QTableWidgetItem("0"); \
+        item->setTextAlignment(Qt::AlignCenter); \
+        item->setFlags( flags ); \
+        averagesTable->setItem( x , y , item ); \
+    }
 
-    raAverageItem->setTextAlignment(Qt::AlignCenter);
-    donAverageItem->setTextAlignment(Qt::AlignCenter);
-    raAverageWeekendItem->setTextAlignment(Qt::AlignCenter);
-    donAverageWeekendItem->setTextAlignment(Qt::AlignCenter);
-    amAverageItem->setTextAlignment(Qt::AlignCenter);
+    DECL_AVG_ITEM(donAverageItem, 0, 2, flags);
+    DECL_AVG_ITEM(raAverageItem, 1, 2, flags);
+    DECL_AVG_ITEM(raAverageWeekendItem, 0, 3, flags );
+    DECL_AVG_ITEM(donAverageWeekendItem, 1, 3, flags );
+    DECL_AVG_ITEM(amAverageItem, 0, 5, flags );
+    DECL_AVG_ITEM(dayRAAverageItem, 1, 4, flags );
+    DECL_AVG_ITEM(dayDonAverageItem, 0, 4, flags );
 
-    raAverageItem->setFlags(flags);
-    donAverageItem->setFlags(flags);
-    raAverageWeekendItem->setFlags(flags);
-    donAverageWeekendItem->setFlags(flags);
-    amAverageItem->setFlags(flags);
+#undef DECL_AVG_ITEM
 
-    averagesTable->setItem(0,0,new QTableWidgetItem("Average"));
-    averagesTable->setItem(1,0,new QTableWidgetItem("Average"));
-    averagesTable->setItem(0,1,new QTableWidgetItem("Don"));
-    averagesTable->setItem(1,1,new QTableWidgetItem("RA"));
-    averagesTable->setItem(0,2,donAverageItem);
-    averagesTable->setItem(0,3,donAverageWeekendItem);
-    averagesTable->setItem(0,4,amAverageItem);
-    averagesTable->setItem(1,2,raAverageItem);
-    averagesTable->setItem(1,3,raAverageWeekendItem);
+    averagesTable->setItem(0, 0, new QTableWidgetItem("Average"));
+    averagesTable->setItem(1, 0, new QTableWidgetItem("Average"));
+    averagesTable->setItem(0, 1, new QTableWidgetItem("Don"));
+    averagesTable->setItem(1, 1, new QTableWidgetItem("RA"));
 
-    statsTable = new QTableWidget(theTeam.count(), 5, this);
+    statsTable = new QTableWidget(theTeam.count(), 6, this);
     statsTable->setStatusTip("This table shows the number of shifts assigned to each staff member. Click a staff member's name to show their individual schedule.");
     connect(statsTable,SIGNAL(itemClicked(QTableWidgetItem*)),this,SLOT(showStaffSchedule(QTableWidgetItem*)));
-    statsTable->setHorizontalHeaderLabels(QString("Name,Position,Total Shifts,Weekend Shifts,AM Shifts").split(","));
+    statsTable->setHorizontalHeaderLabels(QString("Name,Position,Total Shifts,Weekend Shifts,Day,AM").split(","));
     statsTable->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
     statsTable->setMinimumWidth(450);
     statsTable->setSelectionMode(QAbstractItemView::NoSelection);
-    statsTable->setColumnWidth(0,120);
-    statsTable->setColumnWidth(1,50);
-    statsTable->setColumnWidth(2,90);
-    statsTable->setColumnWidth(3,90);
-    statsTable->setColumnWidth(4,70);
+    statsTable->setColumnWidth(0, 120);
+    statsTable->setColumnWidth(1, 50);
+    statsTable->setColumnWidth(2, 90);
+    statsTable->setColumnWidth(3, 90);
+    statsTable->setColumnWidth(4, 70);
+    statsTable->setColumnWidth(5, 70);
 
 
     statsTableItems = new QList<QTableWidgetItem*>;
@@ -433,43 +436,41 @@ void ScheduleWidget::createScheduleStats()
         //name
         QTableWidgetItem *nameItem = new QTableWidgetItem;
         nameItem->setText(theTeam[x]->getFirstName() + " " + theTeam[x]->getLastName().left(1));
-        nameItem->setData(Qt::UserRole,theTeam[x]->uid());
+        nameItem->setData(Qt::UserRole, theTeam[x]->uid());
         nameItem->setFlags(flags);
         statsTableItems->append(nameItem);
 
         //position
         QTableWidgetItem *positionItem = new QTableWidgetItem;
-        if(theTeam.at(x)->getPosition())
+        if(theTeam[x]->getPosition())
             positionItem->setText("Don");
         else
             positionItem->setText("RA");
 
         positionItem->setFlags(flags);
 
+#define DECL_ITEM(value, x, y, flags) { \
+        QTableWidgetItem *item = new QTableWidgetItem; \
+        item->setText( QString::number(value) ); \
+        item->setFlags( flags ); \
+        item->setTextAlignment(Qt::AlignCenter); \
+        statsTable->setItem( x , y , item); \
+    }
 
+        statsTable->setItem(x, 0, nameItem);
+        statsTable->setItem(x, 1, positionItem);
+
+        Staff::Ptr ptr = theTeam[x];
         //total
-        QTableWidgetItem *totalItem = new QTableWidgetItem;
-        totalItem->setText(QString::number(theTeam.at(x)->getShifts()));
-        totalItem->setFlags(flags);
-        totalItem->setTextAlignment(Qt::AlignCenter);
-
+        DECL_ITEM( ptr->getShifts(), x, 2, flags ) ;
         //weekend
-        QTableWidgetItem *weekendItem = new QTableWidgetItem;
-        weekendItem->setText(QString::number(theTeam.at(x)->getWeekendShifts()));
-        weekendItem->setFlags(flags);
-        weekendItem->setTextAlignment(Qt::AlignCenter);
-
+        DECL_ITEM( ptr->getShifts(Staff::WEEKEND), x, 3, flags ) ;
+        //day
+        DECL_ITEM( ptr->getShifts(Staff::DAY), x, 4, flags ) ;
         //AM
-        QTableWidgetItem *amItem = new QTableWidgetItem;
-        amItem->setText(QString::number(theTeam.at(x)->getAMShifts()));
-        amItem->setFlags(flags);
-        amItem->setTextAlignment(Qt::AlignCenter);
+        DECL_ITEM( ptr->getShifts(Staff::AM), x, 5, flags ) ;
 
-        statsTable->setItem(x,0,nameItem);
-        statsTable->setItem(x,1,positionItem);
-        statsTable->setItem(x,2,totalItem);
-        statsTable->setItem(x,3,weekendItem);
-        statsTable->setItem(x,4,amItem);
+#undef DECL_ITEM
 
     }
 
@@ -477,7 +478,7 @@ void ScheduleWidget::createScheduleStats()
 
     schedViewWidget = new SchedViewer(startDate, endDate, this);
 
-    QGridLayout *layout = new QGridLayout(this);
+    QGridLayout *layout = new QGridLayout(scheduleStatsGroupBox);
 
     layout->addWidget(averagesTable, 0, 0, 1, 5);
 
@@ -486,7 +487,6 @@ void ScheduleWidget::createScheduleStats()
     layout->addWidget(schedViewWidget, 2, 0, 1, 1);
 
     scheduleStatsGroupBox->setLayout(layout);
-
 }
 
 void ScheduleWidget::createCalendar()
@@ -520,8 +520,8 @@ void ScheduleWidget::createLists()
     onDeckList->setStatusTip("The staff who are able to work on the selected day. Click to add a staff to the duty list. Right click a don to make them AM.");
     onDutyList->setStatusTip("The staff who are on duty for the selected day. Click to remove a staff from being on duty. The AM is bolded.");
 
-    onDeckList->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-    onDutyList->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+    onDeckList->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    onDutyList->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     onDeckList->setMinimumWidth(150);
     onDutyList->setMinimumWidth(150);
@@ -1399,6 +1399,8 @@ void ScheduleWidget::updateStats()
     double dWAverage = 0;
     double rWAverage = 0;
     double amAverage = 0;
+    double rDAverage = 0.0;
+    double dDAverage = 0.0;
 
     int rCount = 0;
     int dCount = 0;
@@ -1407,21 +1409,24 @@ void ScheduleWidget::updateStats()
     for(int x = 0; x < statsTableItems->count(); x++)
     {
         QString staffId = statsTableItems->at(x)->data(Qt::UserRole).toString();
-        Staff::Ptr pstaff = theTeam.at(staffId);
+        Staff::Ptr pstaff = theTeam[staffId];
         int row = statsTableItems->at(x)->row();
 
-        statsTable->item(row,2)->setText(QString::number(pstaff->getShifts()));
-        statsTable->item(row,3)->setText(QString::number(pstaff->getWeekendShifts()));
-        statsTable->item(row,4)->setText(QString::number(pstaff->getAMShifts()));
+        statsTable->item(row, 2)->setText(QString::number(pstaff->getShifts(Staff::TOTAL)));
+        statsTable->item(row, 3)->setText(QString::number(pstaff->getShifts(Staff::WEEKEND)));
+        statsTable->item(row, 4)->setText(QString::number(pstaff->getShifts(Staff::DAY)));
+        statsTable->item(row, 5)->setText(QString::number(pstaff->getShifts(Staff::AM)));
 
         if (pstaff->getPosition()) {
             dAverage += pstaff->getShifts();
-            dWAverage += pstaff->getWeekendShifts();
-            amAverage += pstaff->getAMShifts();
+            dWAverage += pstaff->getShifts(Staff::WEEKEND);
+            amAverage += pstaff->getShifts(Staff::AM);
+            dDAverage += pstaff->getShifts(Staff::DAY);
             dCount++;
         } else {
             rAverage += pstaff->getShifts();
-            rWAverage += pstaff->getWeekendShifts();
+            rWAverage += pstaff->getShifts(Staff::WEEKEND);
+            rDAverage += pstaff->getShifts(Staff::DAY);
             rCount++;
         }
 
@@ -1432,12 +1437,16 @@ void ScheduleWidget::updateStats()
     rWAverage = rWAverage / rCount;
     dWAverage = dWAverage / dCount;
     amAverage = amAverage / dCount;
+    rDAverage /= rCount;
+    dDAverage /= dCount;
 
     donAverageItem->setText(QString::number(dAverage));
     donAverageWeekendItem->setText(QString::number(dWAverage));
     amAverageItem->setText(QString::number(amAverage));
     raAverageItem->setText(QString::number(rAverage));
     raAverageWeekendItem->setText(QString::number(rWAverage));
+    dayRAAverageItem->setText(QString::number(rDAverage));
+    dayDonAverageItem->setText(QString::number(dDAverage));
 
     schedViewWidget->setToStaff(Staff::Ptr(), datesList);
 }
