@@ -123,6 +123,14 @@ ScheduleWidget::ScheduleWidget(const QString &fileNameSchedule,
                 pstaff->addShift(weekend);
         }
 
+        // adjust for day duty
+        foreach (Staff::Ptr p, theTeam) {
+            if (_sdate.isOnDayDuty(p->uid())) {
+                p->addShift(false, false);
+            }
+        }
+
+
     }
 
     createScheduleGroupBoxs();
@@ -686,6 +694,8 @@ void ScheduleWidget::dateClicked(QDate dateSelected)
 
     cbDayDuty[0]->setEnabled(datesList[dateIndex].isExam());
     cbDayDuty[1]->setEnabled(datesList[dateIndex].isExam());
+
+    dayDutyPrevIDs[0] = dayDutyPrevIDs[1] = "";
 
     QList<Exam::Ptr> curEPtrs, nextEPtrs;
     if (datesList[dateIndex].isExam()) {

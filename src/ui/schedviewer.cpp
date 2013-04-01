@@ -121,7 +121,7 @@ void SchedViewer::setToStaff(Staff::Ptr pStaff, QList<SDate> &datesList) {
     foreach (SDate sdate, datesList)
     {
 //        qDebug() << "[" << static_cast<QDate>(sdate) << "] Can't work:" << sdate.getCantWork();
-        if (sdate.isOn(pStaff->uid()))
+        if (sdate.isOn(pStaff->uid(), true))
         {
             format.setBackground(Qt::magenta);
             if (sdate.getAM() == pStaff->uid())
