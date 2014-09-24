@@ -3,7 +3,7 @@
 
 #include "mainwidget.h"
 #include "mainwindow.h"
-#include "stafflist.h"
+#include "obj/stafflist.h"
 
 MainWidget::MainWidget(QWidget *parent)
     : QWidget(parent)
@@ -25,9 +25,13 @@ MainWidget::~MainWidget()
     delete availWidget;
 
     delete staffTeamList;
+}
 
-    delete examWidget;
 
+Staff::Ptr MainWidget::currentStaff() const {
+    QListWidgetItem *i = staffTeamList->currentItem();//get the list item from the list widget
+    QString id = i->data(Qt::UserRole).toString();//the list item's user data is the staff id
+    return theTeam[id];
 }
 
 //SLOTS
@@ -197,21 +201,50 @@ void MainWidget::updateSelections(QListWidgetItem * item)
 }
 
 void MainWidget::addFinal(const Exam::Ptr e) {
+    if (!e) {
+        return ;
+    }
+
     finalExams.append(e);//adds the pointer to the exam in the main exams list for the team
 }
 
 void MainWidget::removeFinal(const Exam::Ptr e)
 {
-    // nothing to do yet?
+    if (!e) {
+        return ;
+    }
+
+    Staff::Ptr p = currentStaff();
+    if (p) {
+        e->removeStaff(p->uid());
+    }
+
+    if (e->getStaff().size() == 0) {
+        finalExams.removeAll(e);
+    }
 }
 
 void MainWidget::addMidterm(const Exam::Ptr e) {
+    if (!e) {
+        return ;
+    }
+
     midtermExams.append(e);
 }
 
 void MainWidget::removeMidterm(const Exam::Ptr e)
 {
-    // nothing to do yet?
+    if (!e) {
+        return ;
+    }
+
+    Staff::Ptr p = currentStaff();
+    if (p) {
+        e->removeStaff(p->uid());
+    }
+
+    if (e->getStaff().size() == 0)
+        midtermExams.removeAll(e);
 }
 
 // GUI STUFF

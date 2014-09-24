@@ -6,13 +6,15 @@
 #include <QFileInfo>
 #include <QFile>
 
+#include "ui/schedulewidget.h"
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), currentStaffTeamFile(""), currentScheduleFile(""),
       saveNecessary(false)
 {
     createActions();
     createMenu();
-    (void)statusBar();
+    Q_UNUSED(statusBar());
 
     m = new MainWidget(this);
 
@@ -35,40 +37,54 @@ MainWindow::~MainWindow()
 
 void MainWindow::createActions()
 {
+    QStyle *s = this->style();
+
     newStaffTeamAct = new QAction("New Team", this);
     newStaffTeamAct->setStatusTip("Create a new staff team");
+    newStaffTeamAct->setShortcut(QKeySequence("Ctrl+n"));
+    newStaffTeamAct->setIcon(s->standardIcon(QStyle::SP_FileIcon));
     connect(newStaffTeamAct, SIGNAL(triggered()),this, SLOT(newStaffTeam()));
 
     openStaffTeamAct = new QAction("Open Team", this);
     openStaffTeamAct->setStatusTip("Open an existing staff team");
+    openStaffTeamAct->setShortcut(QKeySequence("Ctrl+o"));
+    openStaffTeamAct->setIcon(s->standardIcon(QStyle::SP_DriveFDIcon));
     connect(openStaffTeamAct, SIGNAL(triggered()),this, SLOT(openStaffTeam()));
 
     saveStaffTeamAct = new QAction("Save Team", this);
     saveStaffTeamAct->setStatusTip("Save the opened staff team");
+    saveStaffTeamAct->setShortcut(QKeySequence("Ctrl+s"));
     saveStaffTeamAct->setEnabled(false);
     connect(saveStaffTeamAct, SIGNAL(triggered()),this, SLOT(saveStaffTeam()));
 
     saveAsStaffTeamAct = new QAction("Save Team As", this);
     saveAsStaffTeamAct->setStatusTip(tr("Save the document under a new name"));
+    saveAsStaffTeamAct->setShortcut(QKeySequence("Ctrl+shift+s"));
     connect(saveAsStaffTeamAct, SIGNAL(triggered()), this, SLOT(saveAsStaffTeam()));
 
     newScheduleAct = new QAction("New Schedule", this);
     newScheduleAct->setStatusTip("Create a new duty schedule");
+    newScheduleAct->setShortcut(QKeySequence("f2"));
     connect(newScheduleAct, SIGNAL(triggered()),this, SLOT(newSchedule()));
 
     saveScheduleAct = new QAction("Save Schedule", this);
     saveScheduleAct->setStatusTip("Save the current schedule to work on it later.");
+    saveScheduleAct->setShortcut(QKeySequence("f3"));
     connect(saveScheduleAct, SIGNAL(triggered()),this, SLOT(saveSchedule()));
     saveScheduleAct->setDisabled(true);
 
     openScheduleAct = new QAction("Open Schedule", this);
     openScheduleAct->setStatusTip("Open and existing schedule.");
     connect(openScheduleAct, SIGNAL(triggered()),this, SLOT(loadSchedule()));
+    
+    refreshCountScheduleAct = new QAction("Refresh Counts", this);
+    refreshCountScheduleAct->setStatusTip("Refresh counts if they are skewed.");
+    connect(refreshCountScheduleAct, SIGNAL(triggered()), this, SLOT(refreshCountSchedule()));
+    refreshCountScheduleAct->setEnabled(false);
 
 
     aboutAct = new QAction("Help Me!", this);
     connect(aboutAct, SIGNAL(triggered()),this, SLOT(about()));
-
 }
 
 void MainWindow::createMenu()
@@ -81,8 +97,10 @@ void MainWindow::createMenu()
 
     scheduleMenu = menuBar()->addMenu("Schedule");
     scheduleMenu->addAction(newScheduleAct);
-    scheduleMenu->addAction(saveScheduleAct);
     scheduleMenu->addAction(openScheduleAct);
+    scheduleMenu->addAction(saveScheduleAct);
+    scheduleMenu->addSeparator();
+    scheduleMenu->addAction(refreshCountScheduleAct);
 
 
     helpMenu = menuBar()->addMenu("Help");
@@ -237,6 +255,10 @@ void MainWindow::saveAsStaffTeam() {
 
 void MainWindow::saveStaffTeamName(const QString &fileName)
 {
+    if (fileName.isEmpty())
+        return ;
+
+
     StaffList _sList = m->getStaff();
     QList<Exam::Ptr> _fList, _mList;
     m->getExams(_fList, _mList);
@@ -326,6 +348,7 @@ void MainWindow::loadSchedule()
     openScheduleAct->setDisabled(true);
     newScheduleAct->setDisabled(true);
     saveScheduleAct->setEnabled(true);
+    refreshCountScheduleAct->setEnabled(true);
 
     windowState = SCHEDULE_WIDGET;
 }
@@ -403,9 +426,15 @@ void MainWindow::newSchedule()
     saveAsStaffTeamAct->setDisabled(true);
     saveScheduleAct->setEnabled(true);
     openScheduleAct->setDisabled(true);
+    refreshCountScheduleAct->setEnabled(true);
 
     windowState = SCHEDULE_WIDGET;
 }
+
+void MainWindow::refreshCountSchedule() {
+    s->refreshStats();
+}
+
 
 void MainWindow::about()
 {

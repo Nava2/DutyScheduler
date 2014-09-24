@@ -1,5 +1,7 @@
 #include "schedviewer.h"
 
+#include <QDebug>
+
 SchedViewer::SchedViewer(const QDate &startDate, const QDate &lastDate, QWidget *parent) :
     QWidget(parent),  calendarStaff(NULL), box(NULL), labelBox(NULL), nameLabel(NULL),
     externLayout(NULL), internLayout(NULL), labelLayout(NULL)
@@ -118,7 +120,8 @@ void SchedViewer::setToStaff(Staff::Ptr pStaff, QList<SDate> &datesList) {
     QTextCharFormat format = calendarStaff->weekdayTextFormat(Qt::Monday);
     foreach (SDate sdate, datesList)
     {
-        if (sdate.isOn(pStaff->uid()))
+//        qDebug() << "[" << static_cast<QDate>(sdate) << "] Can't work:" << sdate.getCantWork();
+        if (sdate.isOn(pStaff->uid(), true))
         {
             format.setBackground(Qt::magenta);
             if (sdate.getAM() == pStaff->uid())

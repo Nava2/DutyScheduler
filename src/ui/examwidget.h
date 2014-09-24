@@ -10,7 +10,7 @@
 #include <QTableWidget>
 #include <QComboBox>
 
-#include "exam.h"
+#include "obj/exam.h"
 
 class ExamWidget : public QWidget
 {

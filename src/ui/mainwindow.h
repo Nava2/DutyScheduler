@@ -23,9 +23,9 @@
 #include "mainwidget.h"
 #include "schedulewidget.h"
 #include "schedulewizzard.h"
-#include "exam.h"
-#include "staff.h"
-#include "sdate.h"
+#include "obj/exam.h"
+#include "obj/staff.h"
+#include "obj/sdate.h"
 #include "iohandler.h"
 
 class MainWindow : public QMainWindow
@@ -50,6 +50,7 @@ private slots:
 
     void saveSchedule();
     void loadSchedule();
+    void refreshCountSchedule();
 
     void onSaveTimer();
     void onUpdateSaveState();
@@ -91,7 +92,10 @@ private:
     QAction *newScheduleAct;
     QAction *saveScheduleAct;
     QAction *openScheduleAct;
+    QAction *refreshCountScheduleAct;
+    
     QAction *aboutAct;
+    
 
     bool saveNecessary;
     QTimer *saveTimer;

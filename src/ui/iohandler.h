@@ -5,12 +5,12 @@
 #include <QList>
 #include <QFile>
 #include <QTextStream>
+#include <QSettings>
 
-#include "staff.h"
-#include "exam.h"
-#include "examlist.h"
-#include "sdate.h"
-#include "stafflist.h"
+#include "obj/staff.h"
+#include "obj/exam.h"
+#include "obj/sdate.h"
+#include "obj/stafflist.h"
 
 
 class IOHandler : public QObject
@@ -18,10 +18,13 @@ class IOHandler : public QObject
     Q_OBJECT
 
 public:
-    enum _FileExtension { CSV = 0, JSON, UNKWN, BAD };
+    static QString SETTINGS_CURRENT_STAFF_FILE;
+    static QString SETTINGS_CURRENT_SCHEDULE_FILE;
+
+    enum _FileExtension { CSV=0, JSON, UNKWN, BAD };
     enum _IOType { SCHEDULE, STAFF, CSV_EXPORT };
 
-    enum _Position { AM = 2, DON = 0, RA = 1 };
+    enum _Position { AM = 2, DON = 0, RA = 1, DAY = 3 };
 
     static QString BLANK_ENTRY;
 
@@ -62,6 +65,8 @@ public:
     bool cleanUpAutoSave();
 
 private:
+    QSettings _settings;
+
     QString errorMsg, errorTitle;
 
     QString currentStaffFile, currentScheduleFile;

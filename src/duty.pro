@@ -3,13 +3,22 @@
 ######################################################################
 
 TEMPLATE = app
+<<<<<<< HEAD
 #TARGET =
+=======
+TARGET = 
+>>>>>>> origin/master
 DEPENDPATH += . obj ui
 INCLUDEPATH += . ui obj
 
 QMAKE_CXXFLAGS += -std=c++11
 
+<<<<<<< HEAD
 QT += widgets core
+=======
+LIBS += -lqjson -L/usr/local/lib
+unix:INCLUDEPATH += /usr/local/include
+>>>>>>> origin/master
 
 # Input
 HEADERS += obj/availabledate.h \

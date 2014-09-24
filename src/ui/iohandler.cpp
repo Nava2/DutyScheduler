@@ -1,8 +1,9 @@
 #include "iohandler.h"
 
-#include "staff.h"
-#include "exam.h"
-#include "sdate.h"
+#include "obj/staff.h"
+#include "obj/exam.h"
+#include "obj/sdate.h"
+#include "obj/stafflist.h"
 
 #include <QString>
 #include <QMessageBox>
@@ -13,20 +14,38 @@
 #include <QList>
 #include <QDebug>
 #include <QFileDialog>
+#include <QSettings>
 
 #include <QJsonDocument>
 
-#include "stafflist.h"
+
 
 QString IOHandler::BLANK_ENTRY = "\"\"";
 
+<<<<<<< HEAD
 IOHandler::IOHandler(QObject *parent)
     : QObject(parent), errorMsg(""), errorTitle("")
+=======
+QString IOHandler::SETTINGS_CURRENT_STAFF_FILE = "io/curstaff";
+QString IOHandler::SETTINGS_CURRENT_SCHEDULE_FILE = "io/cursched";
+
+IOHandler::IOHandler() :
+    errorMsg(""), errorTitle("")
+>>>>>>> origin/master
 {
+    currentStaffFile = _settings.value(SETTINGS_CURRENT_STAFF_FILE,
+                                       QDir::homePath()
+                                   ).toString();
+    currentScheduleFile = _settings.value(SETTINGS_CURRENT_SCHEDULE_FILE,
+                                          QDir::homePath()
+                                   ).toString();
 }
 
 IOHandler::~IOHandler() {
     cleanUpAutoSave();
+
+    _settings.setValue(SETTINGS_CURRENT_SCHEDULE_FILE, currentScheduleFile);
+    _settings.setValue(SETTINGS_CURRENT_STAFF_FILE, currentStaffFile);
 }
 
 void IOHandler::getErrorInfo(QString &title, QString &msg) {
@@ -112,7 +131,16 @@ bool IOHandler::checkFileName(const QString &fileName, FileExtension *ext) {
     if (period_pos == 0) {
         *ext = UNKWN;
         result = false;
+<<<<<<< HEAD
     } else if (fileName.mid(period_pos, 4) == "json") {
+=======
+    } /*else if(fileName.mid(period_pos, 3) == "txt") {
+        result = true;
+        if (ext) {
+            *ext = CSV;
+        }
+    } */else if (fileName.mid(period_pos, 4) == "json") {
+>>>>>>> origin/master
         result = true;
 
         if (ext) {
@@ -431,7 +459,7 @@ void IOHandler::export_writeWeekArrays(QTextStream &ts,
     // pad the days so that they are all the same length
     for (int p = 0; p < 7; p++)
     {
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 4; i++) {
             int count = maxNeededForWeek[i] - weekDayLists[p][i].count();
             for(int j = 0; j < count; j++)
                 weekDayLists[p][i] += "";
@@ -482,6 +510,22 @@ void IOHandler::export_writeWeekArrays(QTextStream &ts,
         ts << out << endl;
     }
 
+    if (maxNeededForWeek[DAY] > 0) { // have day duty present
+        // put a line between
+        for (int i = 0; i < 8; i++) {
+            ts << BLANK_ENTRY << ",";
+        }
+        ts << endl;
+
+        for (int y = 0; y < maxNeededForWeek[DAY]; y++) {
+            out = "\"\",";
+            for (int x = 0; x < 7; x++) {
+                 out += "\"" + weekDayLists[x][DAY][y] + "\",";
+            }
+            ts << out << endl;
+        }
+    }
+
     // put a line between
     for (int i = 0; i < 8; i++) {
         ts << BLANK_ENTRY << ",";
@@ -513,11 +557,11 @@ bool IOHandler::exportSchedule(const QString &filePath,
     QDate startDate = datesList.first(),
             endDate = datesList.last();
 
-    QList<QList<QStringList > > weekDayLists; // 3D array, three string lists (AM, Dons, RAs)
+    QList<QList<QStringList > > weekDayLists; // 3D array, three string lists (AM, Dons, RAs, DayDuty)
 
     for (int i = 0; i < 7; i++) {
         QList<QStringList> wList;
-        for (int j = 0; j < 3; j++) {
+        for (int j = 0; j < 4; j++) {
             wList += QStringList();
         }
         weekDayLists += wList;
@@ -527,7 +571,9 @@ bool IOHandler::exportSchedule(const QString &filePath,
     QStringList writtenDates;
     writtenDates << "" << "" << "" << "" << "" << "" << "";
     QList<int > maxNeededForWeek;
-    maxNeededForWeek += 0; // first is dons, then RAs
+    maxNeededForWeek += 0; // first is dons, then RAs, AM, Day
+    maxNeededForWeek += 0; // day duty:
+    maxNeededForWeek += 1;
     maxNeededForWeek += 0;
 
     //for(int y = 0; y < datesList->at(0)->getDate().dayOfWeek() - 1; y++)        // if the first day is in the middle of the week we need pre-padding
@@ -570,6 +616,15 @@ bool IOHandler::exportSchedule(const QString &filePath,
 
         }
 
+        if (date.isExam()) {
+            maxNeededForWeek[DAY] = 2;
+
+            for (int i = 0; i < 2; ++i) {
+                Staff::Ptr pstaff = theTeam[date.dayShiftMember(i)];
+                dayList[DAY] += pstaff->getFirstName() +  " " + pstaff->getLastName()[0];
+            }
+        }
+
         if (dayList[RA].count() > maxNeededForWeek[RA]) { // keep track for padding sake
             maxNeededForWeek[RA] = dayList[RA].count();
         }
@@ -584,7 +639,8 @@ bool IOHandler::exportSchedule(const QString &filePath,
             export_writeWeekArrays(ts, maxNeededForWeek, weekDayLists, writtenDates);
 
             //clean up stuff for the next week.
-            maxNeededForWeek[0] = maxNeededForWeek[1] = 0;
+            maxNeededForWeek[RA] = maxNeededForWeek[DON] = 0;
+            maxNeededForWeek[DAY] = 0;
             writtenDates.clear();
             writtenDates << "" << "" << "" << "" << "" << "" << "";
 
@@ -604,7 +660,7 @@ bool IOHandler::exportSchedule(const QString &filePath,
     QList<int > donAvgs = tableMap["_dAvgs"],
             raAvgs = tableMap["_rAvgs"];
 
-    ts << "Average:,Total,Weekend,AM Shifts" << endl;
+    ts << "Average:,Total,Weekend,Day,AM Shifts" << endl;
     ts << "Dons:,";
     foreach (int val, donAvgs) {
         ts << QString::number(val) << ",";
@@ -625,7 +681,7 @@ bool IOHandler::exportSchedule(const QString &filePath,
     ts << endl << endl;
 
 
-    ts << "Name,Position,Total,Weekend,AM" << endl;
+    ts << "Name,Position,Total,Weekend,Day,AM" << endl;
     foreach (QString id, idList) {
         QList<int > vals = tableMap[id];
         ts << "\"" << theTeam[id]->getFirstName() + " " + theTeam[id]->getLastName()[0] + "\"" << ",";
@@ -870,7 +926,7 @@ QString IOHandler::getSaveFileName(QWidget *parent, const IOType type) {
     switch (type) {
     case STAFF: {
         caption = "Save Staff File..";
-        filters = "Text files (*.txt);;Json Files (*.json)";
+        filters = "Json Files (*.json)";
         selectedFilter = "Json Files (*.json)";
 
         if (!currentStaffFile.isEmpty()) {
@@ -881,7 +937,7 @@ QString IOHandler::getSaveFileName(QWidget *parent, const IOType type) {
     } break;
     case SCHEDULE: {
         caption = "Save Schedule File..";
-        filters = "Text files (*.txt);;Json Files (*.json)";
+        filters = "Json Files (*.json)";
         selectedFilter = "Json Files (*.json)";
 
         if (!currentScheduleFile.isEmpty()) {
@@ -932,7 +988,7 @@ QString IOHandler::getOpenFileName(QWidget *parent, const IOType type) {
     switch (type) {
     case STAFF: {
         caption = "Open Staff File..";
-        filters = "Text files (*.txt);;Json Files (*.json)";
+        filters = "Json Files (*.json)";
         selectedFilter = "Json Files (*.json)";
 
         if (!currentStaffFile.isEmpty()) {
@@ -943,7 +999,7 @@ QString IOHandler::getOpenFileName(QWidget *parent, const IOType type) {
     } break;
     case SCHEDULE: {
         caption = "Open Schedule File..";
-        filters = "Text files (*.txt);;Json Files (*.json)";
+        filters = "Json Files (*.json)";
         selectedFilter = "Json Files (*.json)";
 
         if (!currentScheduleFile.isEmpty()) {

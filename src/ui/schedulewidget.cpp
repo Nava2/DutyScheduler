@@ -6,6 +6,7 @@
 #include <QSignalMapper>
 #include <QListWidget>
 #include <QListWidgetItem>
+#include <QDebug>
 
 #include <math.h>
 
@@ -13,13 +14,15 @@
 #include "schedulewizzard.h"
 #include "schedulewidget.h"
 
-#include "stafflist.h"
+#include "obj/stafflist.h"
 
 #include "mainwindow.h"
 
 ScheduleWidget::ScheduleWidget(const QString &staffteamfilename, const ScheduleWizzard &swiz, QWidget *parent)
     : QWidget(parent)
 {
+    _adjustCBDayDuty = false;
+
     // read from the wizzard
     examSchedule = swiz.isExamSchedule();
     swiz.getDates(startDate, endDate);
@@ -71,6 +74,7 @@ ScheduleWidget::ScheduleWidget(const QString &fileNameSchedule,
                                QWidget *parent) // this constructor is used by LoadSchedule
     : QWidget(parent)
 {    
+    _adjustCBDayDuty = false;
     iohandle = new IOHandler;
 
     bool valid = iohandle->loadSchedule(fileNameSchedule, team, datesList, nightClasses, donsNeeded, rasNeeded);
@@ -91,12 +95,12 @@ ScheduleWidget::ScheduleWidget(const QString &fileNameSchedule,
         nightClasses.append(QList<QString >());
 
     foreach (SDate _sdate, datesList) {
-        bool weekend = _sdate.isWeekend();
+        Staff::ShiftTypes weekend = _sdate.isWeekend() ? Staff::NIGHT | Staff::WEEKEND : Staff::NIGHT;
 
         QString amID = _sdate.getAM();
         if (amID != SDate::AM_NOT_SET) {
             if (theTeam[amID]->getId() < theTeam.count())
-                theTeam[amID]->addShift(weekend, true);    //add the shift count to the staff object
+                theTeam[amID]->addShift( weekend | Staff::AM);    //add the shift count to the staff object
         }
 
         foreach (QString id, _sdate.getDons()) {
@@ -110,6 +114,14 @@ ScheduleWidget::ScheduleWidget(const QString &fileNameSchedule,
             if (pstaff->getId() < theTeam.count())
                 pstaff->addShift(weekend);
         }
+
+        // adjust for day duty
+        foreach (Staff::Ptr p, theTeam) {
+            if (_sdate.isOnDayDuty(p->uid())) {
+                p->addShift(Staff::DAY);
+            }
+        }
+
 
     }
 
@@ -161,7 +173,7 @@ ScheduleWidget::ScheduleWidget(const QString &fileNameSchedule,
 
     dateClicked(startDate);
 
-    QTableWidgetItem *row = averagesTable->item(0, 0);
+    QTableWidgetItem *row = statsTable->item(0, 0);
     QString id = row->data(Qt::UserRole).toString();
 
     schedViewWidget->setToStaff(theTeam[id], datesList);
@@ -176,32 +188,6 @@ ScheduleWidget::ScheduleWidget(const QString &fileNameSchedule,
 
 ScheduleWidget::~ScheduleWidget()
 {
-
-    QList<QTableWidgetItem*>::iterator it_i = statsTableItems->begin();
-
-    for (; it_i != statsTableItems->end();)
-    {
-        delete *it_i;
-        it_i = statsTableItems->erase(it_i);
-    }
-    delete statsTableItems;
-
-    QList<QListWidgetItem*>::iterator it_i2 = onDeckItems->begin();
-    for (; it_i2 != onDeckItems->end();)
-    {
-        delete *it_i2;
-        it_i2 = onDeckItems->erase(it_i2);
-    }
-    delete onDeckItems;
-
-    QList<QListWidgetItem*>::iterator it_i3 = onDutyItems->begin();
-    for (; it_i3 != onDutyItems->end();)
-    {
-        delete *it_i3;
-        it_i3 = onDutyItems->erase(it_i3);
-    }
-    delete onDutyItems;
-
     delete setAsAMAction;
 
     delete copyList;
@@ -234,6 +220,7 @@ void ScheduleWidget::createScheduleGroupBoxs()
 
     for (int i = 0; i < 2; ++i) {
         cbDayDuty[i] = new QComboBox(this);
+        cbDayDuty[i]->setInsertPolicy(QComboBox::InsertAlphabetically);
         connect(cbDayDuty[i], SIGNAL(currentIndexChanged(int)), this, SLOT(changeDayDutyIndex(int)));
 
         dayDutyLabel[i]->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
@@ -252,6 +239,14 @@ void ScheduleWidget::createScheduleGroupBoxs()
     layout->addWidget(listOuter, 0, 1, 2, 1);
     layout->addWidget(scheduleControls, 0, 3);
     layout->addWidget(calendar,1,3);
+
+    QSizePolicy schedStatsPolicy = scheduleStatsGroupBox->sizePolicy();
+    schedStatsPolicy.setHorizontalStretch(2);
+    scheduleStatsGroupBox->setSizePolicy(schedStatsPolicy);
+
+    QSizePolicy listPolicy = listOuter->sizePolicy();
+    listPolicy.setHorizontalStretch(1);
+    listOuter->setSizePolicy(schedStatsPolicy);
 
     setLayout(layout);
     setWindowTitle("Schedule Tool");
@@ -342,113 +337,102 @@ void ScheduleWidget::createScheduleControls()
 void ScheduleWidget::createScheduleStats()
 {
     scheduleStatsGroupBox = new QGroupBox("Stats", this);
-    scheduleStatsGroupBox->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+    scheduleStatsGroupBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-    Qt::ItemFlags flags = 0;
-    flags |= Qt::ItemIsEnabled;
+    Qt::ItemFlags flags = Qt::ItemIsEnabled;
 
-    averagesTable = new QTableWidget(2, 5, this);
+    averagesTable = new QTableWidget(2, 6, this);
     averagesTable->setStatusTip("This table shows the average number of shifts for various types of shifts for Dona and RAs. (Weekend shifts are included in 'total shifts')");
-    averagesTable->setHorizontalHeaderLabels(QString(",Position,Total,Weekend,AM").split(",",QString::KeepEmptyParts));
+    averagesTable->setHorizontalHeaderLabels(QString(",Position,Total,Weekend,Day,AM").split(",",QString::KeepEmptyParts));
     averagesTable->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Fixed);
     averagesTable->setMaximumHeight(80);
     averagesTable->setMinimumWidth(450);
-    averagesTable->setRowHeight(0,25);
-    averagesTable->setRowHeight(1,25);
+    averagesTable->setRowHeight(0, 25);
+    averagesTable->setRowHeight(1, 25);
     averagesTable->setSelectionMode(QAbstractItemView::NoSelection);
-    averagesTable->setColumnWidth(0,120);
-    averagesTable->setColumnWidth(1,50);
-    averagesTable->setColumnWidth(2,90);
-    averagesTable->setColumnWidth(3,90);
-    averagesTable->setColumnWidth(4,70);
+    averagesTable->setColumnWidth(0, 120);
+    averagesTable->setColumnWidth(1, 50);
+    averagesTable->setColumnWidth(2, 90);
+    averagesTable->setColumnWidth(3, 90);
+    averagesTable->setColumnWidth(4, 70);
+    averagesTable->setColumnWidth(5, 70);
 
-    raAverageItem = new QTableWidgetItem("0");
-    donAverageItem = new QTableWidgetItem("0");
-    raAverageWeekendItem = new QTableWidgetItem("0");
-    donAverageWeekendItem = new QTableWidgetItem("0");
-    amAverageItem = new QTableWidgetItem("0");
+#define DECL_AVG_ITEM(item, x, y, flags) { \
+        item = new QTableWidgetItem("0"); \
+        item->setTextAlignment(Qt::AlignCenter); \
+        item->setFlags( flags ); \
+        averagesTable->setItem( x , y , item ); \
+    }
 
-    raAverageItem->setTextAlignment(Qt::AlignCenter);
-    donAverageItem->setTextAlignment(Qt::AlignCenter);
-    raAverageWeekendItem->setTextAlignment(Qt::AlignCenter);
-    donAverageWeekendItem->setTextAlignment(Qt::AlignCenter);
-    amAverageItem->setTextAlignment(Qt::AlignCenter);
+    DECL_AVG_ITEM(donAverageItem, 0, 2, flags);
+    DECL_AVG_ITEM(raAverageItem, 1, 2, flags);
+    DECL_AVG_ITEM(raAverageWeekendItem, 0, 3, flags );
+    DECL_AVG_ITEM(donAverageWeekendItem, 1, 3, flags );
+    DECL_AVG_ITEM(amAverageItem, 0, 5, flags );
+    DECL_AVG_ITEM(dayRAAverageItem, 1, 4, flags );
+    DECL_AVG_ITEM(dayDonAverageItem, 0, 4, flags );
 
-    raAverageItem->setFlags(flags);
-    donAverageItem->setFlags(flags);
-    raAverageWeekendItem->setFlags(flags);
-    donAverageWeekendItem->setFlags(flags);
-    amAverageItem->setFlags(flags);
+#undef DECL_AVG_ITEM
 
-    averagesTable->setItem(0,0,new QTableWidgetItem("Average"));
-    averagesTable->setItem(1,0,new QTableWidgetItem("Average"));
-    averagesTable->setItem(0,1,new QTableWidgetItem("Don"));
-    averagesTable->setItem(1,1,new QTableWidgetItem("RA"));
-    averagesTable->setItem(0,2,donAverageItem);
-    averagesTable->setItem(0,3,donAverageWeekendItem);
-    averagesTable->setItem(0,4,amAverageItem);
-    averagesTable->setItem(1,2,raAverageItem);
-    averagesTable->setItem(1,3,raAverageWeekendItem);
+    averagesTable->setItem(0, 0, new QTableWidgetItem("Average"));
+    averagesTable->setItem(1, 0, new QTableWidgetItem("Average"));
+    averagesTable->setItem(0, 1, new QTableWidgetItem("Don"));
+    averagesTable->setItem(1, 1, new QTableWidgetItem("RA"));
 
-    statsTable = new QTableWidget(theTeam.count(), 5, this);
+    statsTable = new QTableWidget(theTeam.count(), 6, this);
     statsTable->setStatusTip("This table shows the number of shifts assigned to each staff member. Click a staff member's name to show their individual schedule.");
     connect(statsTable,SIGNAL(itemClicked(QTableWidgetItem*)),this,SLOT(showStaffSchedule(QTableWidgetItem*)));
-    statsTable->setHorizontalHeaderLabels(QString("Name,Position,Total Shifts,Weekend Shifts,AM Shifts").split(","));
+    statsTable->setHorizontalHeaderLabels(QString("Name,Position,Total Shifts,Weekend Shifts,Day,AM").split(","));
     statsTable->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
     statsTable->setMinimumWidth(450);
     statsTable->setSelectionMode(QAbstractItemView::NoSelection);
-    statsTable->setColumnWidth(0,120);
-    statsTable->setColumnWidth(1,50);
-    statsTable->setColumnWidth(2,90);
-    statsTable->setColumnWidth(3,90);
-    statsTable->setColumnWidth(4,70);
-
-
-    statsTableItems = new QList<QTableWidgetItem*>;
+    statsTable->setColumnWidth(0, 120);
+    statsTable->setColumnWidth(1, 50);
+    statsTable->setColumnWidth(2, 90);
+    statsTable->setColumnWidth(3, 90);
+    statsTable->setColumnWidth(4, 70);
+    statsTable->setColumnWidth(5, 70);
 
     for (int x = 0; x < theTeam.count(); x++)
     {
         statsTable->setRowHeight(x,20);
         //name
         QTableWidgetItem *nameItem = new QTableWidgetItem;
-        nameItem->setText(theTeam.at(x)->getFirstName() + " " + theTeam.at(x)->getLastName().left(1));
-        nameItem->setData(Qt::UserRole,theTeam.at(x)->uid());
+        nameItem->setText(theTeam[x]->getFirstName() + " " + theTeam[x]->getLastName().left(1));
+        nameItem->setData(Qt::UserRole, theTeam[x]->uid());
         nameItem->setFlags(flags);
-        statsTableItems->append(nameItem);
 
         //position
         QTableWidgetItem *positionItem = new QTableWidgetItem;
-        if(theTeam.at(x)->getPosition())
+        if(theTeam[x]->getPosition())
             positionItem->setText("Don");
         else
             positionItem->setText("RA");
 
         positionItem->setFlags(flags);
 
+#define DECL_ITEM(value, x, y, flags) { \
+        QTableWidgetItem *item = new QTableWidgetItem; \
+        item->setText( QString::number(value) ); \
+        item->setFlags( flags ); \
+        item->setTextAlignment(Qt::AlignCenter); \
+        statsTable->setItem( x , y , item); \
+    }
 
+        statsTable->setItem(x, 0, nameItem);
+        statsTable->setItem(x, 1, positionItem);
+
+        Staff::Ptr ptr = theTeam[x];
         //total
-        QTableWidgetItem *totalItem = new QTableWidgetItem;
-        totalItem->setText(QString::number(theTeam.at(x)->getShifts()));
-        totalItem->setFlags(flags);
-        totalItem->setTextAlignment(Qt::AlignCenter);
-
+        DECL_ITEM( ptr->getShifts(), x, 2, flags ) ;
         //weekend
-        QTableWidgetItem *weekendItem = new QTableWidgetItem;
-        weekendItem->setText(QString::number(theTeam.at(x)->getWeekendShifts()));
-        weekendItem->setFlags(flags);
-        weekendItem->setTextAlignment(Qt::AlignCenter);
-
+        DECL_ITEM( ptr->getShifts(Staff::WEEKEND), x, 3, flags ) ;
+        //day
+        DECL_ITEM( ptr->getShifts(Staff::DAY), x, 4, flags ) ;
         //AM
-        QTableWidgetItem *amItem = new QTableWidgetItem;
-        amItem->setText(QString::number(theTeam.at(x)->getAMShifts()));
-        amItem->setFlags(flags);
-        amItem->setTextAlignment(Qt::AlignCenter);
+        DECL_ITEM( ptr->getShifts(Staff::AM), x, 5, flags ) ;
 
-        statsTable->setItem(x,0,nameItem);
-        statsTable->setItem(x,1,positionItem);
-        statsTable->setItem(x,2,totalItem);
-        statsTable->setItem(x,3,weekendItem);
-        statsTable->setItem(x,4,amItem);
+#undef DECL_ITEM
 
     }
 
@@ -456,7 +440,7 @@ void ScheduleWidget::createScheduleStats()
 
     schedViewWidget = new SchedViewer(startDate, endDate, this);
 
-    QGridLayout *layout = new QGridLayout(this);
+    QGridLayout *layout = new QGridLayout(scheduleStatsGroupBox);
 
     layout->addWidget(averagesTable, 0, 0, 1, 5);
 
@@ -465,7 +449,6 @@ void ScheduleWidget::createScheduleStats()
     layout->addWidget(schedViewWidget, 2, 0, 1, 1);
 
     scheduleStatsGroupBox->setLayout(layout);
-
 }
 
 void ScheduleWidget::createCalendar()
@@ -499,8 +482,8 @@ void ScheduleWidget::createLists()
     onDeckList->setStatusTip("The staff who are able to work on the selected day. Click to add a staff to the duty list. Right click a don to make them AM.");
     onDutyList->setStatusTip("The staff who are on duty for the selected day. Click to remove a staff from being on duty. The AM is bolded.");
 
-    onDeckList->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-    onDutyList->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+    onDeckList->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    onDutyList->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     onDeckList->setMinimumWidth(150);
     onDutyList->setMinimumWidth(150);
@@ -674,19 +657,23 @@ void ScheduleWidget::dateClicked(QDate dateSelected)
     cbDayDuty[0]->setEnabled(datesList[dateIndex].isExam());
     cbDayDuty[1]->setEnabled(datesList[dateIndex].isExam());
 
+    dayDutyPrevIDs[0] = dayDutyPrevIDs[1] = "";
+
     QList<Exam::Ptr> curEPtrs, nextEPtrs;
     if (datesList[dateIndex].isExam()) {
         foreach (Exam::Ptr ptr, theFinals.all()) {
             QDate d = *ptr;
-            if (d == datesList[dateIndex]) {
+            if (d == cDate) {
                 curEPtrs += ptr;
             } else if (next && d == *next) {
                 nextEPtrs += ptr;
             }
         }
     } else {
+        _adjustCBDayDuty = true;
         cbDayDuty[0]->clear();
         cbDayDuty[1]->clear();
+        _adjustCBDayDuty = false;
     }
 
     QMap<QString, QString> dayDutyIDs[2]; // uid, name
@@ -705,7 +692,7 @@ void ScheduleWidget::dateClicked(QDate dateSelected)
         QString id = deckItem->data(Qt::UserRole).toString();
         QFont font = dutyItem->font();
         //check who's on duty already
-        if (datesList[dateIndex].isOn(id))
+        if (datesList[dateIndex].isOn(id, false))
         {
             if (datesList[dateIndex].getAM() == id)
                 font.setBold(true);
@@ -728,7 +715,8 @@ void ScheduleWidget::dateClicked(QDate dateSelected)
         // check for exams:
         if (datesList[dateIndex].isExam()) {
             // already scheduled for day duty..
-            bool canWorkNight = id != datesList[dateIndex].dayShiftMember(0) && id != datesList[dateIndex].dayShiftMember(1);
+            bool canWorkNight = id != datesList[dateIndex].dayShiftMember(0) &&
+                    id != datesList[dateIndex].dayShiftMember(1);
 
             // check all exams on current day
             foreach (Exam::Ptr p, curEPtrs) {
@@ -803,7 +791,7 @@ void ScheduleWidget::dateClicked(QDate dateSelected)
             }
         }
 
-        if (prev && prev->isOn(id)) {
+        if (prev && prev->isOn(id, true)) {
             deckItem->setBackgroundColor(Qt::yellow);
         } else if (theTeam[id]->getPosition()) {
             // don
@@ -812,14 +800,26 @@ void ScheduleWidget::dateClicked(QDate dateSelected)
             deckItem->setBackgroundColor(defaultRABack);
         }
     }
+
     // fill combo-boxes with available day duty staff
     // also set the current index to be the on duty member
+    _adjustCBDayDuty = true;
     for (int i = 0; i < 2; ++i) {
         cbDayDuty[i]->clear();
 
         cbDayDuty[i]->addItem("");
-        foreach (QString key, dayDutyIDs[i].keys()) {
-            cbDayDuty[i]->addItem(dayDutyIDs[i][key], key);
+
+        QMap<QString, QString> tMap;
+        foreach (QString k, dayDutyIDs[i].keys()) {
+            QString v = dayDutyIDs[i][k];
+            tMap.insert(v, k);
+        }
+
+        QList<QString> keys = tMap.keys();
+        qSort(keys.begin(), keys.end());
+
+        foreach (QString key, keys) {
+            cbDayDuty[i]->addItem(key, tMap[key]);
         }
 
         QString dutyID = datesList[dateIndex].dayShiftMember(i);
@@ -828,6 +828,7 @@ void ScheduleWidget::dateClicked(QDate dateSelected)
             cbDayDuty[i]->setCurrentIndex(index);
         }
     }
+    _adjustCBDayDuty = false;
 
 
 //    QDate tDate = calendar->selectedDate();
@@ -848,7 +849,7 @@ void ScheduleWidget::addStaff(QListWidgetItem *item)
     int dateIndex = dateToIndex(calendar->selectedDate());
     bool pos = theTeam.at(staffId)->getPosition();
 
-    if (datesList[dateIndex].isOn(staffId))
+    if (datesList[dateIndex].isOn(staffId, true))
         return;
 
     if (datesList[dateIndex].isSpecial())
@@ -881,9 +882,8 @@ void ScheduleWidget::addStaff(QListWidgetItem *item)
     onDutyItems->at(itemIndex)->setHidden(false);
     updateNeeded();
 
-    bool isWeekend = datesList[dateIndex].isWeekend();
-
-    theTeam.at(staffId)->addShift(isWeekend, false);
+    Staff::ShiftTypes shft = datesList[dateIndex].isWeekend() ? Staff::WEEKEND : Staff::NONE;
+    theTeam[staffId]->addShift(shft | Staff::NIGHT);
 
     emit updateSaveState();
 
@@ -918,9 +918,11 @@ void ScheduleWidget::removeStaff(QListWidgetItem *item)
 
     //update the stats counters
 
-    bool isWeekend = datesList[dateIndex].isWeekend();
+    Staff::ShiftTypes shft = datesList[dateIndex].isWeekend() ? Staff::WEEKEND : Staff::NONE;
+    if (isAM)
+        shft = shft | Staff::AM;
 
-    theTeam.at(staffId)->removeShift(isWeekend, isAM);
+    theTeam[staffId]->removeShift(shft | Staff::NIGHT);
 
     if (datesList[dateIndex].isExam()) {
         // fix the day duty lists
@@ -943,7 +945,7 @@ void ScheduleWidget::setAsAM()
     if (!theTeam.at(staffId)->getPosition())
         return;
 
-    if (datesList[dateIndex].isOn(staffId))
+    if (datesList[dateIndex].isOn(staffId, true))
         return;
 
     if (datesList[dateIndex].getAM() != SDate::AM_NOT_SET)
@@ -974,9 +976,8 @@ void ScheduleWidget::setAsAM()
 
     //update the stats counters
 
-    bool isWeekend = datesList[dateIndex].isWeekend();
-
-    theTeam.at(staffId)->addShift(isWeekend, true);
+    Staff::ShiftTypes shft = datesList[dateIndex].isWeekend() ? Staff::WEEKEND : Staff::NONE;
+    theTeam[staffId]->addShift(shft | Staff::AM);
 
     emit updateSaveState();
 
@@ -1056,37 +1057,53 @@ void ScheduleWidget::showSchedule(const QString &id) {
 }
 
 void ScheduleWidget::changeDayDutyIndex(const int newIndex) {
+    if (_adjustCBDayDuty || newIndex == -1)
+        return ;
+
     QComboBox *cmb = dynamic_cast<QComboBox *>(sender());
 
     // read the currently stored values
-    QString sid;
+    QString sid; // the previously stored ID
     for (int i = 0; i < 2; ++i) {
         if (cmb == cbDayDuty[i] && !dayDutyPrevIDs[i].isEmpty()) {
             sid = dayDutyPrevIDs[i];
+            //TODO Store day duty
             break;
         }
     }
 
     // search setting the new staff member off-deck, and old one on-deck
+    // reset to be ondeck
     QString id = cmb->itemData(newIndex, Qt::UserRole).toString();
     bool f[] = {false, false};
-    for (int i = 0; i < theTeam.size()  && (!f[0] || !f[1]); ++i) {
+    for (int i = 0; i < theTeam.size()  && !(f[0] && f[1]); ++i) {
         QListWidgetItem *ptr = onDeckItems->at(i);
-        if (theTeam[i]->uid() == id) {
+        Staff::Ptr sptr = theTeam[i];
+        if (sptr->uid() == id) {
+            sptr->addShift(Staff::DAY);
             ptr->setHidden(true);
             f[0] = true;
         }
 
-        if (theTeam[i]->uid() == sid) {
+        if (sptr->uid() == sid) {
             ptr->setHidden(false);
+            sptr->removeShift(Staff::DAY);
             f[1] = true;
         }
     }
 
-    // save the values of both comboboxes.
+    // save the values of both comboboxes, and to the day
+    SDate &d = datesList[dateToIndex(calendar->selectedDate())];
+
     for (int i = 0; i < 2; ++i) {
-        dayDutyPrevIDs[i] = cbDayDuty[i]->itemData(cbDayDuty[i]->currentIndex(), Qt::UserRole).toString();
+        QString uid = cbDayDuty[i]->itemData(cbDayDuty[i]->currentIndex(), Qt::UserRole).toString();
+        dayDutyPrevIDs[i] = uid;
+        d.setDayShiftMember(i, uid);
     }
+
+    emit updateSaveState();
+
+    updateStats();
 }
 
 void ScheduleWidget::copySlot()
@@ -1157,7 +1174,7 @@ void ScheduleWidget::setAsAM(const QString &staffId)
     if (!theTeam.at(staffId)->getPosition())
         return;
 
-    if (datesList[dateIndex].isOn(staffId))
+    if (datesList[dateIndex].isOn(staffId, true))
         return;
 
     if (datesList[dateIndex].getAM() != SDate::AM_NOT_SET)
@@ -1189,9 +1206,9 @@ void ScheduleWidget::setAsAM(const QString &staffId)
 
     //update the stats counters
 
-    bool isWeekend = datesList[dateIndex].isWeekend();
+    Staff::ShiftTypes isWeekend = datesList[dateIndex].isWeekend() ? Staff::WEEKEND : Staff::NONE;
 
-    pstaff->addShift(isWeekend, true);
+    pstaff->addShift(isWeekend | Staff::AM);
 
     if (datesList[dateIndex].isExam()) {
         // fix the day duty lists
@@ -1221,7 +1238,7 @@ void ScheduleWidget::addStaff(const QString &staffId)
     if (nightClasses[calendar->selectedDate().dayOfWeek()-1].contains(staffId))
         return;
 
-    if (datesList[dateIndex].isOn(staffId))
+    if (datesList[dateIndex].isOn(staffId, true))
         return;
 
     if (datesList[dateIndex].isSpecial())
@@ -1255,9 +1272,9 @@ void ScheduleWidget::addStaff(const QString &staffId)
 
     //update the stats counters
 
-    bool isWeekend = datesList[dateIndex].isWeekend();
+    Staff::ShiftTypes isWeekend = datesList[dateIndex].isWeekend() ? Staff::WEEKEND : Staff::NONE;
 
-    pstaff->addShift(isWeekend, false);
+    pstaff->addShift(isWeekend);
 
     if (datesList[dateIndex].isExam()) {
         // fix the day duty lists
@@ -1301,10 +1318,12 @@ void ScheduleWidget::exportSchedule()
     QList<int > donAvgs;
     donAvgs += donAverageItem->text().toFloat();
     donAvgs += donAverageWeekendItem->text().toFloat();
+    donAvgs += dayDonAverageItem->text().toFloat();
     donAvgs += amAverageItem->text().toFloat();
 
     QList<int > raAvgs;
     raAvgs += raAverageItem->text().toFloat();
+    raAvgs += raAverageWeekendItem->text().toFloat();
     raAvgs += raAverageWeekendItem->text().toFloat();
 
     map["_dAvgs"] = donAvgs;
@@ -1313,11 +1332,11 @@ void ScheduleWidget::exportSchedule()
     QList<QString > ids;
 
     for (int i = 0; i < statsTable->rowCount(); i++) {
-        QTableWidgetItem *item = statsTableItems->at(i);
+        QTableWidgetItem *item = statsTable->item(i, 0);
 
         QList<int > vals;
 
-        for (int j = 2; j <= 4; j++) {
+        for (int j = 2; j < statsTable->columnCount(); j++) {
             vals += statsTable->item(i, j)->text().toInt();
         }
 
@@ -1343,48 +1362,104 @@ void ScheduleWidget::updateStats()
     double dWAverage = 0;
     double rWAverage = 0;
     double amAverage = 0;
+    double rDAverage = 0.0;
+    double dDAverage = 0.0;
 
     int rCount = 0;
     int dCount = 0;
 
 
-    for(int x = 0; x < statsTableItems->count(); x++)
+    for(int x = 0; x < statsTable->rowCount(); x++)
     {
-        QString staffId = statsTableItems->at(x)->data(Qt::UserRole).toString();
-        Staff::Ptr pstaff = theTeam.at(staffId);
-        int row = statsTableItems->at(x)->row();
+        QTableWidgetItem *item = statsTable->item(x, 0);
+        QString staffId = item->data(Qt::UserRole).toString();
+        Staff::Ptr pstaff = theTeam[staffId];
 
-        statsTable->item(row,2)->setText(QString::number(pstaff->getShifts()));
-        statsTable->item(row,3)->setText(QString::number(pstaff->getWeekendShifts()));
-        statsTable->item(row,4)->setText(QString::number(pstaff->getAMShifts()));
+        statsTable->item(x, 2)->setText(QString::number(pstaff->getShifts(Staff::TOTAL)));
+        statsTable->item(x, 3)->setText(QString::number(pstaff->getShifts(Staff::WEEKEND)));
+        statsTable->item(x, 4)->setText(QString::number(pstaff->getShifts(Staff::DAY)));
+        statsTable->item(x, 5)->setText(QString::number(pstaff->getShifts(Staff::AM)));
 
         if (pstaff->getPosition()) {
             dAverage += pstaff->getShifts();
-            dWAverage += pstaff->getWeekendShifts();
-            amAverage += pstaff->getAMShifts();
+            dWAverage += pstaff->getShifts(Staff::WEEKEND);
+            amAverage += pstaff->getShifts(Staff::AM);
+            dDAverage += pstaff->getShifts(Staff::DAY);
             dCount++;
         } else {
             rAverage += pstaff->getShifts();
-            rWAverage += pstaff->getWeekendShifts();
+            rWAverage += pstaff->getShifts(Staff::WEEKEND);
+            rDAverage += pstaff->getShifts(Staff::DAY);
             rCount++;
         }
 
     }
 
-    rAverage = rAverage / rCount;
-    dAverage = dAverage / dCount;
-    rWAverage = rWAverage / rCount;
-    dWAverage = dWAverage / dCount;
-    amAverage = amAverage / dCount;
+    rAverage /= rCount;
+    dAverage /= dCount;
+    rWAverage /= rCount;
+    dWAverage /= dCount;
+    amAverage /= dCount;
+    rDAverage /= rCount;
+    dDAverage /= dCount;
 
     donAverageItem->setText(QString::number(dAverage));
     donAverageWeekendItem->setText(QString::number(dWAverage));
     amAverageItem->setText(QString::number(amAverage));
     raAverageItem->setText(QString::number(rAverage));
     raAverageWeekendItem->setText(QString::number(rWAverage));
+    dayRAAverageItem->setText(QString::number(rDAverage));
+    dayDonAverageItem->setText(QString::number(dDAverage));
 
     schedViewWidget->setToStaff(Staff::Ptr(), datesList);
 }
+
+void ScheduleWidget::refreshStats()
+{
+    // reset all shifts
+    foreach (Staff::Ptr ptr, theTeam) {
+        ptr->setShifts(0, 0, 0, 0);
+    }
+    
+    foreach(SDate sdate, datesList)
+    {
+        if (sdate.isSpecial()) {
+//             qDebug() << "Special:" << (QDate)sdate;
+            // don't count
+            continue;
+        }
+        
+        Qt::DayOfWeek dow = static_cast<Qt::DayOfWeek>(sdate.dayOfWeek());
+//         qDebug() << "Date of week:" << dow;
+        bool wkd = dow == Qt::Friday || dow == Qt::Saturday;
+        Staff::ShiftTypes wkdShift = wkd ? Staff::WEEKEND : Staff::NONE;
+
+        QString am = sdate.getAM();
+        QList<QString> dons = sdate.getDons();
+        QList<QString> ras = sdate.getRas();
+        
+        if (am != SDate::AM_NOT_SET)
+            theTeam[am]->addShift(wkdShift | Staff::AM);
+        
+        foreach (QString id, dons) {
+            theTeam[id]->addShift(wkdShift);
+        }
+        
+        foreach (QString id, ras) {
+            theTeam[id]->addShift(wkdShift);
+        }
+
+        for (int i = 0; i < 2; ++i) {
+            QString uid = sdate.dayShiftMember(i);
+            if (!uid.isEmpty()) {
+                theTeam[uid]->addShift(Staff::DAY);
+            }
+        }
+    }
+    
+    updateStats();
+}
+
 
 void ScheduleWidget::saveMidSchedule(const QString &fileName)
 {

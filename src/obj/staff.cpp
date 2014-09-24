@@ -19,6 +19,7 @@ Staff::Staff()
     numShifts = 0;
     numWeekendShifts = 0;
     numAMShifts = 0;
+    numDayDuty = 0;
 
     _uid = "xxx";
     UIDSet = false;
@@ -35,12 +36,13 @@ Staff::Staff(int i, QString first, QString last, bool pos, bool gen, int night)
     numShifts = 0;
     numWeekendShifts = 0;
     numAMShifts = 0;
+    numDayDuty = 0;
 
     genUID();
 }
 
 Staff::Staff(const QVariantMap &json) :
-    numShifts(0), numWeekendShifts(0), numAMShifts(0)
+    numShifts(0), numDayDuty(0), numWeekendShifts(0), numAMShifts(0)
 {
     *this << json;
 }
@@ -328,26 +330,39 @@ QString Staff::getAvailabilityStr() {
     return out;
 }
 
-void Staff::addShift(bool weekend, bool isAM)
+void Staff::addShift(ShiftTypes type)
 {
-    if (isAM)
+    if ((type & AM) == AM)
         numAMShifts++;
 
-    if (weekend)
+    if ((type & WEEKEND) == WEEKEND)
         numWeekendShifts++;
+
+    if ((type & DAY) == DAY)
+        numDayDuty++;
 
     numShifts++;
 }
 
-void Staff::removeShift(bool weekend, bool isAM)
+void Staff::removeShift(ShiftTypes type)
 {
-    if (isAM)
+    if ((type & AM) == AM)
         numAMShifts--;
 
-    if (weekend)
+    if ((type & WEEKEND) == WEEKEND)
         numWeekendShifts--;
 
+    if ((type & DAY) == DAY)
+        numDayDuty--;
+
     numShifts--;
+}
+
+void Staff::setShifts(int total, int weekend, int day, int AM) {
+    numShifts = total;
+    numWeekendShifts = weekend;
+    numAMShifts = AM;
+    numDayDuty = day;
 }
 
 bool Staff::isUIDSet() const {
@@ -357,18 +372,17 @@ QString Staff::uid() const {
     return _uid;
 }
 
-int Staff::getShifts()
+int Staff::getShifts(ShiftTypes type)
 {
-    return numShifts;
-}
+    if ((type & TOTAL) == TOTAL)
+        return numShifts;
+    else if ((type & DAY) == DAY)
+        return numDayDuty;
+    else if ((type & AM) == AM)
+        return numAMShifts;
+    else if ((type & NIGHT) == NIGHT)
+        return numShifts - numDayDuty;
 
-int Staff::getWeekendShifts()
-{
-    return numWeekendShifts;
-}
-
-int Staff::getAMShifts()
-{
-    return numAMShifts;
+    return -1;
 }
 

@@ -5,6 +5,7 @@
 #include <QVariant>
 #include <QDate>
 #include <QSharedPointer>
+#include <QFlags>
 
 #include "exam.h"
 #include "availabledate.h"
@@ -13,6 +14,13 @@ class Staff
 {
 
 public:
+    enum ShiftType {
+        NONE = 0x00,
+        AM = 0x01, TOTAL = 0x83,
+        DAY = 0x80, NIGHT = 0x02, WEEKEND = 0x06
+    };
+    Q_DECLARE_FLAGS(ShiftTypes, ShiftType)
+
     typedef QSharedPointer<Staff> Ptr;
 
     enum POSITION {
@@ -72,9 +80,8 @@ public:
     QList<Exam::Ptr> getMidterms();
     QString getMidtermsStr();
 
-    int getShifts();
-    int getWeekendShifts();
-    int getAMShifts();
+    int getShifts(ShiftTypes type = TOTAL);
+    void setShifts(int total, int weekend, int day, int am);
 
 
     //setters
@@ -104,8 +111,10 @@ public:
     void appendAvail(const AvailableDate &dt);
     void removeAvail(const AvailableDate &dt);
 
-    void addShift(bool, bool = false);
-    void removeShift(bool, bool);
+    void addShift(ShiftTypes type);
+    void removeShift(ShiftTypes type);
+    
+    
 
     bool isUIDSet() const;
     QString uid() const;
@@ -123,6 +132,7 @@ private:
 //     QString availability;// "dd/MM/yyyy,dd/MM/yyyy," etc
     QList<AvailableDate > availList;
     int numShifts;
+    int numDayDuty;
     int numWeekendShifts;
     int numAMShifts;
 
@@ -131,5 +141,7 @@ private:
     bool examListContains(const Exam::Ptr e, const QList<Exam::Ptr> &list);
 
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(Staff::ShiftTypes)
 
 #endif // STAFF_H

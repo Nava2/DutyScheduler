@@ -7,12 +7,12 @@
 #include <QTableWidgetItem>
 #include <QSignalMapper>
 #include <QComboBox>
+#include <QAction>
 
-#include "staff.h"
-#include "exam.h"
-#include "examlist.h"
-#include "stafflist.h"
-#include "sdate.h"
+#include "obj/staff.h"
+#include "obj/exam.h"
+#include "obj/sdate.h"
+
 #include "myqlistwidget.h"
 #include "schedviewer.h"
 
@@ -51,6 +51,9 @@ public:
 
     virtual
     ~ScheduleWidget();
+    
+public slots:
+    void refreshStats();
 
 private slots:
     void dateClicked(QDate);
@@ -60,6 +63,7 @@ private slots:
     void showStaffSchedule(QTableWidgetItem*);
     void setAsAM();
     void setSpecialDuty();
+    
     void updateStats();
     void copySlot();
     void pasteSlot();
@@ -121,8 +125,6 @@ private:
 
     //tableWidget stuff
     QTableWidget * statsTable;
-    QList<QTableWidgetItem*> * statsTableItems;
-    //
 
     QTableWidget * averagesTable;
     QTableWidgetItem * raAverageItem;
@@ -130,12 +132,15 @@ private:
     QTableWidgetItem * donAverageItem;
     QTableWidgetItem * donAverageWeekendItem;
     QTableWidgetItem * amAverageItem;
+    QTableWidgetItem *dayDonAverageItem;
+    QTableWidgetItem *dayRAAverageItem;
 
     QGroupBox *OnDutyGroupBox;
     QGroupBox *OnDeckGroupBox;
     MyQListWidget *onDeckList;
     MyQListWidget *onDutyList;
 
+    bool _adjustCBDayDuty;
     QComboBox *cbDayDuty[2];
     QString dayDutyPrevIDs[2];
 

@@ -19,7 +19,7 @@ public:
     ~SDate();
 
     bool isSpecial() const; // is this special duty?
-    bool isOn(const QString &) const;// is this staff on duty already?
+    bool isOn(const QString &uid, const bool checkDay = false) const;// is this staff on duty already?
     bool isFull() const;
     bool isExam() const;
     bool rasFull() const; // do we have enough ras?
@@ -42,6 +42,12 @@ public:
      */
     void setDayShiftMember(int shiftNo, const QString &id);
 
+    /*!
+     * \brief isOnDayDuty Returns true if a staff member is on day duty
+     * \param id The UID to check against
+     * \return True if on duty
+     */
+    bool isOnDayDuty(const QString &id) const;
 
     QString getAM() const;//return the AM's ID
     int getWeekday() const;
