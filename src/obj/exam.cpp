@@ -56,7 +56,7 @@ QList<QString > Exam::getStaff() {
 void Exam::operator <<(const QVariantMap &json) {
     id = json["id"].toInt();
     QDate date = json["date"].toDate();
-    setYMD(date.year(), date.month(), date.day());
+    setDate(date.year(), date.month(), date.day());
 
     QVariantMap::const_iterator it = json.find("period");
     if (it == json.end()) {

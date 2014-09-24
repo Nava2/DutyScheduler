@@ -340,7 +340,7 @@ void SDate::operator <<(const QVariantMap &map) {
     cantWork.clear();
 
     QDate d = map["date"].toDate();
-    setYMD(d.year(), d.month(), d.day());
+    setDate(d.year(), d.month(), d.day());
 
 
     // load the object

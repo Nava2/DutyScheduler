@@ -14,8 +14,7 @@
 #include <QDebug>
 #include <QFileDialog>
 
-#include <qjson/parser.h>
-#include <qjson/serializer.h>
+#include <QJsonDocument>
 
 #include "stafflist.h"
 
@@ -191,11 +190,7 @@ bool IOHandler::loadStaffTeam(QString filePath, StaffList &staffList, ExamList &
 
 bool IOHandler::loadStaffTeamJson(QFile &file, StaffList &staffList, ExamList &finals, ExamList &midterms) {
 
-    QJson::Parser parser; // define parser
-
-    // read the whole file into the QByteArray then put it into a string for
-    // parsing
-    QByteArray data = file.readAll();
+    QJsonDocument doc = QJsonDocument::fromJson(file.readAll()); // define parser
 
     // parse using json.h
     bool ok = false;

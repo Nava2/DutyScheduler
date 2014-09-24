@@ -64,7 +64,7 @@ Staff::Staff(const Staff &old) {
 
 void Staff::genUID() {
     QString id = firstName + lastName + QString::number((int)(rand() * 1000));
-    QByteArray tuid = QCryptographicHash::hash(id.toAscii(), QCryptographicHash::Sha1);
+    QByteArray tuid = QCryptographicHash::hash(id.toUtf8(), QCryptographicHash::Sha1);
     tuid = tuid.toHex();
     _uid = QString(tuid.left(3) + tuid.right(3));
 
